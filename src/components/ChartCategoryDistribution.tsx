@@ -3,6 +3,18 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 
+// Componente para mostrar cuando no hay datos
+const NoDataDisplay = () => (
+  <div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
+    <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+      <line x1="12" y1="9" x2="12" y2="13"></line>
+      <line x1="12" y1="17" x2="12.01" y2="17"></line>
+    </svg>
+    <p className="mt-4">No hay datos disponibles</p>
+  </div>
+);
+
 const data = [
   { name: 'Insumos', value: 4500 },
   { name: 'Mano de Obra', value: 3000 },
@@ -20,7 +32,7 @@ const CustomTooltip = ({ active, payload }: any) => {
       <div className="bg-white p-3 border rounded shadow-sm">
         <p className="font-bold">{payload[0].name}</p>
         <p>
-          {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(payload[0].value)}
+          {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'USD' }).format(payload[0].value)}
           {" - "}
           {((payload[0].value / data.reduce((sum, entry) => sum + entry.value, 0)) * 100).toFixed(1)}%
         </p>
@@ -30,9 +42,14 @@ const CustomTooltip = ({ active, payload }: any) => {
   return null;
 };
 
-const ChartCategoryDistribution: React.FC<{ title?: string; type?: 'gastos' | 'ingresos' }> = ({ 
+const ChartCategoryDistribution: React.FC<{ 
+  title?: string; 
+  type?: 'gastos' | 'ingresos';
+  hasData?: boolean;
+}> = ({ 
   title = "Distribución de gastos por categoría",
-  type = "gastos" 
+  type = "gastos",
+  hasData = false // Por defecto, asumimos que no hay datos
 }) => {
   return (
     <Card>
@@ -40,25 +57,29 @@ const ChartCategoryDistribution: React.FC<{ title?: string; type?: 'gastos' | 'i
         <CardTitle>{title}</CardTitle>
       </CardHeader>
       <CardContent className="h-64">
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
-            <Pie
-              data={data}
-              cx="50%"
-              cy="50%"
-              labelLine={false}
-              outerRadius={80}
-              fill="#8884d8"
-              dataKey="value"
-            >
-              {data.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-              ))}
-            </Pie>
-            <Tooltip content={<CustomTooltip />} />
-            <Legend />
-          </PieChart>
-        </ResponsiveContainer>
+        {hasData ? (
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={data}
+                cx="50%"
+                cy="50%"
+                labelLine={false}
+                outerRadius={80}
+                fill="#8884d8"
+                dataKey="value"
+              >
+                {data.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                ))}
+              </Pie>
+              <Tooltip content={<CustomTooltip />} />
+              <Legend />
+            </PieChart>
+          </ResponsiveContainer>
+        ) : (
+          <NoDataDisplay />
+        )}
       </CardContent>
     </Card>
   );

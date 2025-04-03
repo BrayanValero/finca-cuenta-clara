@@ -8,6 +8,24 @@ import { BarChart, Bar, LineChart, Line, PieChart, Pie, XAxis, YAxis, CartesianG
 import ChartMonthlyBalance from '@/components/ChartMonthlyBalance';
 import ChartCategoryDistribution from '@/components/ChartCategoryDistribution';
 import MobileNav from '@/components/MobileNav';
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+
+// Función para formatear moneda
+const formatCurrency = (value: number) => {
+  return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'USD' }).format(value);
+};
+
+// Componente para mostrar cuando no hay datos
+const NoDataDisplay = ({ message = "No hay datos disponibles para mostrar" }) => (
+  <div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
+    <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+      <line x1="12" y1="9" x2="12" y2="13"></line>
+      <line x1="12" y1="17" x2="12.01" y2="17"></line>
+    </svg>
+    <p className="mt-4">{message}</p>
+  </div>
+);
 
 // Datos de ejemplo
 const monthlyData = [
@@ -45,8 +63,22 @@ const categoryData = {
 // Colores para gráficos
 const COLORS = ['#4D5726', '#6B7B3A', '#3A4219', '#B8860B', '#D9A441'];
 
+// Estado de datos para simular cuando no hay datos
+const dataStates = {
+  withData: 'withData',
+  noData: 'noData'
+};
+
 const Statistics = () => {
   const [year, setYear] = useState('2023');
+  // Para demostración: cambiar a dataStates.noData para mostrar estado sin datos
+  const [dataState, setDataState] = useState(dataStates.noData);
+  
+  // Verificar si hay datos disponibles
+  const hasData = dataState === dataStates.withData;
+  
+  // Formatter para tooltips monetarios
+  const currencyFormatter = (value: number) => formatCurrency(value);
   
   return (
     <>
@@ -73,6 +105,16 @@ const Statistics = () => {
           </div>
         </div>
 
+        {/* Toggle para demostrar estados con/sin datos (solo para demostración) */}
+        <div className="mb-4">
+          <button 
+            onClick={() => setDataState(dataState === dataStates.withData ? dataStates.noData : dataStates.withData)}
+            className="text-xs text-muted-foreground underline"
+          >
+            {dataState === dataStates.withData ? "Mostrar interfaz sin datos" : "Mostrar datos de ejemplo"}
+          </button>
+        </div>
+
         <Tabs defaultValue="general" className="space-y-6">
           <TabsList className="w-full md:w-auto">
             <TabsTrigger value="general">General</TabsTrigger>
@@ -88,19 +130,23 @@ const Statistics = () => {
                   <CardTitle>Balance Anual {year}</CardTitle>
                 </CardHeader>
                 <CardContent className="h-80">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart
-                      data={monthlyData}
-                      margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="month" />
-                      <YAxis />
-                      <Tooltip />
-                      <Legend />
-                      <Line type="monotone" dataKey="balance" stroke="#4D5726" strokeWidth={2} />
-                    </LineChart>
-                  </ResponsiveContainer>
+                  {hasData ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart
+                        data={monthlyData}
+                        margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="month" />
+                        <YAxis tickFormatter={currencyFormatter} />
+                        <Tooltip formatter={currencyFormatter} />
+                        <Legend />
+                        <Line type="monotone" dataKey="balance" stroke="#4D5726" strokeWidth={2} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <NoDataDisplay message="No hay datos de balance disponibles para este período" />
+                  )}
                 </CardContent>
               </Card>
               
@@ -109,27 +155,90 @@ const Statistics = () => {
                   <CardTitle>Comparativa Ingresos vs Gastos</CardTitle>
                 </CardHeader>
                 <CardContent className="h-80">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      data={monthlyData}
-                      margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="month" />
-                      <YAxis />
-                      <Tooltip />
-                      <Legend />
-                      <Bar dataKey="ingresos" fill="#4D5726" name="Ingresos" />
-                      <Bar dataKey="gastos" fill="#B8860B" name="Gastos" />
-                    </BarChart>
-                  </ResponsiveContainer>
+                  {hasData ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart
+                        data={monthlyData}
+                        margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="month" />
+                        <YAxis tickFormatter={currencyFormatter} />
+                        <Tooltip formatter={currencyFormatter} />
+                        <Legend />
+                        <Bar dataKey="ingresos" fill="#4D5726" name="Ingresos" />
+                        <Bar dataKey="gastos" fill="#B8860B" name="Gastos" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <NoDataDisplay message="No hay datos comparativos de ingresos y gastos" />
+                  )}
                 </CardContent>
               </Card>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <ChartCategoryDistribution title="Distribución de ingresos" type="ingresos" />
-              <ChartCategoryDistribution title="Distribución de gastos" type="gastos" />
+              <Card>
+                <CardHeader>
+                  <CardTitle>Distribución de ingresos</CardTitle>
+                </CardHeader>
+                <CardContent className="h-80">
+                  {hasData ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={categoryData.ingresos}
+                          cx="50%"
+                          cy="50%"
+                          outerRadius={80}
+                          fill="#8884d8"
+                          dataKey="value"
+                          label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                        >
+                          {categoryData.ingresos.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip formatter={(value) => formatCurrency(value as number)} />
+                        <Legend />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <NoDataDisplay message="No hay datos de distribución de ingresos" />
+                  )}
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle>Distribución de gastos</CardTitle>
+                </CardHeader>
+                <CardContent className="h-80">
+                  {hasData ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={categoryData.gastos}
+                          cx="50%"
+                          cy="50%"
+                          outerRadius={80}
+                          fill="#8884d8"
+                          dataKey="value"
+                          label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                        >
+                          {categoryData.gastos.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip formatter={(value) => formatCurrency(value as number)} />
+                        <Legend />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <NoDataDisplay message="No hay datos de distribución de gastos" />
+                  )}
+                </CardContent>
+              </Card>
             </div>
           </TabsContent>
           
@@ -140,19 +249,23 @@ const Statistics = () => {
                   <CardTitle>Ingresos Mensuales</CardTitle>
                 </CardHeader>
                 <CardContent className="h-80">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart
-                      data={monthlyData}
-                      margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="month" />
-                      <YAxis />
-                      <Tooltip />
-                      <Legend />
-                      <Line type="monotone" dataKey="ingresos" stroke="#4D5726" strokeWidth={2} />
-                    </LineChart>
-                  </ResponsiveContainer>
+                  {hasData ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart
+                        data={monthlyData}
+                        margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="month" />
+                        <YAxis tickFormatter={currencyFormatter} />
+                        <Tooltip formatter={currencyFormatter} />
+                        <Legend />
+                        <Line type="monotone" dataKey="ingresos" stroke="#4D5726" strokeWidth={2} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <NoDataDisplay message="No hay datos de ingresos mensuales" />
+                  )}
                 </CardContent>
               </Card>
               
@@ -161,25 +274,29 @@ const Statistics = () => {
                   <CardTitle>Distribución de Ingresos</CardTitle>
                 </CardHeader>
                 <CardContent className="h-80">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={categoryData.ingresos}
-                        cx="50%"
-                        cy="50%"
-                        outerRadius={80}
-                        fill="#8884d8"
-                        dataKey="value"
-                        label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                      >
-                        {categoryData.ingresos.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip formatter={(value) => new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(value as number)} />
-                      <Legend />
-                    </PieChart>
-                  </ResponsiveContainer>
+                  {hasData ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={categoryData.ingresos}
+                          cx="50%"
+                          cy="50%"
+                          outerRadius={80}
+                          fill="#8884d8"
+                          dataKey="value"
+                          label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                        >
+                          {categoryData.ingresos.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip formatter={(value) => formatCurrency(value as number)} />
+                        <Legend />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <NoDataDisplay message="No hay datos de distribución de ingresos" />
+                  )}
                 </CardContent>
               </Card>
             </div>
@@ -192,19 +309,23 @@ const Statistics = () => {
                   <CardTitle>Gastos Mensuales</CardTitle>
                 </CardHeader>
                 <CardContent className="h-80">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart
-                      data={monthlyData}
-                      margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="month" />
-                      <YAxis />
-                      <Tooltip />
-                      <Legend />
-                      <Line type="monotone" dataKey="gastos" stroke="#B8860B" strokeWidth={2} />
-                    </LineChart>
-                  </ResponsiveContainer>
+                  {hasData ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart
+                        data={monthlyData}
+                        margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="month" />
+                        <YAxis tickFormatter={currencyFormatter} />
+                        <Tooltip formatter={currencyFormatter} />
+                        <Legend />
+                        <Line type="monotone" dataKey="gastos" stroke="#B8860B" strokeWidth={2} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <NoDataDisplay message="No hay datos de gastos mensuales" />
+                  )}
                 </CardContent>
               </Card>
               
@@ -213,25 +334,29 @@ const Statistics = () => {
                   <CardTitle>Distribución de Gastos</CardTitle>
                 </CardHeader>
                 <CardContent className="h-80">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={categoryData.gastos}
-                        cx="50%"
-                        cy="50%"
-                        outerRadius={80}
-                        fill="#8884d8"
-                        dataKey="value"
-                        label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                      >
-                        {categoryData.gastos.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip formatter={(value) => new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(value as number)} />
-                      <Legend />
-                    </PieChart>
-                  </ResponsiveContainer>
+                  {hasData ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={categoryData.gastos}
+                          cx="50%"
+                          cy="50%"
+                          outerRadius={80}
+                          fill="#8884d8"
+                          dataKey="value"
+                          label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                        >
+                          {categoryData.gastos.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip formatter={(value) => formatCurrency(value as number)} />
+                        <Legend />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <NoDataDisplay message="No hay datos de distribución de gastos" />
+                  )}
                 </CardContent>
               </Card>
             </div>
@@ -243,21 +368,25 @@ const Statistics = () => {
                 <CardTitle>Tendencia Anual</CardTitle>
               </CardHeader>
               <CardContent className="h-96">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart
-                    data={monthlyData}
-                    margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="month" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Line type="monotone" dataKey="ingresos" stroke="#4D5726" name="Ingresos" strokeWidth={2} />
-                    <Line type="monotone" dataKey="gastos" stroke="#B8860B" name="Gastos" strokeWidth={2} />
-                    <Line type="monotone" dataKey="balance" stroke="#000" name="Balance" strokeWidth={2} strokeDasharray="5 5" />
-                  </LineChart>
-                </ResponsiveContainer>
+                {hasData ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart
+                      data={monthlyData}
+                      margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="month" />
+                      <YAxis tickFormatter={currencyFormatter} />
+                      <Tooltip formatter={currencyFormatter} />
+                      <Legend />
+                      <Line type="monotone" dataKey="ingresos" stroke="#4D5726" name="Ingresos" strokeWidth={2} />
+                      <Line type="monotone" dataKey="gastos" stroke="#B8860B" name="Gastos" strokeWidth={2} />
+                      <Line type="monotone" dataKey="balance" stroke="#000" name="Balance" strokeWidth={2} strokeDasharray="5 5" />
+                    </LineChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <NoDataDisplay message="No hay datos de tendencias disponibles para este período" />
+                )}
               </CardContent>
             </Card>
           </TabsContent>
