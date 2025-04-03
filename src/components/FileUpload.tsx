@@ -7,6 +7,11 @@ import * as XLSX from 'xlsx';
 import { useQueryClient } from '@tanstack/react-query';
 import { createTransaction, TransactionInput } from '@/services/transactionService';
 
+// Interface for the row data from Excel
+interface ExcelRowData {
+  [key: string]: string | number | null;
+}
+
 const FileUpload = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -102,7 +107,7 @@ const FileUpload = () => {
         const worksheet = workbook.Sheets[firstSheetName];
         
         // Convert to JSON
-        const jsonData = XLSX.utils.sheet_to_json(worksheet);
+        const jsonData = XLSX.utils.sheet_to_json<ExcelRowData>(worksheet);
         
         // Process transactions
         let successCount = 0;
@@ -112,10 +117,11 @@ const FileUpload = () => {
         for (const row of jsonData) {
           try {
             // Check which columns are available in the file
-            const dateKey = 'Fecha' in row ? 'Fecha' : 'fecha';
-            const descKey = 'Descripción' in row ? 'Descripción' : ('Descripcion' in row ? 'Descripcion' : 'descripcion');
-            const incomeKey = 'Ingreso' in row ? 'Ingreso' : 'ingreso';
-            const expenseKey = 'Gasto' in row ? 'Gasto' : 'gasto';
+            const dateKey = row.hasOwnProperty('Fecha') ? 'Fecha' : 'fecha';
+            const descKey = row.hasOwnProperty('Descripción') ? 'Descripción' : 
+                           (row.hasOwnProperty('Descripcion') ? 'Descripcion' : 'descripcion');
+            const incomeKey = row.hasOwnProperty('Ingreso') ? 'Ingreso' : 'ingreso';
+            const expenseKey = row.hasOwnProperty('Gasto') ? 'Gasto' : 'gasto';
             
             // Handle amount and transaction type
             let amount = 0;
@@ -158,8 +164,15 @@ const FileUpload = () => {
               category = 'otros';
             }
             
+            const dateValue = row[dateKey];
+            if (!dateValue) {
+              console.error('Missing date value in row:', row);
+              errorCount++;
+              continue;
+            }
+            
             const transaction: TransactionInput = {
-              date: formatDate(row[dateKey]),
+              date: formatDate(dateValue),
               type,
               category,
               description: description || null,
