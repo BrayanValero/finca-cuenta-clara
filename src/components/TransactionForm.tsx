@@ -13,6 +13,7 @@ import { CalendarIcon } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createTransaction, TransactionInput } from '@/services/transactionService';
+import { useAuth } from '@/contexts/AuthContext';
 
 const categorias = [
   { value: 'insumos', label: 'Insumos' },
@@ -23,10 +24,20 @@ const categorias = [
   { value: 'otros', label: 'Otros' },
 ];
 
+type FormData = {
+  fecha: Date;
+  type: 'ingreso' | 'gasto';
+  category: string;
+  description: string;
+  amount: number;
+};
+
 const TransactionForm = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [formData, setFormData] = useState<Omit<TransactionInput, 'date'> & { fecha: Date | undefined }>({
+  const { user } = useAuth();
+  
+  const [formData, setFormData] = useState<FormData>({
     fecha: new Date(),
     type: 'gasto',
     category: '',
@@ -63,7 +74,9 @@ const TransactionForm = () => {
   };
 
   const handleDateChange = (date: Date | undefined) => {
-    setFormData({ ...formData, fecha: date });
+    if (date) {
+      setFormData({ ...formData, fecha: date });
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -82,9 +95,9 @@ const TransactionForm = () => {
     // Preparar datos para enviar
     const transactionData: TransactionInput = {
       date: formData.fecha.toISOString().split('T')[0],
-      type: formData.type as 'ingreso' | 'gasto',
+      type: formData.type,
       category: formData.category,
-      description: formData.description,
+      description: formData.description || null,
       amount: Number(formData.amount)
     };
 

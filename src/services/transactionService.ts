@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { TablesInsert } from "@/integrations/supabase/types";
+import { Tables, TablesInsert } from "@/integrations/supabase/types";
 
 // Types for transaction data
 export interface Transaction {
@@ -12,9 +12,16 @@ export interface Transaction {
   amount: number;
   created_at: string;
   updated_at: string;
+  user_id: string;
 }
 
-export type TransactionInput = Omit<TablesInsert<'transactions'>, 'id' | 'user_id' | 'created_at' | 'updated_at'>;
+export type TransactionInput = {
+  date: string;
+  type: 'ingreso' | 'gasto';
+  category: string;
+  description: string | null;
+  amount: number;
+};
 
 // Get all transactions for the current user
 export const getTransactions = async (): Promise<Transaction[]> => {
