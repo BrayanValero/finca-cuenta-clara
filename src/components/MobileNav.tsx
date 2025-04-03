@@ -1,16 +1,23 @@
 
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { BarChart3, FileText, Home, Menu, PlusCircle, X } from 'lucide-react';
+import { BarChart3, FileText, Home, LogOut, Menu, PlusCircle } from 'lucide-react';
 import AppLogo from './AppLogo';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { useAuth } from '@/contexts/AuthContext';
 
 const MobileNav: React.FC = () => {
   const location = useLocation();
   const [open, setOpen] = useState(false);
+  const { signOut } = useAuth();
   
   const isActive = (path: string) => {
     return location.pathname === path;
+  };
+
+  const handleSignOut = () => {
+    setOpen(false);
+    signOut();
   };
 
   return (
@@ -91,7 +98,11 @@ const MobileNav: React.FC = () => {
               </nav>
               
               <div className="p-4 border-t border-farm-darkgreen/20 dark:border-farm-lightgreen/20">
-                <button className="flex items-center p-2 w-full rounded-md transition-colors hover:bg-farm-lightgreen/30">
+                <button 
+                  onClick={handleSignOut} 
+                  className="flex items-center p-2 w-full rounded-md transition-colors hover:bg-farm-lightgreen/30"
+                >
+                  <LogOut size={20} className="mr-3" />
                   <span>Cerrar Sesión</span>
                 </button>
               </div>

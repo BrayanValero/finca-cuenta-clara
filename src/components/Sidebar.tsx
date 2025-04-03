@@ -3,9 +3,11 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { BarChart3, FileText, Home, LogOut, PlusCircle } from 'lucide-react';
 import AppLogo from './AppLogo';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Sidebar: React.FC = () => {
   const location = useLocation();
+  const { signOut } = useAuth();
   
   const isActive = (path: string) => {
     return location.pathname === path;
@@ -75,7 +77,10 @@ const Sidebar: React.FC = () => {
       </nav>
       
       <div className="p-4 border-t border-farm-darkgreen/20 dark:border-farm-lightgreen/20">
-        <button className="flex items-center p-2 w-full rounded-md transition-colors hover:bg-farm-lightgreen/30">
+        <button 
+          onClick={signOut}
+          className="flex items-center p-2 w-full rounded-md transition-colors hover:bg-farm-lightgreen/30"
+        >
           <LogOut size={20} className="mr-3" />
           <span>Cerrar Sesión</span>
         </button>
