@@ -6,8 +6,70 @@ import ChartMonthlyBalance from '@/components/ChartMonthlyBalance';
 import ChartCategoryDistribution from '@/components/ChartCategoryDistribution';
 import TransactionTable from '@/components/TransactionTable';
 import MobileNav from '@/components/MobileNav';
+import { useQuery } from '@tanstack/react-query';
+import { getTransactions, Transaction } from '@/services/transactionService';
 
 const Dashboard = () => {
+  const { data: transactions = [], isLoading } = useQuery({
+    queryKey: ['transactions'],
+    queryFn: getTransactions
+  });
+
+  // Calculate financial summary
+  const calculateSummary = () => {
+    if (isLoading || !transactions.length) {
+      return {
+        totalBalance: 0,
+        monthlyIncome: 0,
+        monthlyExpenses: 0,
+        liquidity: 0,
+        incomeTrend: 0,
+        expensesTrend: 0
+      };
+    }
+
+    const currentDate = new Date();
+    const currentMonth = currentDate.getMonth();
+    const currentYear = currentDate.getFullYear();
+
+    const monthlyTransactions = transactions.filter((t: Transaction) => {
+      const transDate = new Date(t.date);
+      return transDate.getMonth() === currentMonth && transDate.getFullYear() === currentYear;
+    });
+
+    const totalIncome = transactions
+      .filter((t: Transaction) => t.type === 'ingreso')
+      .reduce((sum: number, t: Transaction) => sum + Number(t.amount), 0);
+
+    const totalExpenses = transactions
+      .filter((t: Transaction) => t.type === 'gasto')
+      .reduce((sum: number, t: Transaction) => sum + Number(t.amount), 0);
+
+    const monthlyIncome = monthlyTransactions
+      .filter((t: Transaction) => t.type === 'ingreso')
+      .reduce((sum: number, t: Transaction) => sum + Number(t.amount), 0);
+
+    const monthlyExpenses = monthlyTransactions
+      .filter((t: Transaction) => t.type === 'gasto')
+      .reduce((sum: number, t: Transaction) => sum + Number(t.amount), 0);
+
+    return {
+      totalBalance: totalIncome - totalExpenses,
+      monthlyIncome,
+      monthlyExpenses,
+      liquidity: totalIncome - totalExpenses,
+      incomeTrend: 24, // Example value, would need historical data for real calculation
+      expensesTrend: -8 // Example value, would need historical data for real calculation
+    };
+  };
+
+  const summary = calculateSummary();
+
+  // Helper to format currency
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(amount);
+  };
+
   return (
     <>
       <MobileNav />
@@ -20,28 +82,27 @@ const Dashboard = () => {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <CardStat
             title="Balance Total"
-            value="€24,500.00"
+            value={formatCurrency(summary.totalBalance)}
             icon={<DollarSign className="h-4 w-4" />}
-            trend={12}
             className="bg-white dark:bg-farm-green"
           />
           <CardStat
             title="Ingresos Mensuales"
-            value="€8,250.00"
+            value={formatCurrency(summary.monthlyIncome)}
             icon={<TrendingUp className="h-4 w-4 text-green-500" />}
-            trend={24}
+            trend={summary.incomeTrend}
             className="bg-white dark:bg-farm-green"
           />
           <CardStat
             title="Gastos Mensuales"
-            value="€4,890.00"
+            value={formatCurrency(summary.monthlyExpenses)}
             icon={<TrendingDown className="h-4 w-4 text-red-500" />}
-            trend={-8}
+            trend={summary.expensesTrend}
             className="bg-white dark:bg-farm-green"
           />
           <CardStat
             title="Liquidez"
-            value="€19,610.00"
+            value={formatCurrency(summary.liquidity)}
             icon={<BanknoteIcon className="h-4 w-4" />}
             className="bg-white dark:bg-farm-green"
           />

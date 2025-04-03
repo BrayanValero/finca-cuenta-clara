@@ -11,6 +11,8 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { createTransaction, TransactionInput } from '@/services/transactionService';
 
 const categorias = [
   { value: 'insumos', label: 'Insumos' },
@@ -21,22 +23,34 @@ const categorias = [
   { value: 'otros', label: 'Otros' },
 ];
 
-interface FormData {
-  fecha: Date | undefined;
-  tipo: string;
-  categoria: string;
-  descripcion: string;
-  monto: string;
-}
-
 const TransactionForm = () => {
   const { toast } = useToast();
-  const [formData, setFormData] = useState<FormData>({
+  const queryClient = useQueryClient();
+  const [formData, setFormData] = useState<Omit<TransactionInput, 'date'> & { fecha: Date | undefined }>({
     fecha: new Date(),
-    tipo: 'gasto',
-    categoria: '',
-    descripcion: '',
-    monto: '',
+    type: 'gasto',
+    category: '',
+    description: '',
+    amount: 0
+  });
+
+  const createTransactionMutation = useMutation({
+    mutationFn: createTransaction,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      toast({
+        title: "Transacción registrada",
+        description: "La transacción ha sido guardada con éxito."
+      });
+      resetForm();
+    },
+    onError: (error) => {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "No se pudo registrar la transacción. Por favor, inténtelo de nuevo."
+      });
+    }
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -56,7 +70,7 @@ const TransactionForm = () => {
     e.preventDefault();
     
     // Validaciones básicas
-    if (!formData.fecha || !formData.categoria || !formData.monto || formData.monto === '0') {
+    if (!formData.fecha || !formData.category || !formData.amount) {
       toast({
         title: "Error",
         description: "Por favor complete todos los campos requeridos.",
@@ -65,22 +79,26 @@ const TransactionForm = () => {
       return;
     }
 
-    // Aquí iría la lógica para guardar la transacción
-    console.log('Submitting form data:', formData);
-    
-    // Mostrar confirmación
-    toast({
-      title: "Transacción registrada",
-      description: "La transacción ha sido guardada con éxito.",
-    });
-    
-    // Resetear formulario
+    // Preparar datos para enviar
+    const transactionData: TransactionInput = {
+      date: formData.fecha.toISOString().split('T')[0],
+      type: formData.type as 'ingreso' | 'gasto',
+      category: formData.category,
+      description: formData.description,
+      amount: Number(formData.amount)
+    };
+
+    // Enviar datos
+    createTransactionMutation.mutate(transactionData);
+  };
+
+  const resetForm = () => {
     setFormData({
       fecha: new Date(),
-      tipo: 'gasto',
-      categoria: '',
-      descripcion: '',
-      monto: '',
+      type: 'gasto',
+      category: '',
+      description: '',
+      amount: 0
     });
   };
 
@@ -114,10 +132,10 @@ const TransactionForm = () => {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="tipo">Tipo de Transacción</Label>
+          <Label htmlFor="type">Tipo de Transacción</Label>
           <Select 
-            value={formData.tipo} 
-            onValueChange={(value) => handleSelectChange('tipo', value)}
+            value={formData.type} 
+            onValueChange={(value) => handleSelectChange('type', value)}
           >
             <SelectTrigger>
               <SelectValue placeholder="Seleccione un tipo" />
@@ -130,10 +148,10 @@ const TransactionForm = () => {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="categoria">Categoría</Label>
+          <Label htmlFor="category">Categoría</Label>
           <Select 
-            value={formData.categoria} 
-            onValueChange={(value) => handleSelectChange('categoria', value)}
+            value={formData.category} 
+            onValueChange={(value) => handleSelectChange('category', value)}
           >
             <SelectTrigger>
               <SelectValue placeholder="Seleccione una categoría" />
@@ -147,33 +165,37 @@ const TransactionForm = () => {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="monto">Monto</Label>
+          <Label htmlFor="amount">Monto</Label>
           <Input
-            id="monto"
-            name="monto"
+            id="amount"
+            name="amount"
             type="number"
             placeholder="0.00"
-            value={formData.monto}
+            value={formData.amount}
             onChange={handleInputChange}
             className="text-right"
           />
         </div>
 
         <div className="space-y-2 md:col-span-2">
-          <Label htmlFor="descripcion">Descripción</Label>
+          <Label htmlFor="description">Descripción</Label>
           <Textarea
-            id="descripcion"
-            name="descripcion"
+            id="description"
+            name="description"
             placeholder="Descripción de la transacción"
-            value={formData.descripcion}
+            value={formData.description}
             onChange={handleInputChange}
             rows={3}
           />
         </div>
       </div>
 
-      <Button type="submit" className="w-full md:w-auto bg-farm-green hover:bg-farm-lightgreen text-white">
-        Registrar Transacción
+      <Button 
+        type="submit" 
+        className="w-full md:w-auto bg-farm-green hover:bg-farm-lightgreen text-white"
+        disabled={createTransactionMutation.isPending}
+      >
+        {createTransactionMutation.isPending ? "Procesando..." : "Registrar Transacción"}
       </Button>
     </form>
   );

@@ -20,50 +20,9 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-
-// Datos de ejemplo para transacciones
-const transactionData = [
-  {
-    id: 1,
-    fecha: '2023-04-01',
-    tipo: 'ingreso',
-    categoria: 'ventas',
-    descripcion: 'Venta de cosecha de maíz',
-    monto: 2500.00,
-  },
-  {
-    id: 2,
-    fecha: '2023-04-03',
-    tipo: 'gasto',
-    categoria: 'insumos',
-    descripcion: 'Compra de fertilizantes',
-    monto: 850.00,
-  },
-  {
-    id: 3,
-    fecha: '2023-04-10',
-    tipo: 'gasto',
-    categoria: 'mano_obra',
-    descripcion: 'Pago a trabajadores temporales',
-    monto: 1200.00,
-  },
-  {
-    id: 4,
-    fecha: '2023-04-15',
-    tipo: 'ingreso',
-    categoria: 'ventas',
-    descripcion: 'Venta de productos lácteos',
-    monto: 750.00,
-  },
-  {
-    id: 5,
-    fecha: '2023-04-22',
-    tipo: 'gasto',
-    categoria: 'maquinaria',
-    descripcion: 'Reparación de tractor',
-    monto: 350.00,
-  },
-];
+import { useToast } from '@/components/ui/use-toast';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { getTransactions, deleteTransaction, Transaction } from '@/services/transactionService';
 
 const formatDate = (dateString: string) => {
   const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'short', day: 'numeric' };
@@ -88,24 +47,49 @@ const getCategoryLabel = (category: string) => {
 
 const TransactionTable = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [filteredData, setFilteredData] = useState(transactionData);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const { data: transactions = [], isLoading, error } = useQuery({
+    queryKey: ['transactions'],
+    queryFn: getTransactions
+  });
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const term = e.target.value.toLowerCase();
-    setSearchTerm(term);
-    
-    if (term.trim() === '') {
-      setFilteredData(transactionData);
-    } else {
-      const filtered = transactionData.filter(
-        transaction =>
-          transaction.descripcion.toLowerCase().includes(term) ||
-          getCategoryLabel(transaction.categoria).toLowerCase().includes(term) ||
-          formatDate(transaction.fecha).toLowerCase().includes(term)
-      );
-      setFilteredData(filtered);
+    setSearchTerm(e.target.value.toLowerCase());
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteTransaction(id);
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      toast({
+        title: "Transacción eliminada",
+        description: "La transacción ha sido eliminada con éxito."
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "No se pudo eliminar la transacción."
+      });
     }
   };
+
+  const filteredTransactions = transactions.filter(
+    (transaction: Transaction) =>
+      transaction.description?.toLowerCase().includes(searchTerm) ||
+      getCategoryLabel(transaction.category).toLowerCase().includes(searchTerm) ||
+      formatDate(transaction.date).toLowerCase().includes(searchTerm)
+  );
+
+  if (isLoading) {
+    return <div className="text-center py-8">Cargando transacciones...</div>;
+  }
+
+  if (error) {
+    return <div className="text-center py-8 text-red-500">Error al cargar las transacciones.</div>;
+  }
 
   return (
     <div className="space-y-4">
@@ -131,43 +115,51 @@ const TransactionTable = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredData.map((transaction) => (
-              <TableRow key={transaction.id}>
-                <TableCell>{formatDate(transaction.fecha)}</TableCell>
-                <TableCell>
-                  <Badge variant={transaction.tipo === 'ingreso' ? 'default' : 'destructive'}>
-                    {transaction.tipo === 'ingreso' ? 'Ingreso' : 'Gasto'}
-                  </Badge>
-                </TableCell>
-                <TableCell>{getCategoryLabel(transaction.categoria)}</TableCell>
-                <TableCell className="max-w-[300px] truncate">{transaction.descripcion}</TableCell>
-                <TableCell className="text-right font-medium">
-                  <span className={transaction.tipo === 'ingreso' ? 'text-green-600' : 'text-red-600'}>
-                    {transaction.tipo === 'ingreso' ? '+' : '-'} {formatCurrency(transaction.monto)}
-                  </span>
-                </TableCell>
-                <TableCell>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-8 w-8 p-0">
-                        <span className="sr-only">Abrir menú</span>
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem>Editar</DropdownMenuItem>
-                      <DropdownMenuItem>Detalles</DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem className="text-red-600">Eliminar</DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
-              </TableRow>
-            ))}
-            {filteredData.length === 0 && (
+            {filteredTransactions.length > 0 ? (
+              filteredTransactions.map((transaction: Transaction) => (
+                <TableRow key={transaction.id}>
+                  <TableCell>{formatDate(transaction.date)}</TableCell>
+                  <TableCell>
+                    <Badge variant={transaction.type === 'ingreso' ? 'default' : 'destructive'}>
+                      {transaction.type === 'ingreso' ? 'Ingreso' : 'Gasto'}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>{getCategoryLabel(transaction.category)}</TableCell>
+                  <TableCell className="max-w-[300px] truncate">{transaction.description}</TableCell>
+                  <TableCell className="text-right font-medium">
+                    <span className={transaction.type === 'ingreso' ? 'text-green-600' : 'text-red-600'}>
+                      {transaction.type === 'ingreso' ? '+' : '-'} {formatCurrency(transaction.amount)}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                          <span className="sr-only">Abrir menú</span>
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem>Editar</DropdownMenuItem>
+                        <DropdownMenuItem>Detalles</DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem 
+                          className="text-red-600"
+                          onClick={() => handleDelete(transaction.id)}
+                        >
+                          Eliminar
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
               <TableRow>
                 <TableCell colSpan={6} className="h-24 text-center">
-                  No se encontraron transacciones.
+                  {searchTerm 
+                    ? "No se encontraron transacciones coincidentes." 
+                    : "No hay transacciones registradas aún."}
                 </TableCell>
               </TableRow>
             )}
