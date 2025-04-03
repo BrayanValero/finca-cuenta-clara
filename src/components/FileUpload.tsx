@@ -3,11 +3,16 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { Upload } from 'lucide-react';
+import * as XLSX from 'xlsx';
+import { useQueryClient } from '@tanstack/react-query';
+import { createTransaction, TransactionInput } from '@/services/transactionService';
 
 const FileUpload = () => {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [isDragging, setIsDragging] = useState(false);
   const [file, setFile] = useState<File | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -54,23 +59,144 @@ const FileUpload = () => {
     });
   };
 
-  const handleUpload = () => {
+  const formatDate = (dateString: string | number): string => {
+    // Handle Excel date formats (numeric) or string formats
+    let date: Date;
+    
+    if (typeof dateString === 'number') {
+      // Excel dates are stored as days since 1900-01-01
+      date = new Date(Math.round((dateString - 25569) * 86400 * 1000));
+    } else {
+      // Try to parse the date string
+      const parts = dateString.split('/');
+      if (parts.length === 3) {
+        // Format DD/MM/YYYY to YYYY-MM-DD
+        date = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
+      } else {
+        date = new Date(dateString);
+      }
+    }
+    
+    // Format as YYYY-MM-DD
+    return date.toISOString().split('T')[0];
+  };
+
+  const handleUpload = async () => {
     if (!file) return;
     
-    // Aquí iría la lógica para procesar el archivo
+    setIsProcessing(true);
     toast({
       title: "Procesando archivo",
       description: "Las transacciones están siendo importadas...",
     });
     
-    // Simulación de procesamiento
-    setTimeout(() => {
+    try {
+      const reader = new FileReader();
+      
+      reader.onload = async (e) => {
+        const data = new Uint8Array(e.target?.result as ArrayBuffer);
+        const workbook = XLSX.read(data, { type: 'array' });
+        
+        // Assuming first sheet contains the data
+        const firstSheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[firstSheetName];
+        
+        // Convert to JSON
+        const jsonData = XLSX.utils.sheet_to_json(worksheet);
+        
+        // Process transactions
+        let successCount = 0;
+        let errorCount = 0;
+        
+        // Map expected column names from Spanish to our data model
+        for (const row of jsonData) {
+          try {
+            // Check which columns are available in the file
+            const dateKey = 'Fecha' in row ? 'Fecha' : 'fecha';
+            const descKey = 'Descripción' in row ? 'Descripción' : ('Descripcion' in row ? 'Descripcion' : 'descripcion');
+            const incomeKey = 'Ingreso' in row ? 'Ingreso' : 'ingreso';
+            const expenseKey = 'Gasto' in row ? 'Gasto' : 'gasto';
+            
+            // Handle amount and transaction type
+            let amount = 0;
+            let type: 'ingreso' | 'gasto' = 'gasto';
+            
+            const incomeValue = row[incomeKey];
+            const expenseValue = row[expenseKey];
+            
+            if (incomeValue && incomeValue !== 0) {
+              // It's an income
+              amount = typeof incomeValue === 'string' 
+                ? parseFloat(incomeValue.replace(/[^\d.-]/g, ''))
+                : Number(incomeValue);
+              type = 'ingreso';
+            } else if (expenseValue && expenseValue !== 0) {
+              // It's an expense
+              amount = typeof expenseValue === 'string'
+                ? parseFloat(expenseValue.replace(/[^\d.-]/g, ''))
+                : Number(expenseValue);
+              type = 'gasto';
+            }
+            
+            if (amount <= 0) {
+              continue; // Skip rows with zero or negative amounts
+            }
+            
+            // Determine category based on description
+            const description = String(row[descKey] || '');
+            let category = 'otros';
+            
+            // Simple category determination based on description
+            const lowerDesc = description.toLowerCase();
+            if (lowerDesc.includes('cacao') || lowerDesc.includes('maiz') || lowerDesc.includes('venta')) {
+              category = 'ventas';
+            } else if (lowerDesc.includes('gasolina')) {
+              category = 'insumos';
+            } else if (lowerDesc.includes('pago') && (lowerDesc.includes('marcos') || lowerDesc.includes('roberto') || lowerDesc.includes('fernando'))) {
+              category = 'mano_obra';
+            } else if (lowerDesc.includes('abogado')) {
+              category = 'otros';
+            }
+            
+            const transaction: TransactionInput = {
+              date: formatDate(row[dateKey]),
+              type,
+              category,
+              description: description || null,
+              amount: Math.abs(amount),
+            };
+            
+            await createTransaction(transaction);
+            successCount++;
+          } catch (err) {
+            console.error('Error processing row:', row, err);
+            errorCount++;
+          }
+        }
+        
+        // Refresh the transactions list
+        queryClient.invalidateQueries({ queryKey: ['transactions'] });
+        
+        toast({
+          title: "Importación completada",
+          description: `${successCount} transacciones importadas con éxito. ${errorCount > 0 ? `${errorCount} transacciones con error.` : ''}`,
+        });
+        
+        setFile(null);
+        setIsProcessing(false);
+      };
+      
+      reader.readAsArrayBuffer(file);
+      
+    } catch (error) {
+      console.error('Error processing file:', error);
       toast({
-        title: "Importación completada",
-        description: "Todas las transacciones han sido importadas exitosamente.",
+        title: "Error al procesar el archivo",
+        description: "Ha ocurrido un error al procesar el archivo. Por favor, inténtalo de nuevo.",
+        variant: "destructive",
       });
-      setFile(null);
-    }, 2000);
+      setIsProcessing(false);
+    }
   };
 
   return (
@@ -120,8 +246,9 @@ const FileUpload = () => {
           <Button 
             onClick={handleUpload}
             className="bg-farm-brown hover:bg-farm-lightbrown text-white"
+            disabled={isProcessing}
           >
-            Procesar Archivo
+            {isProcessing ? "Procesando..." : "Procesar Archivo"}
           </Button>
         </div>
       )}
