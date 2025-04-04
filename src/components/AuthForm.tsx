@@ -6,26 +6,14 @@ import { Label } from '@/components/ui/label';
 import AppLogo from './AppLogo';
 import { useAuth } from '@/contexts/AuthContext';
 
-type AuthMode = 'login' | 'register';
-
 const AuthForm = () => {
-  const [mode, setMode] = useState<AuthMode>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const { signIn, signUp, isLoading } = useAuth();
-
-  const toggleMode = () => {
-    setMode(mode === 'login' ? 'register' : 'login');
-  };
+  const { signIn, isLoading } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (mode === 'login') {
-      await signIn(email, password);
-    } else {
-      await signUp(email, password);
-    }
+    await signIn(email, password);
   };
 
   return (
@@ -33,12 +21,10 @@ const AuthForm = () => {
       <div className="text-center space-y-2">
         <AppLogo className="justify-center" />
         <h1 className="text-2xl font-bold tracking-tight text-farm-green dark:text-farm-beige">
-          {mode === 'login' ? 'Iniciar Sesión' : 'Crear Cuenta'}
+          Iniciar Sesión
         </h1>
         <p className="text-sm text-muted-foreground">
-          {mode === 'login' 
-            ? 'Ingresa tus credenciales para acceder a la aplicación' 
-            : 'Crea una cuenta para comenzar a utilizar la aplicación'}
+          Ingresa tus credenciales para acceder a la aplicación
         </p>
       </div>
 
@@ -71,17 +57,9 @@ const AuthForm = () => {
           disabled={isLoading}
           style={{ backgroundColor: "#4D5726" }}
         >
-          {isLoading ? 'Procesando...' : mode === 'login' ? 'Iniciar Sesión' : 'Registrarse'}
+          {isLoading ? 'Procesando...' : 'Iniciar Sesión'}
         </Button>
       </form>
-
-      <div className="text-center">
-        <Button variant="link" onClick={toggleMode} className="text-farm-green dark:text-farm-beige">
-          {mode === 'login' 
-            ? '¿No tienes una cuenta? Regístrate' 
-            : '¿Ya tienes una cuenta? Inicia sesión'}
-        </Button>
-      </div>
     </div>
   );
 };

@@ -35,7 +35,7 @@ const NoDataDisplay = ({ message = "No hay datos disponibles para mostrar" }) =>
 const COLORS = ['#4D5726', '#6B7B3A', '#3A4219', '#B8860B', '#D9A441'];
 
 const Statistics = () => {
-  const [year, setYear] = useState('2023');
+  const [year, setYear] = useState('2025');
   
   const { data: transactions = [], isLoading } = useQuery({
     queryKey: ['transactions'],
@@ -118,6 +118,21 @@ const Statistics = () => {
   // Formatter para tooltips monetarios
   const currencyFormatter = (value: number) => formatCurrency(value);
   
+  // Generar array de años desde 2020 hasta el año actual (2025)
+  const generateYearOptions = () => {
+    const currentYear = 2025; // Año actual hardcodeado para el ejemplo
+    const startYear = 2020;
+    const years = [];
+    
+    for (let year = currentYear; year >= startYear; year--) {
+      years.push(year.toString());
+    }
+    
+    return years;
+  };
+  
+  const yearOptions = generateYearOptions();
+  
   return (
     <>
       <MobileNav />
@@ -135,9 +150,9 @@ const Statistics = () => {
                 <SelectValue placeholder="Seleccionar año" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="2024">2024</SelectItem>
-                <SelectItem value="2023">2023</SelectItem>
-                <SelectItem value="2022">2022</SelectItem>
+                {yearOptions.map(yearOption => (
+                  <SelectItem key={yearOption} value={yearOption}>{yearOption}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
