@@ -2,6 +2,9 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { Transaction } from '@/services/transactionService';
+import { format, parse, isValid, startOfMonth, endOfMonth, isSameMonth, parseISO } from 'date-fns';
+import { es } from 'date-fns/locale';
 
 // Componente para mostrar cuando no hay datos
 const NoDataDisplay = () => (
@@ -15,24 +18,62 @@ const NoDataDisplay = () => (
   </div>
 );
 
-const data = [
-  { month: 'Enero', ingresos: 4000, gastos: 2400 },
-  { month: 'Febrero', ingresos: 3000, gastos: 1398 },
-  { month: 'Marzo', ingresos: 2000, gastos: 9800 },
-  { month: 'Abril', ingresos: 2780, gastos: 3908 },
-  { month: 'Mayo', ingresos: 1890, gastos: 4800 },
-  { month: 'Junio', ingresos: 2390, gastos: 3800 },
-];
+const processMonthlyData = (transactions: Transaction[]) => {
+  if (!transactions || transactions.length === 0) return [];
+  
+  // Obtener el rango de meses
+  const dates = transactions.map(t => new Date(t.date));
+  const minDate = new Date(Math.min(...dates.map(d => d.getTime())));
+  const maxDate = new Date(Math.max(...dates.map(d => d.getTime())));
+  
+  // Inicializar datos mensuales
+  const monthlyData: { month: string, ingresos: number, gastos: number }[] = [];
+  
+  // Crear un objeto para cada mes en el rango
+  let currentDate = startOfMonth(minDate);
+  while (currentDate <= endOfMonth(maxDate)) {
+    const monthName = format(currentDate, 'MMMM', { locale: es });
+    monthlyData.push({
+      month: monthName.charAt(0).toUpperCase() + monthName.slice(1),
+      ingresos: 0,
+      gastos: 0
+    });
+    
+    // Avanzar al siguiente mes
+    currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
+  }
+  
+  // Rellenar los datos de transacciones
+  transactions.forEach(transaction => {
+    const transDate = parseISO(transaction.date);
+    if (!isValid(transDate)) return;
+    
+    const monthIndex = monthlyData.findIndex(data => {
+      const dataMonth = parse(data.month, 'MMMM', new Date(), { locale: es });
+      return isSameMonth(dataMonth, transDate);
+    });
+    
+    if (monthIndex >= 0) {
+      if (transaction.type === 'ingreso') {
+        monthlyData[monthIndex].ingresos += Number(transaction.amount);
+      } else {
+        monthlyData[monthIndex].gastos += Number(transaction.amount);
+      }
+    }
+  });
+  
+  return monthlyData;
+};
 
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
       <div className="bg-white p-4 border rounded shadow-sm">
         <p className="font-bold">{label}</p>
-        <p className="text-green-600">Ingresos: {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'USD' }).format(payload[0].value)}</p>
-        <p className="text-red-600">Gastos: {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'USD' }).format(payload[1].value)}</p>
+        <p className="text-green-600">Ingresos: {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'USD', currencyDisplay: 'symbol' }).format(payload[0].value)}</p>
+        <p className="text-red-600">Gastos: {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'USD', currencyDisplay: 'symbol' }).format(payload[1].value)}</p>
         <p className="font-semibold pt-1 border-t mt-1">
-          Balance: {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'USD' }).format(payload[0].value - payload[1].value)}
+          Balance: {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'USD', currencyDisplay: 'symbol' }).format(payload[0].value - payload[1].value)}
         </p>
       </div>
     );
@@ -41,10 +82,13 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 const ChartMonthlyBalance: React.FC<{ 
-  hasData?: boolean 
+  transactions?: Transaction[]
 }> = ({ 
-  hasData = false // Por defecto, asumimos que no hay datos
+  transactions = []
 }) => {
+  const data = processMonthlyData(transactions);
+  const hasData = data.length > 0;
+
   return (
     <Card className="col-span-1 md:col-span-3">
       <CardHeader>

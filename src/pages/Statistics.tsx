@@ -9,10 +9,14 @@ import ChartMonthlyBalance from '@/components/ChartMonthlyBalance';
 import ChartCategoryDistribution from '@/components/ChartCategoryDistribution';
 import MobileNav from '@/components/MobileNav';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { useQuery } from '@tanstack/react-query';
+import { getTransactions, Transaction } from '@/services/transactionService';
+import { format, parseISO, isValid, startOfYear, endOfYear, isSameMonth, isSameYear } from 'date-fns';
+import { es } from 'date-fns/locale';
 
 // Función para formatear moneda
 const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'USD' }).format(value);
+  return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'USD', currencyDisplay: 'symbol' }).format(value);
 };
 
 // Componente para mostrar cuando no hay datos
@@ -27,55 +31,89 @@ const NoDataDisplay = ({ message = "No hay datos disponibles para mostrar" }) =>
   </div>
 );
 
-// Datos de ejemplo
-const monthlyData = [
-  { month: 'Enero', ingresos: 4000, gastos: 2400, balance: 1600 },
-  { month: 'Febrero', ingresos: 3000, gastos: 1398, balance: 1602 },
-  { month: 'Marzo', ingresos: 2000, gastos: 3800, balance: -1800 },
-  { month: 'Abril', ingresos: 2780, gastos: 3908, balance: -1128 },
-  { month: 'Mayo', ingresos: 1890, gastos: 4800, balance: -2910 },
-  { month: 'Junio', ingresos: 2390, gastos: 3800, balance: -1410 },
-  { month: 'Julio', ingresos: 3490, gastos: 4300, balance: -810 },
-  { month: 'Agosto', ingresos: 4000, gastos: 2400, balance: 1600 },
-  { month: 'Septiembre', ingresos: 5000, gastos: 3800, balance: 1200 },
-  { month: 'Octubre', ingresos: 4500, gastos: 2600, balance: 1900 },
-  { month: 'Noviembre', ingresos: 4100, gastos: 3200, balance: 900 },
-  { month: 'Diciembre', ingresos: 5200, gastos: 3100, balance: 2100 },
-];
-
-const categoryData = {
-  ingresos: [
-    { name: 'Venta de Cosechas', value: 8500 },
-    { name: 'Productos Lácteos', value: 3800 },
-    { name: 'Subproductos', value: 1500 },
-    { name: 'Subsidios', value: 2500 },
-    { name: 'Otros', value: 1200 },
-  ],
-  gastos: [
-    { name: 'Insumos', value: 4500 },
-    { name: 'Mano de Obra', value: 3800 },
-    { name: 'Maquinaria', value: 2500 },
-    { name: 'Servicios', value: 1200 },
-    { name: 'Impuestos', value: 800 },
-  ]
-};
-
 // Colores para gráficos
 const COLORS = ['#4D5726', '#6B7B3A', '#3A4219', '#B8860B', '#D9A441'];
 
-// Estado de datos para simular cuando no hay datos
-const dataStates = {
-  withData: 'withData',
-  noData: 'noData'
-};
-
 const Statistics = () => {
   const [year, setYear] = useState('2023');
-  // Para demostración: cambiar a dataStates.noData para mostrar estado sin datos
-  const [dataState, setDataState] = useState(dataStates.noData);
+  
+  const { data: transactions = [], isLoading } = useQuery({
+    queryKey: ['transactions'],
+    queryFn: getTransactions
+  });
+  
+  // Filtrar transacciones por año seleccionado
+  const filteredTransactions = transactions.filter((t: Transaction) => {
+    const transDate = parseISO(t.date);
+    return isValid(transDate) && transDate.getFullYear().toString() === year;
+  });
   
   // Verificar si hay datos disponibles
-  const hasData = dataState === dataStates.withData;
+  const hasData = filteredTransactions.length > 0;
+  
+  // Procesamiento de datos de ingresos/gastos mensuales
+  const processMonthlyData = () => {
+    if (!hasData) return [];
+    
+    const months = [
+      'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 
+      'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+    ];
+    
+    const monthlyData = months.map(month => ({
+      month,
+      ingresos: 0,
+      gastos: 0,
+      balance: 0
+    }));
+    
+    filteredTransactions.forEach((t: Transaction) => {
+      const date = parseISO(t.date);
+      if (!isValid(date)) return;
+      
+      const monthIndex = date.getMonth();
+      
+      if (t.type === 'ingreso') {
+        monthlyData[monthIndex].ingresos += Number(t.amount);
+      } else {
+        monthlyData[monthIndex].gastos += Number(t.amount);
+      }
+    });
+    
+    // Calcular balance
+    monthlyData.forEach(data => {
+      data.balance = data.ingresos - data.gastos;
+    });
+    
+    return monthlyData;
+  };
+  
+  // Procesamiento de datos de categorías
+  const processCategoryData = (type: 'ingresos' | 'gastos') => {
+    if (!hasData) return [];
+    
+    const filteredByType = filteredTransactions.filter(
+      (t: Transaction) => type === 'ingresos' ? t.type === 'ingreso' : t.type === 'gasto'
+    );
+    
+    if (filteredByType.length === 0) return [];
+    
+    const categories: Record<string, number> = {};
+    
+    filteredByType.forEach((t: Transaction) => {
+      const category = t.category;
+      if (!categories[category]) {
+        categories[category] = 0;
+      }
+      categories[category] += Number(t.amount);
+    });
+    
+    return Object.entries(categories).map(([name, value]) => ({ name, value }));
+  };
+  
+  const monthlyData = processMonthlyData();
+  const incomeCategories = processCategoryData('ingresos');
+  const expenseCategories = processCategoryData('gastos');
   
   // Formatter para tooltips monetarios
   const currencyFormatter = (value: number) => formatCurrency(value);
@@ -97,22 +135,12 @@ const Statistics = () => {
                 <SelectValue placeholder="Seleccionar año" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="2024">2024</SelectItem>
                 <SelectItem value="2023">2023</SelectItem>
                 <SelectItem value="2022">2022</SelectItem>
-                <SelectItem value="2021">2021</SelectItem>
               </SelectContent>
             </Select>
           </div>
-        </div>
-
-        {/* Toggle para demostrar estados con/sin datos (solo para demostración) */}
-        <div className="mb-4">
-          <button 
-            onClick={() => setDataState(dataState === dataStates.withData ? dataStates.noData : dataStates.withData)}
-            className="text-xs text-muted-foreground underline"
-          >
-            {dataState === dataStates.withData ? "Mostrar interfaz sin datos" : "Mostrar datos de ejemplo"}
-          </button>
         </div>
 
         <Tabs defaultValue="general" className="space-y-6">
@@ -183,11 +211,11 @@ const Statistics = () => {
                   <CardTitle>Distribución de ingresos</CardTitle>
                 </CardHeader>
                 <CardContent className="h-80">
-                  {hasData ? (
+                  {hasData && incomeCategories.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
                         <Pie
-                          data={categoryData.ingresos}
+                          data={incomeCategories}
                           cx="50%"
                           cy="50%"
                           outerRadius={80}
@@ -195,7 +223,7 @@ const Statistics = () => {
                           dataKey="value"
                           label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}
                         >
-                          {categoryData.ingresos.map((entry, index) => (
+                          {incomeCategories.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                           ))}
                         </Pie>
@@ -214,11 +242,11 @@ const Statistics = () => {
                   <CardTitle>Distribución de gastos</CardTitle>
                 </CardHeader>
                 <CardContent className="h-80">
-                  {hasData ? (
+                  {hasData && expenseCategories.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
                         <Pie
-                          data={categoryData.gastos}
+                          data={expenseCategories}
                           cx="50%"
                           cy="50%"
                           outerRadius={80}
@@ -226,7 +254,7 @@ const Statistics = () => {
                           dataKey="value"
                           label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}
                         >
-                          {categoryData.gastos.map((entry, index) => (
+                          {expenseCategories.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                           ))}
                         </Pie>
@@ -274,11 +302,11 @@ const Statistics = () => {
                   <CardTitle>Distribución de Ingresos</CardTitle>
                 </CardHeader>
                 <CardContent className="h-80">
-                  {hasData ? (
+                  {hasData && incomeCategories.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
                         <Pie
-                          data={categoryData.ingresos}
+                          data={incomeCategories}
                           cx="50%"
                           cy="50%"
                           outerRadius={80}
@@ -286,7 +314,7 @@ const Statistics = () => {
                           dataKey="value"
                           label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}
                         >
-                          {categoryData.ingresos.map((entry, index) => (
+                          {incomeCategories.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                           ))}
                         </Pie>
@@ -334,11 +362,11 @@ const Statistics = () => {
                   <CardTitle>Distribución de Gastos</CardTitle>
                 </CardHeader>
                 <CardContent className="h-80">
-                  {hasData ? (
+                  {hasData && expenseCategories.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
                         <Pie
-                          data={categoryData.gastos}
+                          data={expenseCategories}
                           cx="50%"
                           cy="50%"
                           outerRadius={80}
@@ -346,7 +374,7 @@ const Statistics = () => {
                           dataKey="value"
                           label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}
                         >
-                          {categoryData.gastos.map((entry, index) => (
+                          {expenseCategories.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                           ))}
                         </Pie>

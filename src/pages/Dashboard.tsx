@@ -67,7 +67,7 @@ const Dashboard = () => {
 
   // Helper to format currency
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(amount);
+    return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'USD', currencyDisplay: 'symbol' }).format(amount);
   };
 
   return (
@@ -109,8 +109,12 @@ const Dashboard = () => {
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          <ChartMonthlyBalance />
-          <ChartCategoryDistribution />
+          <ChartMonthlyBalance transactions={transactions} />
+          <ChartCategoryDistribution 
+            title="Distribución de gastos" 
+            type="gastos" 
+            transactions={transactions} 
+          />
         </div>
 
         <div className="space-y-4">

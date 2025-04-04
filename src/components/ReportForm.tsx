@@ -11,6 +11,7 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { CalendarIcon, FileText } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Transaction } from '@/services/transactionService';
 
 interface ReportFormData {
   tipo: string;
@@ -20,7 +21,11 @@ interface ReportFormData {
   formatoSalida: string;
 }
 
-const ReportForm: React.FC = () => {
+interface ReportFormProps {
+  transactions?: Transaction[];
+}
+
+const ReportForm: React.FC<ReportFormProps> = ({ transactions = [] }) => {
   const { toast } = useToast();
   const [isGenerating, setIsGenerating] = useState(false);
   const [formData, setFormData] = useState<ReportFormData>({
@@ -56,15 +61,29 @@ const ReportForm: React.FC = () => {
       return;
     }
     
+    if (transactions.length === 0) {
+      toast({
+        title: "Sin datos",
+        description: "No hay transacciones disponibles para generar el informe.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     // Generar informe
     setIsGenerating(true);
     
-    // Simulación de generación de informe
+    // Simulación de generación de informe con datos reales
     setTimeout(() => {
       setIsGenerating(false);
       toast({
         title: "Informe generado",
-        description: "El informe se ha generado correctamente",
+        description: `El informe se ha generado correctamente con ${transactions.length} transacciones`,
+      });
+      
+      console.log("Generating report with data:", {
+        formData,
+        transactionsCount: transactions.length
       });
     }, 2000);
   };

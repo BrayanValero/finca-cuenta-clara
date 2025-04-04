@@ -30,7 +30,7 @@ const formatDate = (dateString: string) => {
 };
 
 const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(amount);
+  return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'USD', currencyDisplay: 'symbol' }).format(amount);
 };
 
 const getCategoryLabel = (category: string) => {

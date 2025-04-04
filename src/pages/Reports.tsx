@@ -6,6 +6,9 @@ import { Button } from '@/components/ui/button';
 import { FileText, FileSpreadsheet, Download, PieChart } from 'lucide-react';
 import ReportForm from '@/components/ReportForm';
 import MobileNav from '@/components/MobileNav';
+import { useQuery } from '@tanstack/react-query';
+import { getTransactions } from '@/services/transactionService';
+import { useToast } from '@/components/ui/use-toast';
 
 const ReportCard = ({ 
   title, 
@@ -39,9 +42,29 @@ const ReportCard = ({
 );
 
 const Reports = () => {
+  const { toast } = useToast();
+  const { data: transactions = [], isLoading } = useQuery({
+    queryKey: ['transactions'],
+    queryFn: getTransactions
+  });
+
   const handleGenerateQuickReport = (type: string) => {
-    console.log(`Generating ${type} report`);
-    // Aquí iría la lógica para generar el informe rápido
+    if (transactions.length === 0) {
+      toast({
+        title: "Sin datos",
+        description: "No hay transacciones disponibles para generar el informe.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    toast({
+      title: "Generando informe",
+      description: `Informe de tipo ${type} generado con éxito.`
+    });
+    
+    console.log(`Generating ${type} report with ${transactions.length} transactions`);
+    // Aquí iría la lógica para generar el informe con datos reales
   };
 
   return (
@@ -93,7 +116,7 @@ const Reports = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <ReportForm />
+                <ReportForm transactions={transactions} />
               </CardContent>
             </Card>
           </TabsContent>

@@ -2,6 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
+import { Transaction } from '@/services/transactionService';
 
 // Componente para mostrar cuando no hay datos
 const NoDataDisplay = () => (
@@ -15,26 +16,18 @@ const NoDataDisplay = () => (
   </div>
 );
 
-const data = [
-  { name: 'Insumos', value: 4500 },
-  { name: 'Mano de Obra', value: 3000 },
-  { name: 'Maquinaria', value: 2000 },
-  { name: 'Cosecha', value: 1500 },
-  { name: 'Otros', value: 1000 },
-];
-
 // Colores complementarios a la paleta de la finca
 const COLORS = ['#4D5726', '#6B7B3A', '#3A4219', '#B8860B', '#D9A441'];
 
-const CustomTooltip = ({ active, payload }: any) => {
+const CustomTooltip = ({ active, payload, data }: any) => {
   if (active && payload && payload.length) {
     return (
       <div className="bg-white p-3 border rounded shadow-sm">
         <p className="font-bold">{payload[0].name}</p>
         <p>
-          {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'USD' }).format(payload[0].value)}
+          {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'USD', currencyDisplay: 'symbol' }).format(payload[0].value)}
           {" - "}
-          {((payload[0].value / data.reduce((sum, entry) => sum + entry.value, 0)) * 100).toFixed(1)}%
+          {((payload[0].value / data.reduce((sum: number, entry: any) => sum + entry.value, 0)) * 100).toFixed(1)}%
         </p>
       </div>
     );
@@ -42,15 +35,44 @@ const CustomTooltip = ({ active, payload }: any) => {
   return null;
 };
 
+const processCategoryData = (transactions: Transaction[], type: 'gastos' | 'ingresos') => {
+  if (!transactions || transactions.length === 0) return [];
+  
+  const filteredTransactions = transactions.filter(t => 
+    type === 'gastos' ? t.type === 'gasto' : t.type === 'ingreso'
+  );
+  
+  if (filteredTransactions.length === 0) return [];
+  
+  // Agrupar por categoría
+  const categories: Record<string, number> = {};
+  filteredTransactions.forEach(transaction => {
+    const category = transaction.category;
+    if (!categories[category]) {
+      categories[category] = 0;
+    }
+    categories[category] += Number(transaction.amount);
+  });
+  
+  // Convertir a formato para gráfico
+  return Object.entries(categories).map(([name, value]) => ({
+    name,
+    value
+  }));
+};
+
 const ChartCategoryDistribution: React.FC<{ 
   title?: string; 
   type?: 'gastos' | 'ingresos';
-  hasData?: boolean;
+  transactions?: Transaction[];
 }> = ({ 
   title = "Distribución de gastos por categoría",
   type = "gastos",
-  hasData = false // Por defecto, asumimos que no hay datos
+  transactions = [] 
 }) => {
+  const data = processCategoryData(transactions, type);
+  const hasData = data.length > 0;
+
   return (
     <Card>
       <CardHeader>
@@ -73,7 +95,7 @@ const ChartCategoryDistribution: React.FC<{
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>
-              <Tooltip content={<CustomTooltip />} />
+              <Tooltip content={<CustomTooltip data={data} />} />
               <Legend />
             </PieChart>
           </ResponsiveContainer>
