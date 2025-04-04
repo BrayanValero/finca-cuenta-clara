@@ -30,7 +30,9 @@ const formatDate = (dateString: string) => {
 };
 
 const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'USD', currencyDisplay: 'symbol' }).format(amount);
+  return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'USD', currencyDisplay: 'symbol' })
+    .format(amount)
+    .replace('US$', '$');
 };
 
 const getCategoryLabel = (category: string) => {
@@ -40,6 +42,7 @@ const getCategoryLabel = (category: string) => {
     'ventas': 'Ventas',
     'maquinaria': 'Maquinaria',
     'mano_obra': 'Mano de Obra',
+    'sueldos': 'Sueldos',
     'otros': 'Otros',
   };
   return categories[category] || category;

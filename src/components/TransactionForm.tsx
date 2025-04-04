@@ -21,6 +21,7 @@ const categorias = [
   { value: 'ventas', label: 'Ventas' },
   { value: 'maquinaria', label: 'Maquinaria' },
   { value: 'mano_obra', label: 'Mano de Obra' },
+  { value: 'sueldos', label: 'Sueldos' },
   { value: 'otros', label: 'Otros' },
 ];
 

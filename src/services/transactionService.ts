@@ -23,6 +23,26 @@ export type TransactionInput = {
   amount: number;
 };
 
+// Helper function to determine category based on description
+export const determineCategory = (description: string): string => {
+  const lowerDesc = description.toLowerCase();
+  
+  if (lowerDesc.includes('semana marcos') || lowerDesc.includes('sueldo')) {
+    return 'sueldos';
+  } else if (lowerDesc.includes('cacao') || lowerDesc.includes('maiz') || lowerDesc.includes('venta')) {
+    return 'ventas';
+  } else if (lowerDesc.includes('gasolina')) {
+    return 'insumos';
+  } else if ((lowerDesc.includes('pago') && (lowerDesc.includes('roberto') || lowerDesc.includes('fernando'))) || 
+            lowerDesc.includes('mano de obra')) {
+    return 'mano_obra';
+  } else if (lowerDesc.includes('abogado')) {
+    return 'otros';
+  }
+  
+  return 'otros';
+};
+
 // Get all transactions for the current user
 export const getTransactions = async (): Promise<Transaction[]> => {
   const { data, error } = await supabase
@@ -51,6 +71,14 @@ export const createTransaction = async (transaction: TransactionInput): Promise<
     throw new Error('User not authenticated');
   }
 
+  // If description exists, check if we need to update the category
+  if (transaction.description) {
+    const suggestedCategory = determineCategory(transaction.description);
+    if (suggestedCategory !== 'otros') {
+      transaction.category = suggestedCategory;
+    }
+  }
+
   const { data, error } = await supabase
     .from('transactions')
     .insert({
@@ -74,6 +102,14 @@ export const createTransaction = async (transaction: TransactionInput): Promise<
 
 // Update an existing transaction
 export const updateTransaction = async (id: string, transaction: Partial<TransactionInput>): Promise<Transaction> => {
+  // If description exists, check if we need to update the category
+  if (transaction.description) {
+    const suggestedCategory = determineCategory(transaction.description);
+    if (suggestedCategory !== 'otros') {
+      transaction.category = suggestedCategory;
+    }
+  }
+
   const { data, error } = await supabase
     .from('transactions')
     .update(transaction)

@@ -1,11 +1,10 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { Upload } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { useQueryClient } from '@tanstack/react-query';
-import { createTransaction, TransactionInput } from '@/services/transactionService';
+import { createTransaction, TransactionInput, determineCategory } from '@/services/transactionService';
 
 // Interface for the row data from Excel
 interface ExcelRowData {
@@ -150,19 +149,7 @@ const FileUpload = () => {
             
             // Determine category based on description
             const description = String(row[descKey] || '');
-            let category = 'otros';
-            
-            // Simple category determination based on description
-            const lowerDesc = description.toLowerCase();
-            if (lowerDesc.includes('cacao') || lowerDesc.includes('maiz') || lowerDesc.includes('venta')) {
-              category = 'ventas';
-            } else if (lowerDesc.includes('gasolina')) {
-              category = 'insumos';
-            } else if (lowerDesc.includes('pago') && (lowerDesc.includes('marcos') || lowerDesc.includes('roberto') || lowerDesc.includes('fernando'))) {
-              category = 'mano_obra';
-            } else if (lowerDesc.includes('abogado')) {
-              category = 'otros';
-            }
+            const category = determineCategory(description);
             
             const dateValue = row[dateKey];
             if (!dateValue) {
