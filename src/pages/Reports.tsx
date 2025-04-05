@@ -60,7 +60,7 @@ const Reports = () => {
     
     toast({
       title: "Generando informe",
-      description: `Informe de tipo ${type} generado con éxito.`
+      description: `Informe de tipo ${type} generado con éxito. Encontradas ${transactions.length} transacciones.`
     });
     
     console.log(`Generating ${type} report with ${transactions.length} transactions`);
