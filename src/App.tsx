@@ -10,6 +10,7 @@ import Dashboard from "./pages/Dashboard";
 import Transactions from "./pages/Transactions";
 import Statistics from "./pages/Statistics";
 import Reports from "./pages/Reports";
+import Loans from "./pages/Loans";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
@@ -47,6 +48,7 @@ const AppRoutes = () => {
         <Route path="/transacciones" element={<Transactions />} />
         <Route path="/estadisticas" element={<Statistics />} />
         <Route path="/informes" element={<Reports />} />
+        <Route path="/prestamos" element={<Loans />} />
       </Route>
       
       {/* Ruta 404 */}
