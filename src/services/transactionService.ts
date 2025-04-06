@@ -7,7 +7,7 @@ export interface Transaction {
   id: string;
   date: string;
   type: 'ingreso' | 'gasto';
-  category: string;
+  category: string; // Mantenemos el campo en la interfaz para compatibilidad interna
   description: string | null;
   amount: number;
   created_at: string;
@@ -18,7 +18,7 @@ export interface Transaction {
 export type TransactionInput = {
   date: string;
   type: 'ingreso' | 'gasto';
-  category: string;
+  category: string; // Mantenemos el campo en el input pero no lo mostramos en la UI
   description: string | null;
   amount: number;
 };

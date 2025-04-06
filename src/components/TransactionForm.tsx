@@ -15,20 +15,9 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createTransaction, TransactionInput } from '@/services/transactionService';
 import { useAuth } from '@/contexts/AuthContext';
 
-const categorias = [
-  { value: 'insumos', label: 'Insumos' },
-  { value: 'cosecha', label: 'Cosecha' },
-  { value: 'ventas', label: 'Ventas' },
-  { value: 'maquinaria', label: 'Maquinaria' },
-  { value: 'mano_obra', label: 'Mano de Obra' },
-  { value: 'sueldos', label: 'Sueldos' },
-  { value: 'otros', label: 'Otros' },
-];
-
 type FormData = {
   fecha: Date;
   type: 'ingreso' | 'gasto';
-  category: string;
   description: string;
   amount: number;
 };
@@ -41,7 +30,6 @@ const TransactionForm = () => {
   const [formData, setFormData] = useState<FormData>({
     fecha: new Date(),
     type: 'gasto',
-    category: '',
     description: '',
     amount: 0
   });
@@ -84,7 +72,7 @@ const TransactionForm = () => {
     e.preventDefault();
     
     // Validaciones básicas
-    if (!formData.fecha || !formData.category || !formData.amount) {
+    if (!formData.fecha || !formData.amount) {
       toast({
         title: "Error",
         description: "Por favor complete todos los campos requeridos.",
@@ -97,7 +85,7 @@ const TransactionForm = () => {
     const transactionData: TransactionInput = {
       date: formData.fecha.toISOString().split('T')[0],
       type: formData.type,
-      category: formData.category,
+      category: 'otros', // Mantenemos un valor predeterminado para la categoría en backend
       description: formData.description || null,
       amount: Number(formData.amount)
     };
@@ -110,7 +98,6 @@ const TransactionForm = () => {
     setFormData({
       fecha: new Date(),
       type: 'gasto',
-      category: '',
       description: '',
       amount: 0
     });
@@ -157,23 +144,6 @@ const TransactionForm = () => {
             <SelectContent>
               <SelectItem value="ingreso">Ingreso</SelectItem>
               <SelectItem value="gasto">Gasto</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="category">Categoría</Label>
-          <Select 
-            value={formData.category} 
-            onValueChange={(value) => handleSelectChange('category', value)}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Seleccione una categoría" />
-            </SelectTrigger>
-            <SelectContent>
-              {categorias.map((cat) => (
-                <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>
-              ))}
             </SelectContent>
           </Select>
         </div>

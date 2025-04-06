@@ -35,19 +35,6 @@ const formatCurrency = (amount: number) => {
     .replace('US$', '$');
 };
 
-const getCategoryLabel = (category: string) => {
-  const categories: Record<string, string> = {
-    'insumos': 'Insumos',
-    'cosecha': 'Cosecha',
-    'ventas': 'Ventas',
-    'maquinaria': 'Maquinaria',
-    'mano_obra': 'Mano de Obra',
-    'sueldos': 'Sueldos',
-    'otros': 'Otros',
-  };
-  return categories[category] || category;
-};
-
 const TransactionTable = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const { toast } = useToast();
@@ -82,7 +69,6 @@ const TransactionTable = () => {
   const filteredTransactions = transactions.filter(
     (transaction: Transaction) =>
       transaction.description?.toLowerCase().includes(searchTerm) ||
-      getCategoryLabel(transaction.category).toLowerCase().includes(searchTerm) ||
       formatDate(transaction.date).toLowerCase().includes(searchTerm)
   );
 
@@ -111,7 +97,6 @@ const TransactionTable = () => {
             <TableRow>
               <TableHead className="w-[100px]">Fecha</TableHead>
               <TableHead>Tipo</TableHead>
-              <TableHead>Categoría</TableHead>
               <TableHead className="max-w-[300px]">Descripción</TableHead>
               <TableHead className="text-right">Monto</TableHead>
               <TableHead className="w-[70px]"></TableHead>
@@ -127,7 +112,6 @@ const TransactionTable = () => {
                       {transaction.type === 'ingreso' ? 'Ingreso' : 'Gasto'}
                     </Badge>
                   </TableCell>
-                  <TableCell>{getCategoryLabel(transaction.category)}</TableCell>
                   <TableCell className="max-w-[300px] truncate">{transaction.description}</TableCell>
                   <TableCell className="text-right font-medium">
                     <span className={transaction.type === 'ingreso' ? 'text-green-600' : 'text-red-600'}>
@@ -159,7 +143,7 @@ const TransactionTable = () => {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={6} className="h-24 text-center">
+                <TableCell colSpan={5} className="h-24 text-center">
                   {searchTerm 
                     ? "No se encontraron transacciones coincidentes." 
                     : "No hay transacciones registradas aún."}

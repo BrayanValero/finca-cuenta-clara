@@ -4,9 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { BarChart, Bar, LineChart, Line, PieChart, Pie, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts';
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import ChartMonthlyBalance from '@/components/ChartMonthlyBalance';
-import ChartCategoryDistribution from '@/components/ChartCategoryDistribution';
 import MobileNav from '@/components/MobileNav';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { useQuery } from '@tanstack/react-query';
@@ -88,32 +87,7 @@ const Statistics = () => {
     return monthlyData;
   };
   
-  // Procesamiento de datos de categorías
-  const processCategoryData = (type: 'ingresos' | 'gastos') => {
-    if (!hasData) return [];
-    
-    const filteredByType = filteredTransactions.filter(
-      (t: Transaction) => type === 'ingresos' ? t.type === 'ingreso' : t.type === 'gasto'
-    );
-    
-    if (filteredByType.length === 0) return [];
-    
-    const categories: Record<string, number> = {};
-    
-    filteredByType.forEach((t: Transaction) => {
-      const category = t.category;
-      if (!categories[category]) {
-        categories[category] = 0;
-      }
-      categories[category] += Number(t.amount);
-    });
-    
-    return Object.entries(categories).map(([name, value]) => ({ name, value }));
-  };
-  
   const monthlyData = processMonthlyData();
-  const incomeCategories = processCategoryData('ingresos');
-  const expenseCategories = processCategoryData('gastos');
   
   // Formatter para tooltips monetarios
   const currencyFormatter = (value: number) => formatCurrency(value);
@@ -219,74 +193,10 @@ const Statistics = () => {
                 </CardContent>
               </Card>
             </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Distribución de ingresos</CardTitle>
-                </CardHeader>
-                <CardContent className="h-80">
-                  {hasData && incomeCategories.length > 0 ? (
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={incomeCategories}
-                          cx="50%"
-                          cy="50%"
-                          outerRadius={80}
-                          fill="#8884d8"
-                          dataKey="value"
-                          label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                        >
-                          {incomeCategories.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                          ))}
-                        </Pie>
-                        <Tooltip formatter={(value) => formatCurrency(value as number)} />
-                        <Legend />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  ) : (
-                    <NoDataDisplay message="No hay datos de distribución de ingresos" />
-                  )}
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader>
-                  <CardTitle>Distribución de gastos</CardTitle>
-                </CardHeader>
-                <CardContent className="h-80">
-                  {hasData && expenseCategories.length > 0 ? (
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={expenseCategories}
-                          cx="50%"
-                          cy="50%"
-                          outerRadius={80}
-                          fill="#8884d8"
-                          dataKey="value"
-                          label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                        >
-                          {expenseCategories.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                          ))}
-                        </Pie>
-                        <Tooltip formatter={(value) => formatCurrency(value as number)} />
-                        <Legend />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  ) : (
-                    <NoDataDisplay message="No hay datos de distribución de gastos" />
-                  )}
-                </CardContent>
-              </Card>
-            </div>
           </TabsContent>
           
           <TabsContent value="ingresos" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-6">
               <Card>
                 <CardHeader>
                   <CardTitle>Ingresos Mensuales</CardTitle>
@@ -311,42 +221,11 @@ const Statistics = () => {
                   )}
                 </CardContent>
               </Card>
-              
-              <Card>
-                <CardHeader>
-                  <CardTitle>Distribución de Ingresos</CardTitle>
-                </CardHeader>
-                <CardContent className="h-80">
-                  {hasData && incomeCategories.length > 0 ? (
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={incomeCategories}
-                          cx="50%"
-                          cy="50%"
-                          outerRadius={80}
-                          fill="#8884d8"
-                          dataKey="value"
-                          label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                        >
-                          {incomeCategories.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                          ))}
-                        </Pie>
-                        <Tooltip formatter={(value) => formatCurrency(value as number)} />
-                        <Legend />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  ) : (
-                    <NoDataDisplay message="No hay datos de distribución de ingresos" />
-                  )}
-                </CardContent>
-              </Card>
             </div>
           </TabsContent>
           
           <TabsContent value="gastos" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-6">
               <Card>
                 <CardHeader>
                   <CardTitle>Gastos Mensuales</CardTitle>
@@ -368,37 +247,6 @@ const Statistics = () => {
                     </ResponsiveContainer>
                   ) : (
                     <NoDataDisplay message="No hay datos de gastos mensuales" />
-                  )}
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader>
-                  <CardTitle>Distribución de Gastos</CardTitle>
-                </CardHeader>
-                <CardContent className="h-80">
-                  {hasData && expenseCategories.length > 0 ? (
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={expenseCategories}
-                          cx="50%"
-                          cy="50%"
-                          outerRadius={80}
-                          fill="#8884d8"
-                          dataKey="value"
-                          label={({name, percent}) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                        >
-                          {expenseCategories.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                          ))}
-                        </Pie>
-                        <Tooltip formatter={(value) => formatCurrency(value as number)} />
-                        <Legend />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  ) : (
-                    <NoDataDisplay message="No hay datos de distribución de gastos" />
                   )}
                 </CardContent>
               </Card>
