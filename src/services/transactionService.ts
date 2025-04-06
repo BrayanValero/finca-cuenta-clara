@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Tables, TablesInsert } from "@/integrations/supabase/types";
 
@@ -44,7 +43,7 @@ export const determineCategory = (description: string): string => {
   return 'otros';
 };
 
-// Get all transactions for the current user
+// Get all transactions
 export const getTransactions = async (): Promise<Transaction[]> => {
   const { data, error } = await supabase
     .from('transactions')

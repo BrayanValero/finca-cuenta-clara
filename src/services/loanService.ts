@@ -24,7 +24,7 @@ export type LoanInput = {
   due_date: string | null;
 };
 
-// Get all loans for the current user
+// Get all loans
 export const getLoans = async (): Promise<Loan[]> => {
   const { data, error } = await supabase
     .from('loans')
