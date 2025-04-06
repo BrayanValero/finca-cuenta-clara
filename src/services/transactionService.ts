@@ -29,7 +29,6 @@ export const determineCategory = (description: string): string => {
   
   // Check for sueldos category first (includes "semana marcos")
   if (lowerDesc.includes('semana marcos') || lowerDesc.includes('sueldo')) {
-    console.log('Categorizing as sueldos:', description);
     return 'sueldos';
   } else if (lowerDesc.includes('cacao') || lowerDesc.includes('maiz') || lowerDesc.includes('venta')) {
     return 'ventas';

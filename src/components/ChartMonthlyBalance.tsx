@@ -31,10 +31,15 @@ const processMonthlyData = (transactions: Transaction[]) => {
   
   // Crear un objeto para cada mes en el rango
   let currentDate = startOfMonth(minDate);
-  while (currentDate <= endOfMonth(maxDate)) {
+  const endDate = endOfMonth(maxDate);
+  
+  while (currentDate <= endDate) {
     const monthName = format(currentDate, 'MMMM', { locale: es });
+    const monthYear = format(currentDate, 'MMM yyyy', { locale: es });
+    
     monthlyData.push({
       month: monthName.charAt(0).toUpperCase() + monthName.slice(1),
+      monthYear: monthYear.charAt(0).toUpperCase() + monthYear.slice(1),
       ingresos: 0,
       gastos: 0
     });
@@ -50,7 +55,8 @@ const processMonthlyData = (transactions: Transaction[]) => {
     
     const monthIndex = monthlyData.findIndex(data => {
       const dataMonth = parse(data.month, 'MMMM', new Date(), { locale: es });
-      return isSameMonth(dataMonth, transDate);
+      return isSameMonth(dataMonth, transDate) && 
+             dataMonth.getFullYear() === transDate.getFullYear();
     });
     
     if (monthIndex >= 0) {
@@ -107,7 +113,13 @@ const ChartMonthlyBalance: React.FC<{
               }}
             >
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
+              <XAxis 
+                dataKey="monthYear" 
+                tick={{ fontSize: 12 }} 
+                angle={-45} 
+                textAnchor="end" 
+                height={60}
+              />
               <YAxis tickFormatter={(value) => `$${value}`} />
               <Tooltip content={<CustomTooltip />} />
               <Legend />
