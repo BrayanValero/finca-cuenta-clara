@@ -153,7 +153,7 @@ const LoanTable = () => {
                   </TableCell>
                   <TableCell>
                     <Badge 
-                      variant={loan.status === 'pendiente' ? 'destructive' : 'success'}
+                      variant={loan.status === 'pendiente' ? 'destructive' : 'secondary'}
                       className="cursor-pointer"
                       onClick={() => handleStatusChange(loan.id, loan.status as 'pendiente' | 'pagado')}
                     >
