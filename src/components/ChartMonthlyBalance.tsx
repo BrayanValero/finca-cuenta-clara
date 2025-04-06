@@ -24,6 +24,8 @@ interface MonthlyData {
   monthYear: string;
   ingresos: number;
   gastos: number;
+  monthIndex: number; // Add this to help with sorting and identifying the actual month
+  year: number;       // Add year for precise matching
 }
 
 const processMonthlyData = (transactions: Transaction[]): MonthlyData[] => {
@@ -42,6 +44,8 @@ const processMonthlyData = (transactions: Transaction[]): MonthlyData[] => {
   const endDate = endOfMonth(maxDate);
   
   while (currentDate <= endDate) {
+    const monthIndex = currentDate.getMonth();
+    const year = currentDate.getFullYear();
     const monthName = format(currentDate, 'MMMM', { locale: es });
     const monthYear = format(currentDate, 'MMM yyyy', { locale: es });
     
@@ -49,11 +53,13 @@ const processMonthlyData = (transactions: Transaction[]): MonthlyData[] => {
       month: monthName.charAt(0).toUpperCase() + monthName.slice(1),
       monthYear: monthYear.charAt(0).toUpperCase() + monthYear.slice(1),
       ingresos: 0,
-      gastos: 0
+      gastos: 0,
+      monthIndex,
+      year
     });
     
     // Avanzar al siguiente mes
-    currentDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
+    currentDate = new Date(year, monthIndex + 1, 1);
   }
   
   // Rellenar los datos de transacciones
@@ -61,11 +67,13 @@ const processMonthlyData = (transactions: Transaction[]): MonthlyData[] => {
     const transDate = parseISO(transaction.date);
     if (!isValid(transDate)) return;
     
-    const monthIndex = monthlyData.findIndex(data => {
-      const dataMonth = parse(data.month, 'MMMM', new Date(), { locale: es });
-      return isSameMonth(dataMonth, transDate) && 
-             dataMonth.getFullYear() === transDate.getFullYear();
-    });
+    const transMonth = transDate.getMonth();
+    const transYear = transDate.getFullYear();
+    
+    // Find the correct month entry using monthIndex and year for exact matching
+    const monthIndex = monthlyData.findIndex(data => 
+      data.monthIndex === transMonth && data.year === transYear
+    );
     
     if (monthIndex >= 0) {
       if (transaction.type === 'ingreso') {
