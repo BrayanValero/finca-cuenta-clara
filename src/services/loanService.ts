@@ -53,7 +53,7 @@ export const createLoan = async (loan: LoanInput): Promise<Loan> => {
     .insert({
       ...loan,
       user_id: user.id
-    })
+    } as any)
     .select()
     .single();
 
@@ -69,7 +69,7 @@ export const createLoan = async (loan: LoanInput): Promise<Loan> => {
 export const updateLoan = async (id: string, loan: Partial<LoanInput>): Promise<Loan> => {
   const { data, error } = await supabase
     .from('loans')
-    .update(loan)
+    .update(loan as any)
     .eq('id', id)
     .select()
     .single();
