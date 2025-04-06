@@ -1,224 +1,203 @@
 
-import React, { useEffect, useState } from 'react';
-import { format, parseISO } from 'date-fns';
-import { es } from 'date-fns/locale';
-import { Edit, Trash2, CheckCircle, Clock } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-
+import { useState } from 'react';
+import { ArrowUpDown, Calendar, ChevronDown, MoreHorizontal } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
+import { useToast } from '@/components/ui/use-toast';
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { getLoans, updateLoan, deleteLoan, Loan } from '@/services/loanService';
 
-import { Loan, getLoans, deleteLoan, updateLoan } from '@/services/loanService';
+const formatDate = (dateString: string) => {
+  const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'short', day: 'numeric' };
+  return new Date(dateString).toLocaleDateString('es-ES', options);
+};
+
+const formatCurrency = (amount: number) => {
+  return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'USD' })
+    .format(amount)
+    .replace('US$', '$');
+};
 
 const LoanTable = () => {
-  const [loans, setLoans] = useState<Loan[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    fetchLoans();
-  }, []);
+  const { data: loans = [], isLoading, error } = useQuery({
+    queryKey: ['loans'],
+    queryFn: getLoans
+  });
 
-  const fetchLoans = async () => {
-    try {
-      setLoading(true);
-      const data = await getLoans();
-      setLoans(data);
-    } catch (error) {
-      console.error('Error loading loans:', error);
-      toast({
-        title: 'Error',
-        description: 'No se pudieron cargar los préstamos',
-        variant: 'destructive',
+  const updateLoanMutation = useMutation({
+    mutationFn: ({ id, status }: { id: string; status: 'pendiente' | 'pagado' }) => 
+      updateLoan(id, { status }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['loans'] });
+      toast({ 
+        title: "Estado actualizado", 
+        description: "El estado del préstamo ha sido actualizado con éxito" 
       });
-    } finally {
-      setLoading(false);
+    },
+    onError: () => {
+      toast({ 
+        variant: "destructive", 
+        title: "Error", 
+        description: "No se pudo actualizar el estado del préstamo" 
+      });
+    }
+  });
+
+  const deleteLoanMutation = useMutation({
+    mutationFn: deleteLoan,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['loans'] });
+      toast({ 
+        title: "Préstamo eliminado", 
+        description: "El préstamo ha sido eliminado con éxito" 
+      });
+    },
+    onError: () => {
+      toast({ 
+        variant: "destructive", 
+        title: "Error", 
+        description: "No se pudo eliminar el préstamo" 
+      });
+    }
+  });
+
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value.toLowerCase());
+  };
+
+  const handleStatusChange = (id: string, currentStatus: 'pendiente' | 'pagado') => {
+    const newStatus = currentStatus === 'pendiente' ? 'pagado' : 'pendiente';
+    updateLoanMutation.mutate({ id, status: newStatus });
+  };
+
+  const handleDelete = (id: string) => {
+    if (window.confirm('¿Estás seguro de que deseas eliminar este préstamo?')) {
+      deleteLoanMutation.mutate(id);
     }
   };
 
-  const handleDelete = async (id: string) => {
-    try {
-      await deleteLoan(id);
-      setLoans(loans.filter(loan => loan.id !== id));
-      toast({
-        title: 'Préstamo eliminado',
-        description: 'El préstamo ha sido eliminado con éxito',
-      });
-    } catch (error) {
-      console.error('Error deleting loan:', error);
-      toast({
-        title: 'Error',
-        description: 'No se pudo eliminar el préstamo',
-        variant: 'destructive',
-      });
-    }
-  };
+  const filteredLoans = loans.filter(
+    (loan: Loan) =>
+      loan.description?.toLowerCase().includes(searchTerm) ||
+      formatDate(loan.date).toLowerCase().includes(searchTerm) ||
+      (loan.loan_type === 'recibido' ? 'recibido'.includes(searchTerm) : 'otorgado'.includes(searchTerm))
+  );
 
-  const handleStatusChange = async (loan: Loan) => {
-    try {
-      const newStatus = loan.status === 'pendiente' ? 'pagado' : 'pendiente';
-      await updateLoan(loan.id, { status: newStatus });
-      
-      setLoans(loans.map(l => 
-        l.id === loan.id ? { ...l, status: newStatus } : l
-      ));
-      
-      toast({
-        title: 'Estado actualizado',
-        description: `El préstamo ahora está ${newStatus === 'pagado' ? 'pagado' : 'pendiente'}`,
-      });
-    } catch (error) {
-      console.error('Error updating loan status:', error);
-      toast({
-        title: 'Error',
-        description: 'No se pudo actualizar el estado del préstamo',
-        variant: 'destructive',
-      });
-    }
-  };
+  if (isLoading) {
+    return <div className="text-center py-8">Cargando préstamos...</div>;
+  }
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('es-MX', {
-      style: 'currency',
-      currency: 'MXN',
-    }).format(amount);
-  };
-
-  const renderLoanTable = (loans: Loan[], type: 'recibido' | 'otorgado') => {
-    const filteredLoans = loans.filter(loan => loan.loan_type === type);
-    
-    if (filteredLoans.length === 0) {
-      return (
-        <Card className="mt-4">
-          <CardContent className="pt-6">
-            <p className="text-center text-muted-foreground">No hay préstamos {type === 'recibido' ? 'recibidos' : 'otorgados'} registrados</p>
-          </CardContent>
-        </Card>
-      );
-    }
-    
-    return (
-      <Table className="mt-4">
-        <TableCaption>Lista de préstamos {type === 'recibido' ? 'recibidos' : 'otorgados'}</TableCaption>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Fecha</TableHead>
-            <TableHead>Descripción</TableHead>
-            <TableHead>Monto</TableHead>
-            <TableHead>Estado</TableHead>
-            <TableHead>Vencimiento</TableHead>
-            <TableHead className="text-right">Acciones</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {filteredLoans.map(loan => (
-            <TableRow key={loan.id}>
-              <TableCell>{format(parseISO(loan.date), 'dd/MM/yyyy')}</TableCell>
-              <TableCell>{loan.description || '-'}</TableCell>
-              <TableCell>{formatCurrency(loan.amount)}</TableCell>
-              <TableCell>
-                <Badge 
-                  variant={loan.status === 'pagado' ? 'outline' : 'default'}
-                  className={loan.status === 'pagado' ? 'bg-green-100 text-green-800 hover:bg-green-100' : 'bg-amber-100 text-amber-800 hover:bg-amber-100'}
-                >
-                  {loan.status === 'pagado' ? (
-                    <span className="flex items-center gap-1"><CheckCircle size={12} /> Pagado</span>
-                  ) : (
-                    <span className="flex items-center gap-1"><Clock size={12} /> Pendiente</span>
-                  )}
-                </Badge>
-              </TableCell>
-              <TableCell>
-                {loan.due_date ? format(parseISO(loan.due_date), 'dd/MM/yyyy') : '-'}
-              </TableCell>
-              <TableCell className="text-right">
-                <div className="flex justify-end gap-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => handleStatusChange(loan)}
-                  >
-                    {loan.status === 'pendiente' ? 'Marcar pagado' : 'Marcar pendiente'}
-                  </Button>
-                  
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button variant="destructive" size="icon">
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Esta acción no se puede deshacer. Esto eliminará permanentemente el registro del préstamo.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                        <AlertDialogAction 
-                          onClick={() => handleDelete(loan.id)}
-                          className="bg-red-600 hover:bg-red-700"
-                        >
-                          Eliminar
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    );
-  };
-
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center p-8">
-        <p>Cargando préstamos...</p>
-      </div>
-    );
+  if (error) {
+    return <div className="text-center py-8 text-red-500">Error al cargar los préstamos.</div>;
   }
 
   return (
-    <Tabs defaultValue="recibidos" className="w-full">
-      <TabsList className="grid w-full grid-cols-2">
-        <TabsTrigger value="recibidos">Préstamos Recibidos</TabsTrigger>
-        <TabsTrigger value="otorgados">Préstamos Otorgados</TabsTrigger>
-      </TabsList>
-
-      <TabsContent value="recibidos">
-        {renderLoanTable(loans, 'recibido')}
-      </TabsContent>
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <Input
+          placeholder="Buscar préstamos..."
+          value={searchTerm}
+          onChange={handleSearch}
+          className="max-w-sm"
+        />
+      </div>
       
-      <TabsContent value="otorgados">
-        {renderLoanTable(loans, 'otorgado')}
-      </TabsContent>
-    </Tabs>
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[120px]">Fecha</TableHead>
+              <TableHead>Tipo</TableHead>
+              <TableHead className="max-w-[400px]">Descripción</TableHead>
+              <TableHead className="text-right">Monto</TableHead>
+              <TableHead>Estado</TableHead>
+              <TableHead className="w-[70px]"></TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredLoans.length > 0 ? (
+              filteredLoans.map((loan: Loan) => (
+                <TableRow key={loan.id}>
+                  <TableCell>{formatDate(loan.date)}</TableCell>
+                  <TableCell>
+                    <Badge variant={loan.loan_type === 'recibido' ? 'outline' : 'default'}>
+                      {loan.loan_type === 'recibido' ? 'Recibido' : 'Otorgado'}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="max-w-[400px] truncate">{loan.description}</TableCell>
+                  <TableCell className="text-right font-medium">
+                    {formatCurrency(loan.amount)}
+                  </TableCell>
+                  <TableCell>
+                    <Badge 
+                      variant={loan.status === 'pendiente' ? 'destructive' : 'success'}
+                      className="cursor-pointer"
+                      onClick={() => handleStatusChange(loan.id, loan.status as 'pendiente' | 'pagado')}
+                    >
+                      {loan.status === 'pendiente' ? 'Pendiente' : 'Pagado'}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                          <span className="sr-only">Abrir menú</span>
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+                        <DropdownMenuItem onClick={() => handleStatusChange(loan.id, loan.status as 'pendiente' | 'pagado')}>
+                          Cambiar estado
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          className="text-red-600"
+                          onClick={() => handleDelete(loan.id)}
+                        >
+                          Eliminar
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={6} className="h-24 text-center">
+                  {searchTerm 
+                    ? "No se encontraron préstamos coincidentes." 
+                    : "No hay préstamos registrados aún."}
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
+    </div>
   );
 };
 
