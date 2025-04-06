@@ -18,7 +18,15 @@ const NoDataDisplay = () => (
   </div>
 );
 
-const processMonthlyData = (transactions: Transaction[]) => {
+// Define the interface for monthly data
+interface MonthlyData {
+  month: string;
+  monthYear: string;
+  ingresos: number;
+  gastos: number;
+}
+
+const processMonthlyData = (transactions: Transaction[]): MonthlyData[] => {
   if (!transactions || transactions.length === 0) return [];
   
   // Obtener el rango de meses
@@ -27,7 +35,7 @@ const processMonthlyData = (transactions: Transaction[]) => {
   const maxDate = new Date(Math.max(...dates.map(d => d.getTime())));
   
   // Inicializar datos mensuales
-  const monthlyData: { month: string, ingresos: number, gastos: number }[] = [];
+  const monthlyData: MonthlyData[] = [];
   
   // Crear un objeto para cada mes en el rango
   let currentDate = startOfMonth(minDate);
