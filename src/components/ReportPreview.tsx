@@ -97,13 +97,13 @@ const ReportPreview: React.FC<ReportPreviewProps> = ({
                     <TableRow key={category}>
                       <TableCell className="font-medium">{category}</TableCell>
                       <TableCell className="text-right text-green-600">
-                        {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'USD' }).format(values.income)}
+                        {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'COP' }).format(values.income)}
                       </TableCell>
                       <TableCell className="text-right text-red-600">
-                        {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'USD' }).format(values.expense)}
+                        {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'COP' }).format(values.expense)}
                       </TableCell>
                       <TableCell className="text-right">
-                        {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'USD' }).format(values.income - values.expense)}
+                        {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'COP' }).format(values.income - values.expense)}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -126,7 +126,7 @@ const ReportPreview: React.FC<ReportPreviewProps> = ({
                       <TableCell>{transaction.description || '-'}</TableCell>
                       <TableCell>{transaction.category}</TableCell>
                       <TableCell className={`text-right ${transaction.type === 'ingreso' ? 'text-green-600' : 'text-red-600'}`}>
-                        {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'USD' }).format(Number(transaction.amount))}
+                        {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'COP' }).format(Number(transaction.amount))}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -138,19 +138,19 @@ const ReportPreview: React.FC<ReportPreviewProps> = ({
               <div>
                 <h4 className="text-sm font-medium text-muted-foreground">Total Ingresos</h4>
                 <p className="text-xl font-bold text-green-600">
-                  {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'USD' }).format(totalIncome)}
+                  {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'COP' }).format(totalIncome)}
                 </p>
               </div>
               <div>
                 <h4 className="text-sm font-medium text-muted-foreground">Total Gastos</h4>
                 <p className="text-xl font-bold text-red-600">
-                  {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'USD' }).format(totalExpense)}
+                  {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'COP' }).format(totalExpense)}
                 </p>
               </div>
               <div>
                 <h4 className="text-sm font-medium text-muted-foreground">Balance</h4>
                 <p className={`text-xl font-bold ${balance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'USD' }).format(balance)}
+                  {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'COP' }).format(balance)}
                 </p>
               </div>
             </div>

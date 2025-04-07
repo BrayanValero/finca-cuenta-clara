@@ -25,7 +25,7 @@ const CustomTooltip = ({ active, payload, data }: any) => {
       <div className="bg-white p-3 border rounded shadow-sm">
         <p className="font-bold">{payload[0].name}</p>
         <p>
-          {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'USD', currencyDisplay: 'symbol' }).format(payload[0].value)}
+          {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'COP', currencyDisplay: 'symbol' }).format(payload[0].value)}
           {" - "}
           {((payload[0].value / data.reduce((sum: number, entry: any) => sum + entry.value, 0)) * 100).toFixed(1)}%
         </p>

@@ -67,7 +67,7 @@ const Dashboard = () => {
 
   // Helper to format currency
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'USD', currencyDisplay: 'symbol' }).format(amount);
+    return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'COP', currencyDisplay: 'symbol' }).format(amount);
   };
 
   return (
