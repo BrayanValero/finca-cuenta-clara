@@ -23,14 +23,14 @@ const AuthForm = () => {
         <h1 className="text-2xl font-bold tracking-tight text-farm-green dark:text-farm-beige">
           Iniciar Sesión
         </h1>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-muted-foreground font-medium">
           Ingresa tus credenciales para acceder a la aplicación
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="email">Correo electrónico</Label>
+          <Label htmlFor="email" className="font-medium">Correo electrónico</Label>
           <Input
             id="email"
             type="email"
@@ -38,22 +38,24 @@ const AuthForm = () => {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            className="bg-white/80 dark:bg-farm-darkgreen/80"
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="password">Contraseña</Label>
+          <Label htmlFor="password" className="font-medium">Contraseña</Label>
           <Input
             id="password"
             type="password"
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            className="bg-white/80 dark:bg-farm-darkgreen/80"
           />
         </div>
 
         <Button 
           type="submit" 
-          className="w-full" 
+          className="w-full font-medium" 
           disabled={isLoading}
           style={{ backgroundColor: "#4D5726" }}
         >
