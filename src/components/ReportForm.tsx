@@ -19,7 +19,7 @@ interface ReportFormData {
   fechaInicio?: Date;
   fechaFin?: Date;
   incluirGraficos: boolean;
-  formatoSalida: 'pdf' | 'excel' | 'csv';
+  formatoSalida: 'pdf' | 'excel' | 'csv' | 'preview';
   titulo: string;
 }
 
@@ -112,6 +112,18 @@ const ReportForm: React.FC<ReportFormProps> = ({
           : undefined
       });
       
+      // Generate a report with 'preview' format - this won't actually create a file
+      generateReport({
+        transactions,
+        title: formData.titulo,
+        dateRange: formData.fechaInicio && formData.fechaFin 
+          ? { start: formData.fechaInicio, end: formData.fechaFin } 
+          : undefined,
+        type: formData.tipo,
+        format: 'preview',
+        includeCharts: formData.incluirGraficos
+      });
+      
       // Cambiar a la pestaña de vista previa
       const previewTab = document.querySelector('[value="preview"]') as HTMLButtonElement;
       if (previewTab) {
@@ -120,7 +132,7 @@ const ReportForm: React.FC<ReportFormProps> = ({
     }
   };
 
-  const handleSubmit = (e: React.FormEvent, format?: 'preview') => {
+  const handleSubmit = (e: React.FormEvent, preview?: boolean) => {
     e.preventDefault();
     
     // Validación básica
@@ -143,7 +155,7 @@ const ReportForm: React.FC<ReportFormProps> = ({
     }
     
     // Si es una vista previa, actualizar el componente
-    if (format === 'preview') {
+    if (preview) {
       handlePreview();
       return;
     }
@@ -304,7 +316,7 @@ const ReportForm: React.FC<ReportFormProps> = ({
           type="button"
           variant="outline"
           className="flex-1"
-          onClick={(e) => handleSubmit(e, 'preview')}
+          onClick={(e) => handleSubmit(e, true)}
         >
           <Eye className="mr-2 h-4 w-4" />
           Vista previa

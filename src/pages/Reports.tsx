@@ -56,7 +56,7 @@ const Reports = () => {
     queryFn: getTransactions
   });
 
-  const handleGenerateQuickReport = (type: string, format: 'pdf' | 'excel' = 'excel') => {
+  const handleGenerateQuickReport = (type: string, format: 'pdf' | 'excel' | 'preview' = 'excel') => {
     if (transactions.length === 0) {
       toast({
         title: "Sin datos",
@@ -97,6 +97,13 @@ const Reports = () => {
             title: "Informe generado",
             description: `Informe mensual generado con éxito en formato ${format.toUpperCase()}.`
           });
+        } else {
+          // For preview, we just set the active report which will be displayed in the preview tab
+          // and automatically switch to the preview tab
+          const previewTab = document.querySelector('[value="preview"]') as HTMLButtonElement;
+          if (previewTab) {
+            previewTab.click();
+          }
         }
         break;
         
@@ -126,6 +133,12 @@ const Reports = () => {
             title: "Informe generado",
             description: `Balance anual generado con éxito en formato ${format.toUpperCase()}.`
           });
+        } else {
+          // For preview, just switch to the preview tab
+          const previewTab = document.querySelector('[value="preview"]') as HTMLButtonElement;
+          if (previewTab) {
+            previewTab.click();
+          }
         }
         break;
         
@@ -150,6 +163,12 @@ const Reports = () => {
             title: "Informe generado",
             description: `Análisis de categorías generado con éxito en formato ${format.toUpperCase()}.`
           });
+        } else {
+          // For preview, just switch to the preview tab
+          const previewTab = document.querySelector('[value="preview"]') as HTMLButtonElement;
+          if (previewTab) {
+            previewTab.click();
+          }
         }
         break;
     }

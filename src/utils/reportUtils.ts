@@ -8,7 +8,7 @@ interface ReportOptions {
   title: string;
   dateRange?: { start?: Date; end?: Date };
   type?: 'all' | 'incomes' | 'expenses' | 'categories';
-  format: 'pdf' | 'excel' | 'csv';
+  format: 'pdf' | 'excel' | 'csv' | 'preview';
   includeCharts?: boolean;
 }
 
@@ -32,6 +32,11 @@ export const filterTransactions = (transactions: Transaction[], options: Omit<Re
 // Convert transactions to Excel or CSV
 export const exportToExcel = (options: ReportOptions) => {
   const { transactions, title, dateRange, type, format } = options;
+  
+  // If this is just a preview, don't generate a file
+  if (format === 'preview') {
+    return true;
+  }
   
   const filteredTransactions = filterTransactions(transactions, { transactions, title, dateRange, type });
   
@@ -101,6 +106,11 @@ export const exportToExcel = (options: ReportOptions) => {
 
 // Placeholder for PDF export (would require additional libraries)
 export const exportToPDF = (options: ReportOptions) => {
+  // If this is just a preview, don't generate a file
+  if (options.format === 'preview') {
+    return true;
+  }
+  
   // This is a placeholder - in a real implementation, we would use a library like jsPDF
   console.log('PDF export not fully implemented', options);
   
@@ -115,6 +125,11 @@ export const generateReport = (options: ReportOptions) => {
   const { format } = options;
   
   try {
+    // For preview, just return true without generating a file
+    if (format === 'preview') {
+      return true;
+    }
+    
     if (format === 'pdf') {
       return exportToPDF(options);
     } else {
