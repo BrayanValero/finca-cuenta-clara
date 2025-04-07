@@ -9,35 +9,69 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import { CalendarIcon, FileText } from 'lucide-react';
+import { CalendarIcon, FileText, Eye, FileSpreadsheet } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Transaction } from '@/services/transactionService';
+import { generateReport } from '@/utils/reportUtils';
 
 interface ReportFormData {
-  tipo: string;
+  tipo: 'all' | 'incomes' | 'expenses' | 'categories';
   fechaInicio?: Date;
   fechaFin?: Date;
   incluirGraficos: boolean;
-  formatoSalida: string;
+  formatoSalida: 'pdf' | 'excel' | 'csv';
+  titulo: string;
 }
 
 interface ReportFormProps {
   transactions?: Transaction[];
+  setActiveReport?: (report: { 
+    title: string; 
+    type: 'all' | 'incomes' | 'expenses' | 'categories'; 
+    dateRange?: { start?: Date; end?: Date }; 
+  } | null) => void;
 }
 
-const ReportForm: React.FC<ReportFormProps> = ({ transactions = [] }) => {
+const ReportForm: React.FC<ReportFormProps> = ({ 
+  transactions = [], 
+  setActiveReport 
+}) => {
   const { toast } = useToast();
   const [isGenerating, setIsGenerating] = useState(false);
   const [formData, setFormData] = useState<ReportFormData>({
-    tipo: 'completo',
+    tipo: 'all',
     fechaInicio: undefined,
     fechaFin: undefined,
     incluirGraficos: true,
     formatoSalida: 'pdf',
+    titulo: 'Informe personalizado',
   });
 
   const handleSelectChange = (name: string, value: string) => {
-    setFormData({ ...formData, [name]: value });
+    setFormData({ 
+      ...formData, 
+      [name]: name === 'tipo' 
+        ? mapTypeValue(value) 
+        : value 
+    });
+  };
+
+  const mapTypeValue = (value: string): 'all' | 'incomes' | 'expenses' | 'categories' => {
+    switch (value) {
+      case 'ingresos': return 'incomes';
+      case 'gastos': return 'expenses';
+      case 'categorias': return 'categories';
+      default: return 'all';
+    }
+  };
+
+  const getTypeDisplayValue = (): string => {
+    switch (formData.tipo) {
+      case 'incomes': return 'ingresos';
+      case 'expenses': return 'gastos';
+      case 'categories': return 'categorias';
+      default: return 'completo';
+    }
   };
 
   const handleDateChange = (field: 'fechaInicio' | 'fechaFin', date: Date | undefined) => {
@@ -48,14 +82,12 @@ const ReportForm: React.FC<ReportFormProps> = ({ transactions = [] }) => {
     setFormData({ ...formData, [field]: checked });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
+  const handlePreview = () => {
     // Validación básica
-    if (formData.tipo === 'periodo' && (!formData.fechaInicio || !formData.fechaFin)) {
+    if ((formData.fechaInicio && !formData.fechaFin) || (!formData.fechaInicio && formData.fechaFin)) {
       toast({
         title: "Error",
-        description: "Por favor seleccione un periodo válido",
+        description: "Debe seleccionar ambas fechas o ninguna para el periodo",
         variant: "destructive",
       });
       return;
@@ -70,31 +102,101 @@ const ReportForm: React.FC<ReportFormProps> = ({ transactions = [] }) => {
       return;
     }
     
+    // Actualizar el componente de vista previa
+    if (setActiveReport) {
+      setActiveReport({
+        title: formData.titulo,
+        type: formData.tipo,
+        dateRange: formData.fechaInicio && formData.fechaFin 
+          ? { start: formData.fechaInicio, end: formData.fechaFin } 
+          : undefined
+      });
+      
+      // Cambiar a la pestaña de vista previa
+      const previewTab = document.querySelector('[value="preview"]') as HTMLButtonElement;
+      if (previewTab) {
+        previewTab.click();
+      }
+    }
+  };
+
+  const handleSubmit = (e: React.FormEvent, format?: 'preview') => {
+    e.preventDefault();
+    
+    // Validación básica
+    if ((formData.fechaInicio && !formData.fechaFin) || (!formData.fechaInicio && formData.fechaFin)) {
+      toast({
+        title: "Error",
+        description: "Debe seleccionar ambas fechas o ninguna para el periodo",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (transactions.length === 0) {
+      toast({
+        title: "Sin datos",
+        description: "No hay transacciones disponibles para generar el informe.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Si es una vista previa, actualizar el componente
+    if (format === 'preview') {
+      handlePreview();
+      return;
+    }
+    
     // Generar informe
     setIsGenerating(true);
     
-    // Simulación de generación de informe con datos reales
+    const success = generateReport({
+      transactions,
+      title: formData.titulo,
+      dateRange: formData.fechaInicio && formData.fechaFin 
+        ? { start: formData.fechaInicio, end: formData.fechaFin } 
+        : undefined,
+      type: formData.tipo,
+      format: formData.formatoSalida,
+      includeCharts: formData.incluirGraficos
+    });
+    
     setTimeout(() => {
       setIsGenerating(false);
-      toast({
-        title: "Informe generado",
-        description: `El informe se ha generado correctamente con ${transactions.length} transacciones`,
-      });
       
-      console.log("Generating report with data:", {
-        formData,
-        transactionsCount: transactions.length
-      });
-    }, 2000);
+      if (success) {
+        toast({
+          title: "Informe generado",
+          description: `El informe se ha generado correctamente en formato ${formData.formatoSalida.toUpperCase()}`,
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "Ha ocurrido un error al generar el informe",
+          variant: "destructive"
+        });
+      }
+    }, 1000);
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-4">
         <div className="space-y-2">
+          <Label htmlFor="titulo">Título del informe</Label>
+          <Input
+            id="titulo"
+            value={formData.titulo}
+            onChange={(e) => setFormData({ ...formData, titulo: e.target.value })}
+            placeholder="Ingrese un título para el informe"
+          />
+        </div>
+
+        <div className="space-y-2">
           <Label htmlFor="tipo">Tipo de informe</Label>
           <Select
-            value={formData.tipo}
+            value={getTypeDisplayValue()}
             onValueChange={(value) => handleSelectChange('tipo', value)}
           >
             <SelectTrigger>
@@ -102,7 +204,6 @@ const ReportForm: React.FC<ReportFormProps> = ({ transactions = [] }) => {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="completo">Informe completo</SelectItem>
-              <SelectItem value="periodo">Por periodo</SelectItem>
               <SelectItem value="ingresos">Solo ingresos</SelectItem>
               <SelectItem value="gastos">Solo gastos</SelectItem>
               <SelectItem value="categorias">Por categorías</SelectItem>
@@ -110,61 +211,59 @@ const ReportForm: React.FC<ReportFormProps> = ({ transactions = [] }) => {
           </Select>
         </div>
 
-        {formData.tipo === 'periodo' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="fechaInicio">Fecha de inicio</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant={"outline"}
-                    className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !formData.fechaInicio && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {formData.fechaInicio ? format(formData.fechaInicio, 'PPP') : <span>Seleccionar fecha</span>}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar
-                    mode="single"
-                    selected={formData.fechaInicio}
-                    onSelect={(date) => handleDateChange('fechaInicio', date)}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="fechaFin">Fecha de fin</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant={"outline"}
-                    className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !formData.fechaFin && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {formData.fechaFin ? format(formData.fechaFin, 'PPP') : <span>Seleccionar fecha</span>}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar
-                    mode="single"
-                    selected={formData.fechaFin}
-                    onSelect={(date) => handleDateChange('fechaFin', date)}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="fechaInicio">Fecha de inicio</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant={"outline"}
+                  className={cn(
+                    "w-full justify-start text-left font-normal",
+                    !formData.fechaInicio && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {formData.fechaInicio ? format(formData.fechaInicio, 'PPP') : <span>Seleccionar fecha</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0">
+                <Calendar
+                  mode="single"
+                  selected={formData.fechaInicio}
+                  onSelect={(date) => handleDateChange('fechaInicio', date)}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
           </div>
-        )}
+
+          <div className="space-y-2">
+            <Label htmlFor="fechaFin">Fecha de fin</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant={"outline"}
+                  className={cn(
+                    "w-full justify-start text-left font-normal",
+                    !formData.fechaFin && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {formData.fechaFin ? format(formData.fechaFin, 'PPP') : <span>Seleccionar fecha</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0">
+                <Calendar
+                  mode="single"
+                  selected={formData.fechaFin}
+                  onSelect={(date) => handleDateChange('fechaFin', date)}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+        </div>
 
         <div className="space-y-2">
           <Label htmlFor="formatoSalida">Formato de salida</Label>
@@ -200,26 +299,51 @@ const ReportForm: React.FC<ReportFormProps> = ({ transactions = [] }) => {
         </div>
       </div>
 
-      <Button
-        type="submit"
-        className="bg-farm-green hover:bg-farm-lightgreen text-white"
-        disabled={isGenerating}
-      >
-        {isGenerating ? (
-          <span className="flex items-center">
-            <svg className="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            Generando...
-          </span>
-        ) : (
-          <span className="flex items-center">
-            <FileText className="mr-2 h-4 w-4" />
-            Generar Informe
-          </span>
-        )}
-      </Button>
+      <div className="flex flex-col sm:flex-row gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          className="flex-1"
+          onClick={(e) => handleSubmit(e, 'preview')}
+        >
+          <Eye className="mr-2 h-4 w-4" />
+          Vista previa
+        </Button>
+        
+        <Button
+          type="button"
+          variant="outline"
+          className="flex-1"
+          onClick={(e) => {
+            setFormData({ ...formData, formatoSalida: 'excel' });
+            setTimeout(() => handleSubmit(e), 0);
+          }}
+        >
+          <FileSpreadsheet className="mr-2 h-4 w-4" />
+          Exportar Excel
+        </Button>
+        
+        <Button
+          type="submit"
+          className="flex-1 bg-farm-green hover:bg-farm-lightgreen text-white"
+          disabled={isGenerating}
+        >
+          {isGenerating ? (
+            <span className="flex items-center">
+              <svg className="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Generando...
+            </span>
+          ) : (
+            <span className="flex items-center">
+              <FileText className="mr-2 h-4 w-4" />
+              Generar PDF
+            </span>
+          )}
+        </Button>
+      </div>
     </form>
   );
 };
