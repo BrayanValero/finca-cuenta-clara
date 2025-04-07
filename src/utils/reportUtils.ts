@@ -31,10 +31,10 @@ export const filterTransactions = (transactions: Transaction[], options: Omit<Re
 
 // Convert transactions to Excel or CSV
 export const exportToExcel = (options: ReportOptions) => {
-  const { transactions, title, dateRange, type, format } = options;
+  const { transactions, title, dateRange, type, format: outputFormat } = options;
   
   // If this is just a preview, don't generate a file
-  if (format === 'preview') {
+  if (outputFormat === 'preview') {
     return true;
   }
   
@@ -95,9 +95,9 @@ export const exportToExcel = (options: ReportOptions) => {
   const fileName = `${title.replace(/\s+/g, '_')}${dateStr}`;
   
   // Export based on format
-  if (format === 'excel') {
+  if (outputFormat === 'excel') {
     XLSX.writeFile(workbook, `${fileName}.xlsx`);
-  } else if (format === 'csv') {
+  } else if (outputFormat === 'csv') {
     XLSX.writeFile(workbook, `${fileName}.csv`, { bookType: 'csv' });
   }
   
@@ -122,15 +122,15 @@ export const exportToPDF = (options: ReportOptions) => {
 
 // Main export function
 export const generateReport = (options: ReportOptions) => {
-  const { format } = options;
+  const { format: outputFormat } = options;
   
   try {
     // For preview, just return true without generating a file
-    if (format === 'preview') {
+    if (outputFormat === 'preview') {
       return true;
     }
     
-    if (format === 'pdf') {
+    if (outputFormat === 'pdf') {
       return exportToPDF(options);
     } else {
       return exportToExcel(options);
