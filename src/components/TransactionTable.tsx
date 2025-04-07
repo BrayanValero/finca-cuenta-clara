@@ -23,6 +23,14 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/use-toast';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getTransactions, deleteTransaction, Transaction } from '@/services/transactionService';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import TransactionForm from './TransactionForm';
 
 const formatDate = (dateString: string) => {
   const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'short', day: 'numeric' };
@@ -30,13 +38,15 @@ const formatDate = (dateString: string) => {
 };
 
 const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'USD', currencyDisplay: 'symbol' })
+  return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'COP', currencyDisplay: 'symbol' })
     .format(amount)
-    .replace('US$', '$');
+    .replace('COP', '$');
 };
 
 const TransactionTable = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -64,6 +74,16 @@ const TransactionTable = () => {
         description: "No se pudo eliminar la transacción."
       });
     }
+  };
+
+  const handleEdit = (transaction: Transaction) => {
+    setEditingTransaction(transaction);
+    setIsEditDialogOpen(true);
+  };
+
+  const closeEditDialog = () => {
+    setIsEditDialogOpen(false);
+    setEditingTransaction(null);
   };
 
   const filteredTransactions = transactions.filter(
@@ -127,7 +147,9 @@ const TransactionTable = () => {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem>Editar</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleEdit(transaction)}>
+                          Editar
+                        </DropdownMenuItem>
                         <DropdownMenuItem>Detalles</DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem 
@@ -153,6 +175,22 @@ const TransactionTable = () => {
           </TableBody>
         </Table>
       </div>
+
+      {/* Diálogo de edición */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="sm:max-w-[550px]">
+          <DialogHeader>
+            <DialogTitle>Editar Transacción</DialogTitle>
+            <DialogDescription>
+              Actualice los datos de la transacción según sea necesario.
+            </DialogDescription>
+          </DialogHeader>
+          <TransactionForm 
+            editTransaction={editingTransaction} 
+            onSuccess={closeEditDialog} 
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

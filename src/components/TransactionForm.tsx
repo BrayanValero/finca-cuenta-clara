@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,7 +12,7 @@ import { format } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { createTransaction, TransactionInput } from '@/services/transactionService';
+import { createTransaction, TransactionInput, updateTransaction } from '@/services/transactionService';
 import { useAuth } from '@/contexts/AuthContext';
 
 type FormData = {
@@ -22,7 +22,18 @@ type FormData = {
   amount: number;
 };
 
-const TransactionForm = () => {
+type TransactionFormProps = {
+  editTransaction?: {
+    id: string;
+    date: string;
+    type: 'ingreso' | 'gasto';
+    description: string | null;
+    amount: number;
+  } | null;
+  onSuccess?: () => void;
+};
+
+const TransactionForm = ({ editTransaction, onSuccess }: TransactionFormProps) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -34,6 +45,18 @@ const TransactionForm = () => {
     amount: 0
   });
 
+  // Efecto para cargar datos cuando estamos editando
+  useEffect(() => {
+    if (editTransaction) {
+      setFormData({
+        fecha: new Date(editTransaction.date),
+        type: editTransaction.type,
+        description: editTransaction.description || '',
+        amount: editTransaction.amount
+      });
+    }
+  }, [editTransaction]);
+
   const createTransactionMutation = useMutation({
     mutationFn: createTransaction,
     onSuccess: () => {
@@ -43,12 +66,33 @@ const TransactionForm = () => {
         description: "La transacción ha sido guardada con éxito."
       });
       resetForm();
+      if (onSuccess) onSuccess();
     },
     onError: (error) => {
       toast({
         variant: "destructive",
         title: "Error",
         description: "No se pudo registrar la transacción. Por favor, inténtelo de nuevo."
+      });
+    }
+  });
+
+  const updateTransactionMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: TransactionInput }) => 
+      updateTransaction(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      toast({
+        title: "Transacción actualizada",
+        description: "La transacción ha sido actualizada con éxito."
+      });
+      if (onSuccess) onSuccess();
+    },
+    onError: (error) => {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "No se pudo actualizar la transacción. Por favor, inténtelo de nuevo."
       });
     }
   });
@@ -90,8 +134,15 @@ const TransactionForm = () => {
       amount: Number(formData.amount)
     };
 
-    // Enviar datos
-    createTransactionMutation.mutate(transactionData);
+    // Enviar datos (crear nuevo o actualizar)
+    if (editTransaction) {
+      updateTransactionMutation.mutate({ 
+        id: editTransaction.id, 
+        data: transactionData 
+      });
+    } else {
+      createTransactionMutation.mutate(transactionData);
+    }
   };
 
   const resetForm = () => {
@@ -127,6 +178,7 @@ const TransactionForm = () => {
                 selected={formData.fecha}
                 onSelect={handleDateChange}
                 initialFocus
+                className="p-3 pointer-events-auto"
               />
             </PopoverContent>
           </Popover>
@@ -177,9 +229,11 @@ const TransactionForm = () => {
       <Button 
         type="submit" 
         className="w-full md:w-auto bg-farm-green hover:bg-farm-lightgreen text-white"
-        disabled={createTransactionMutation.isPending}
+        disabled={createTransactionMutation.isPending || updateTransactionMutation.isPending}
       >
-        {createTransactionMutation.isPending ? "Procesando..." : "Registrar Transacción"}
+        {editTransaction 
+          ? (updateTransactionMutation.isPending ? "Actualizando..." : "Actualizar Transacción") 
+          : (createTransactionMutation.isPending ? "Procesando..." : "Registrar Transacción")}
       </Button>
     </form>
   );
