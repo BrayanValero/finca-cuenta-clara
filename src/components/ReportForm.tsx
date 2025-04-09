@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,7 +8,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import { CalendarIcon, FileText, Eye, FileSpreadsheet } from 'lucide-react';
+import { CalendarIcon, FileText, Eye } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Transaction } from '@/services/transactionService';
 import { generateReport } from '@/utils/reportUtils';
@@ -19,7 +18,7 @@ interface ReportFormData {
   fechaInicio?: Date;
   fechaFin?: Date;
   incluirGraficos: boolean;
-  formatoSalida: 'pdf' | 'excel' | 'csv' | 'preview';
+  formatoSalida: 'pdf' | 'preview';
   titulo: string;
 }
 
@@ -83,7 +82,6 @@ const ReportForm: React.FC<ReportFormProps> = ({
   };
 
   const handlePreview = () => {
-    // Validación básica
     if ((formData.fechaInicio && !formData.fechaFin) || (!formData.fechaInicio && formData.fechaFin)) {
       toast({
         title: "Error",
@@ -102,7 +100,6 @@ const ReportForm: React.FC<ReportFormProps> = ({
       return;
     }
     
-    // Actualizar el componente de vista previa
     if (setActiveReport) {
       setActiveReport({
         title: formData.titulo,
@@ -112,7 +109,6 @@ const ReportForm: React.FC<ReportFormProps> = ({
           : undefined
       });
       
-      // Generate a report with 'preview' format - this won't actually create a file
       generateReport({
         transactions,
         title: formData.titulo,
@@ -124,7 +120,6 @@ const ReportForm: React.FC<ReportFormProps> = ({
         includeCharts: formData.incluirGraficos
       });
       
-      // Cambiar a la pestaña de vista previa
       const previewTab = document.querySelector('[value="preview"]') as HTMLButtonElement;
       if (previewTab) {
         previewTab.click();
@@ -135,7 +130,6 @@ const ReportForm: React.FC<ReportFormProps> = ({
   const handleSubmit = (e: React.FormEvent, preview?: boolean) => {
     e.preventDefault();
     
-    // Validación básica
     if ((formData.fechaInicio && !formData.fechaFin) || (!formData.fechaInicio && formData.fechaFin)) {
       toast({
         title: "Error",
@@ -154,13 +148,11 @@ const ReportForm: React.FC<ReportFormProps> = ({
       return;
     }
     
-    // Si es una vista previa, actualizar el componente
     if (preview) {
       handlePreview();
       return;
     }
     
-    // Generar informe
     setIsGenerating(true);
     
     const success = generateReport({
@@ -170,7 +162,7 @@ const ReportForm: React.FC<ReportFormProps> = ({
         ? { start: formData.fechaInicio, end: formData.fechaFin } 
         : undefined,
       type: formData.tipo,
-      format: formData.formatoSalida,
+      format: 'pdf',
       includeCharts: formData.incluirGraficos
     });
     
@@ -180,7 +172,7 @@ const ReportForm: React.FC<ReportFormProps> = ({
       if (success) {
         toast({
           title: "Informe generado",
-          description: `El informe se ha generado correctamente en formato ${formData.formatoSalida.toUpperCase()}`,
+          description: "El informe se ha generado correctamente en formato PDF",
         });
       } else {
         toast({
@@ -277,23 +269,6 @@ const ReportForm: React.FC<ReportFormProps> = ({
           </div>
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="formatoSalida">Formato de salida</Label>
-          <Select
-            value={formData.formatoSalida}
-            onValueChange={(value) => handleSelectChange('formatoSalida', value)}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Seleccione un formato" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="pdf">PDF</SelectItem>
-              <SelectItem value="excel">Excel</SelectItem>
-              <SelectItem value="csv">CSV</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
         <div className="flex items-center space-x-2">
           <Checkbox
             id="incluirGraficos"
@@ -320,19 +295,6 @@ const ReportForm: React.FC<ReportFormProps> = ({
         >
           <Eye className="mr-2 h-4 w-4" />
           Vista previa
-        </Button>
-        
-        <Button
-          type="button"
-          variant="outline"
-          className="flex-1"
-          onClick={(e) => {
-            setFormData({ ...formData, formatoSalida: 'excel' });
-            setTimeout(() => handleSubmit(e), 0);
-          }}
-        >
-          <FileSpreadsheet className="mr-2 h-4 w-4" />
-          Exportar Excel
         </Button>
         
         <Button

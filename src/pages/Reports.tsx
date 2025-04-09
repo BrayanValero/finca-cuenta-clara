@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { FileText, FileSpreadsheet, Download, PieChart, Eye } from 'lucide-react';
+import { FileText, Download, PieChart, Eye } from 'lucide-react';
 import ReportForm from '@/components/ReportForm';
 import MobileNav from '@/components/MobileNav';
 import { useQuery } from '@tanstack/react-query';
@@ -56,7 +56,7 @@ const Reports = () => {
     queryFn: getTransactions
   });
 
-  const handleGenerateQuickReport = (type: string, format: 'pdf' | 'excel' | 'preview' = 'excel') => {
+  const handleGenerateQuickReport = (type: string, format: 'pdf' | 'preview' = 'pdf') => {
     if (transactions.length === 0) {
       toast({
         title: "Sin datos",
@@ -95,7 +95,7 @@ const Reports = () => {
           
           toast({
             title: "Informe generado",
-            description: `Informe mensual generado con éxito en formato ${format.toUpperCase()}.`
+            description: "Informe mensual generado con éxito en formato PDF."
           });
         } else {
           // For preview, we just set the active report which will be displayed in the preview tab
@@ -131,7 +131,7 @@ const Reports = () => {
           
           toast({
             title: "Informe generado",
-            description: `Balance anual generado con éxito en formato ${format.toUpperCase()}.`
+            description: "Balance anual generado con éxito en formato PDF."
           });
         } else {
           // For preview, just switch to the preview tab
@@ -161,7 +161,7 @@ const Reports = () => {
           
           toast({
             title: "Informe generado",
-            description: `Análisis de categorías generado con éxito en formato ${format.toUpperCase()}.`
+            description: "Análisis de categorías generado con éxito en formato PDF."
           });
         } else {
           // For preview, just switch to the preview tab
@@ -212,21 +212,13 @@ const Reports = () => {
                     </Button>
                   </div>
                 </CardContent>
-                <CardFooter className="flex gap-2">
-                  <Button 
-                    onClick={() => handleGenerateQuickReport('monthly', 'excel')} 
-                    variant="outline" 
-                    className="flex-1"
-                  >
-                    <FileSpreadsheet className="mr-2 h-4 w-4" />
-                    Excel
-                  </Button>
+                <CardFooter>
                   <Button 
                     onClick={() => handleGenerateQuickReport('monthly', 'pdf')} 
-                    className="flex-1 bg-farm-brown hover:bg-farm-lightbrown text-white"
+                    className="w-full bg-farm-brown hover:bg-farm-lightbrown text-white"
                   >
                     <FileText className="mr-2 h-4 w-4" />
-                    PDF
+                    Generar PDF
                   </Button>
                 </CardFooter>
               </Card>
@@ -234,7 +226,7 @@ const Reports = () => {
               <Card className="hover:border-farm-brown transition-colors">
                 <CardHeader>
                   <div className="flex items-center gap-3">
-                    <FileSpreadsheet className="h-8 w-8 text-farm-green dark:text-farm-beige" />
+                    <FileText className="h-8 w-8 text-farm-green dark:text-farm-beige" />
                     <CardTitle>Balance Anual</CardTitle>
                   </div>
                   <CardDescription>Estado financiero completo del año en curso.</CardDescription>
@@ -251,21 +243,13 @@ const Reports = () => {
                     </Button>
                   </div>
                 </CardContent>
-                <CardFooter className="flex gap-2">
-                  <Button 
-                    onClick={() => handleGenerateQuickReport('annual', 'excel')} 
-                    variant="outline" 
-                    className="flex-1"
-                  >
-                    <FileSpreadsheet className="mr-2 h-4 w-4" />
-                    Excel
-                  </Button>
+                <CardFooter>
                   <Button 
                     onClick={() => handleGenerateQuickReport('annual', 'pdf')} 
-                    className="flex-1 bg-farm-brown hover:bg-farm-lightbrown text-white"
+                    className="w-full bg-farm-brown hover:bg-farm-lightbrown text-white"
                   >
                     <FileText className="mr-2 h-4 w-4" />
-                    PDF
+                    Generar PDF
                   </Button>
                 </CardFooter>
               </Card>
@@ -290,21 +274,13 @@ const Reports = () => {
                     </Button>
                   </div>
                 </CardContent>
-                <CardFooter className="flex gap-2">
-                  <Button 
-                    onClick={() => handleGenerateQuickReport('categories', 'excel')} 
-                    variant="outline" 
-                    className="flex-1"
-                  >
-                    <FileSpreadsheet className="mr-2 h-4 w-4" />
-                    Excel
-                  </Button>
+                <CardFooter>
                   <Button 
                     onClick={() => handleGenerateQuickReport('categories', 'pdf')} 
-                    className="flex-1 bg-farm-brown hover:bg-farm-lightbrown text-white"
+                    className="w-full bg-farm-brown hover:bg-farm-lightbrown text-white"
                   >
                     <FileText className="mr-2 h-4 w-4" />
-                    PDF
+                    Generar PDF
                   </Button>
                 </CardFooter>
               </Card>
