@@ -1,15 +1,9 @@
 
 import { useState } from 'react';
-import { ArrowUpDown, ChevronDown, MoreHorizontal } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { getTransactions, deleteTransaction, Transaction } from '@/services/transactionService';
+import { useToast } from '@/components/ui/use-toast';
+import { Input } from '@/components/ui/input';
 import {
   Table,
   TableBody,
@@ -18,11 +12,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { useToast } from '@/components/ui/use-toast';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { getTransactions, deleteTransaction, Transaction } from '@/services/transactionService';
 import {
   Dialog,
   DialogContent,
@@ -31,17 +20,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import TransactionForm from './TransactionForm';
-
-const formatDate = (dateString: string) => {
-  const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'short', day: 'numeric' };
-  return new Date(dateString).toLocaleDateString('es-ES', options);
-};
-
-const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'COP', currencyDisplay: 'symbol' })
-    .format(amount)
-    .replace('COP', '$');
-};
+import TransactionRow from './transactions/TransactionRow';
 
 const TransactionTable = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -89,7 +68,7 @@ const TransactionTable = () => {
   const filteredTransactions = transactions.filter(
     (transaction: Transaction) =>
       transaction.description?.toLowerCase().includes(searchTerm) ||
-      formatDate(transaction.date).toLowerCase().includes(searchTerm)
+      new Date(transaction.date).toLocaleDateString('es-ES').toLowerCase().includes(searchTerm)
   );
 
   if (isLoading) {
@@ -125,43 +104,12 @@ const TransactionTable = () => {
           <TableBody>
             {filteredTransactions.length > 0 ? (
               filteredTransactions.map((transaction: Transaction) => (
-                <TableRow key={transaction.id}>
-                  <TableCell>{formatDate(transaction.date)}</TableCell>
-                  <TableCell>
-                    <Badge variant={transaction.type === 'ingreso' ? 'default' : 'destructive'}>
-                      {transaction.type === 'ingreso' ? 'Ingreso' : 'Gasto'}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="max-w-[300px] truncate">{transaction.description}</TableCell>
-                  <TableCell className="text-right font-medium">
-                    <span className={transaction.type === 'ingreso' ? 'text-green-600' : 'text-red-600'}>
-                      {transaction.type === 'ingreso' ? '+' : '-'} {formatCurrency(transaction.amount)}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-8 p-0">
-                          <span className="sr-only">Abrir menú</span>
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => handleEdit(transaction)}>
-                          Editar
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>Detalles</DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem 
-                          className="text-red-600"
-                          onClick={() => handleDelete(transaction.id)}
-                        >
-                          Eliminar
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
+                <TransactionRow 
+                  key={transaction.id}
+                  transaction={transaction}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                />
               ))
             ) : (
               <TableRow>

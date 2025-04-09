@@ -1,17 +1,14 @@
+
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/components/ui/use-toast';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
-import { CalendarIcon, FileText, Eye } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Transaction } from '@/services/transactionService';
 import { generateReport } from '@/utils/reportUtils';
+import ReportDateRangePicker from './reports/ReportDateRangePicker';
+import ReportTypeSelector from './reports/ReportTypeSelector';
+import ReportFormActions from './reports/ReportFormActions';
 
 interface ReportFormData {
   tipo: 'all' | 'incomes' | 'expenses' | 'categories';
@@ -46,12 +43,10 @@ const ReportForm: React.FC<ReportFormProps> = ({
     titulo: 'Informe personalizado',
   });
 
-  const handleSelectChange = (name: string, value: string) => {
+  const handleSelectChange = (value: string) => {
     setFormData({ 
       ...formData, 
-      [name]: name === 'tipo' 
-        ? mapTypeValue(value) 
-        : value 
+      tipo: mapTypeValue(value)
     });
   };
 
@@ -81,14 +76,14 @@ const ReportForm: React.FC<ReportFormProps> = ({
     setFormData({ ...formData, [field]: checked });
   };
 
-  const handlePreview = () => {
+  const validateForm = (): boolean => {
     if ((formData.fechaInicio && !formData.fechaFin) || (!formData.fechaInicio && formData.fechaFin)) {
       toast({
         title: "Error",
         description: "Debe seleccionar ambas fechas o ninguna para el periodo",
         variant: "destructive",
       });
-      return;
+      return false;
     }
     
     if (transactions.length === 0) {
@@ -97,8 +92,15 @@ const ReportForm: React.FC<ReportFormProps> = ({
         description: "No hay transacciones disponibles para generar el informe.",
         variant: "destructive"
       });
-      return;
+      return false;
     }
+    
+    return true;
+  };
+
+  const handlePreview = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!validateForm()) return;
     
     if (setActiveReport) {
       setActiveReport({
@@ -127,31 +129,9 @@ const ReportForm: React.FC<ReportFormProps> = ({
     }
   };
 
-  const handleSubmit = (e: React.FormEvent, preview?: boolean) => {
+  const handleSubmit = (e: React.MouseEvent) => {
     e.preventDefault();
-    
-    if ((formData.fechaInicio && !formData.fechaFin) || (!formData.fechaInicio && formData.fechaFin)) {
-      toast({
-        title: "Error",
-        description: "Debe seleccionar ambas fechas o ninguna para el periodo",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    if (transactions.length === 0) {
-      toast({
-        title: "Sin datos",
-        description: "No hay transacciones disponibles para generar el informe.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    if (preview) {
-      handlePreview();
-      return;
-    }
+    if (!validateForm()) return;
     
     setIsGenerating(true);
     
@@ -185,7 +165,7 @@ const ReportForm: React.FC<ReportFormProps> = ({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form className="space-y-6">
       <div className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="titulo">Título del informe</Label>
@@ -197,77 +177,17 @@ const ReportForm: React.FC<ReportFormProps> = ({
           />
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="tipo">Tipo de informe</Label>
-          <Select
-            value={getTypeDisplayValue()}
-            onValueChange={(value) => handleSelectChange('tipo', value)}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Seleccione un tipo de informe" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="completo">Informe completo</SelectItem>
-              <SelectItem value="ingresos">Solo ingresos</SelectItem>
-              <SelectItem value="gastos">Solo gastos</SelectItem>
-              <SelectItem value="categorias">Por categorías</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        <ReportTypeSelector 
+          value={getTypeDisplayValue()} 
+          onChange={handleSelectChange} 
+        />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="fechaInicio">Fecha de inicio</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant={"outline"}
-                  className={cn(
-                    "w-full justify-start text-left font-normal",
-                    !formData.fechaInicio && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {formData.fechaInicio ? format(formData.fechaInicio, 'PPP') : <span>Seleccionar fecha</span>}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <Calendar
-                  mode="single"
-                  selected={formData.fechaInicio}
-                  onSelect={(date) => handleDateChange('fechaInicio', date)}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="fechaFin">Fecha de fin</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant={"outline"}
-                  className={cn(
-                    "w-full justify-start text-left font-normal",
-                    !formData.fechaFin && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {formData.fechaFin ? format(formData.fechaFin, 'PPP') : <span>Seleccionar fecha</span>}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <Calendar
-                  mode="single"
-                  selected={formData.fechaFin}
-                  onSelect={(date) => handleDateChange('fechaFin', date)}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-        </div>
+        <ReportDateRangePicker 
+          startDate={formData.fechaInicio}
+          endDate={formData.fechaFin}
+          onStartDateChange={(date) => handleDateChange('fechaInicio', date)}
+          onEndDateChange={(date) => handleDateChange('fechaFin', date)}
+        />
 
         <div className="flex items-center space-x-2">
           <Checkbox
@@ -286,38 +206,11 @@ const ReportForm: React.FC<ReportFormProps> = ({
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-2">
-        <Button
-          type="button"
-          variant="outline"
-          className="flex-1"
-          onClick={(e) => handleSubmit(e, true)}
-        >
-          <Eye className="mr-2 h-4 w-4" />
-          Vista previa
-        </Button>
-        
-        <Button
-          type="submit"
-          className="flex-1 bg-farm-green hover:bg-farm-lightgreen text-white"
-          disabled={isGenerating}
-        >
-          {isGenerating ? (
-            <span className="flex items-center">
-              <svg className="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              Generando...
-            </span>
-          ) : (
-            <span className="flex items-center">
-              <FileText className="mr-2 h-4 w-4" />
-              Generar PDF
-            </span>
-          )}
-        </Button>
-      </div>
+      <ReportFormActions 
+        onPreview={handlePreview}
+        onSubmit={handleSubmit}
+        isGenerating={isGenerating}
+      />
     </form>
   );
 };

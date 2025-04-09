@@ -1,47 +1,14 @@
 
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { FileText, Download, PieChart, Eye } from 'lucide-react';
-import ReportForm from '@/components/ReportForm';
 import MobileNav from '@/components/MobileNav';
 import { useQuery } from '@tanstack/react-query';
 import { getTransactions } from '@/services/transactionService';
 import { useToast } from '@/components/ui/use-toast';
 import { generateReport } from '@/utils/reportUtils';
 import ReportPreview from '@/components/ReportPreview';
-
-const ReportCard = ({ 
-  title, 
-  description, 
-  icon: Icon, 
-  onClick 
-}: { 
-  title: string, 
-  description: string, 
-  icon: React.ElementType, 
-  onClick: () => void 
-}) => (
-  <Card className="hover:border-farm-brown transition-colors">
-    <CardHeader>
-      <div className="flex items-center gap-3">
-        <Icon className="h-8 w-8 text-farm-green dark:text-farm-beige" />
-        <CardTitle>{title}</CardTitle>
-      </div>
-      <CardDescription>{description}</CardDescription>
-    </CardHeader>
-    <CardFooter>
-      <Button 
-        onClick={onClick} 
-        className="w-full mt-2 bg-farm-brown hover:bg-farm-lightbrown text-white"
-      >
-        <Download className="mr-2 h-4 w-4" />
-        Generar
-      </Button>
-    </CardFooter>
-  </Card>
-);
+import QuickReportsTab from '@/components/reports/QuickReportsTab';
+import CustomReportTab from '@/components/reports/CustomReportTab';
 
 const Reports = () => {
   const { toast } = useToast();
@@ -68,6 +35,7 @@ const Reports = () => {
     
     let title = '';
     let reportType: 'all' | 'incomes' | 'expenses' | 'categories' = 'all';
+    let dateRange: { start?: Date; end?: Date } | undefined = undefined;
     
     // Define report parameters based on type
     switch (type) {
@@ -77,34 +45,7 @@ const Reports = () => {
         const now = new Date();
         const start = new Date(now.getFullYear(), now.getMonth(), 1);
         const end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-        
-        setActiveReport({
-          title,
-          type: 'all',
-          dateRange: { start, end }
-        });
-        
-        if (format !== 'preview') {
-          generateReport({
-            transactions,
-            title,
-            dateRange: { start, end },
-            type: 'all',
-            format
-          });
-          
-          toast({
-            title: "Informe generado",
-            description: "Informe mensual generado con éxito en formato PDF."
-          });
-        } else {
-          // For preview, we just set the active report which will be displayed in the preview tab
-          // and automatically switch to the preview tab
-          const previewTab = document.querySelector('[value="preview"]') as HTMLButtonElement;
-          if (previewTab) {
-            previewTab.click();
-          }
-        }
+        dateRange = { start, end };
         break;
         
       case 'annual':
@@ -113,64 +54,40 @@ const Reports = () => {
         const currentYear = new Date().getFullYear();
         const yearStart = new Date(currentYear, 0, 1);
         const yearEnd = new Date(currentYear, 11, 31);
-        
-        setActiveReport({
-          title,
-          type: 'all',
-          dateRange: { start: yearStart, end: yearEnd }
-        });
-        
-        if (format !== 'preview') {
-          generateReport({
-            transactions,
-            title,
-            dateRange: { start: yearStart, end: yearEnd },
-            type: 'all',
-            format
-          });
-          
-          toast({
-            title: "Informe generado",
-            description: "Balance anual generado con éxito en formato PDF."
-          });
-        } else {
-          // For preview, just switch to the preview tab
-          const previewTab = document.querySelector('[value="preview"]') as HTMLButtonElement;
-          if (previewTab) {
-            previewTab.click();
-          }
-        }
+        dateRange = { start: yearStart, end: yearEnd };
         break;
         
       case 'categories':
         title = 'Análisis de Categorías';
         reportType = 'categories';
-        
-        setActiveReport({
-          title,
-          type: 'categories'
-        });
-        
-        if (format !== 'preview') {
-          generateReport({
-            transactions,
-            title,
-            type: 'categories',
-            format
-          });
-          
-          toast({
-            title: "Informe generado",
-            description: "Análisis de categorías generado con éxito en formato PDF."
-          });
-        } else {
-          // For preview, just switch to the preview tab
-          const previewTab = document.querySelector('[value="preview"]') as HTMLButtonElement;
-          if (previewTab) {
-            previewTab.click();
-          }
-        }
         break;
+    }
+    
+    setActiveReport({
+      title,
+      type: reportType,
+      dateRange
+    });
+    
+    if (format !== 'preview') {
+      generateReport({
+        transactions,
+        title,
+        dateRange,
+        type: reportType,
+        format
+      });
+      
+      toast({
+        title: "Informe generado",
+        description: `${title} generado con éxito en formato PDF.`
+      });
+    } else {
+      // For preview, just switch to the preview tab
+      const previewTab = document.querySelector('[value="preview"]') as HTMLButtonElement;
+      if (previewTab) {
+        previewTab.click();
+      }
     }
   };
 
@@ -191,114 +108,14 @@ const Reports = () => {
           </TabsList>
           
           <TabsContent value="rapidos" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Card className="hover:border-farm-brown transition-colors">
-                <CardHeader>
-                  <div className="flex items-center gap-3">
-                    <FileText className="h-8 w-8 text-farm-green dark:text-farm-beige" />
-                    <CardTitle>Informe Mensual</CardTitle>
-                  </div>
-                  <CardDescription>Resumen de ingresos y gastos del mes actual.</CardDescription>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="flex space-x-2">
-                    <Button 
-                      onClick={() => handleGenerateQuickReport('monthly', 'preview')} 
-                      variant="outline" 
-                      className="flex-1"
-                    >
-                      <Eye className="mr-2 h-4 w-4" />
-                      Vista previa
-                    </Button>
-                  </div>
-                </CardContent>
-                <CardFooter>
-                  <Button 
-                    onClick={() => handleGenerateQuickReport('monthly', 'pdf')} 
-                    className="w-full bg-farm-brown hover:bg-farm-lightbrown text-white"
-                  >
-                    <FileText className="mr-2 h-4 w-4" />
-                    Generar PDF
-                  </Button>
-                </CardFooter>
-              </Card>
-              
-              <Card className="hover:border-farm-brown transition-colors">
-                <CardHeader>
-                  <div className="flex items-center gap-3">
-                    <FileText className="h-8 w-8 text-farm-green dark:text-farm-beige" />
-                    <CardTitle>Balance Anual</CardTitle>
-                  </div>
-                  <CardDescription>Estado financiero completo del año en curso.</CardDescription>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="flex space-x-2">
-                    <Button 
-                      onClick={() => handleGenerateQuickReport('annual', 'preview')} 
-                      variant="outline" 
-                      className="flex-1"
-                    >
-                      <Eye className="mr-2 h-4 w-4" />
-                      Vista previa
-                    </Button>
-                  </div>
-                </CardContent>
-                <CardFooter>
-                  <Button 
-                    onClick={() => handleGenerateQuickReport('annual', 'pdf')} 
-                    className="w-full bg-farm-brown hover:bg-farm-lightbrown text-white"
-                  >
-                    <FileText className="mr-2 h-4 w-4" />
-                    Generar PDF
-                  </Button>
-                </CardFooter>
-              </Card>
-              
-              <Card className="hover:border-farm-brown transition-colors">
-                <CardHeader>
-                  <div className="flex items-center gap-3">
-                    <PieChart className="h-8 w-8 text-farm-green dark:text-farm-beige" />
-                    <CardTitle>Análisis de Categorías</CardTitle>
-                  </div>
-                  <CardDescription>Distribución detallada por categorías.</CardDescription>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="flex space-x-2">
-                    <Button 
-                      onClick={() => handleGenerateQuickReport('categories', 'preview')} 
-                      variant="outline" 
-                      className="flex-1"
-                    >
-                      <Eye className="mr-2 h-4 w-4" />
-                      Vista previa
-                    </Button>
-                  </div>
-                </CardContent>
-                <CardFooter>
-                  <Button 
-                    onClick={() => handleGenerateQuickReport('categories', 'pdf')} 
-                    className="w-full bg-farm-brown hover:bg-farm-lightbrown text-white"
-                  >
-                    <FileText className="mr-2 h-4 w-4" />
-                    Generar PDF
-                  </Button>
-                </CardFooter>
-              </Card>
-            </div>
+            <QuickReportsTab onGenerateReport={handleGenerateQuickReport} />
           </TabsContent>
           
           <TabsContent value="personalizado" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Generar Informe Personalizado</CardTitle>
-                <CardDescription>
-                  Configura y genera un informe con los parámetros que necesites.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ReportForm transactions={transactions} setActiveReport={setActiveReport} />
-              </CardContent>
-            </Card>
+            <CustomReportTab 
+              transactions={transactions} 
+              setActiveReport={setActiveReport} 
+            />
           </TabsContent>
           
           {activeReport && (
