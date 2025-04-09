@@ -180,7 +180,7 @@ const Reports = () => {
       <div className="space-y-8">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Informes</h2>
-          <p className="text-muted-foreground">Genera informes y análisis de tus finanzas</p>
+          <p className="text-muted-foreground">Genera informes y análisis de tus finanzas en H-V Farm</p>
         </div>
 
         <Tabs defaultValue="rapidos" className="space-y-6">

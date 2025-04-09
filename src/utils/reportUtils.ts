@@ -1,4 +1,3 @@
-
 import { Transaction } from '@/services/transactionService';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -53,7 +52,7 @@ export const exportToPDF = (options: ReportOptions) => {
     
     // Add title
     doc.setFontSize(18);
-    doc.text('Cuenta Clara', 40, 20);
+    doc.text('H-V Farm', 40, 20);
     
     // Add report title
     doc.setFontSize(16);

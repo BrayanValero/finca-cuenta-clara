@@ -14,7 +14,7 @@ const AppLogo: React.FC<AppLogoProps> = ({ className }) => {
         className="h-10 w-auto"
       />
       <span className="ml-2 font-semibold text-lg text-farm-green dark:text-farm-beige">
-        Cuenta Clara
+        H-V Farm
       </span>
     </div>
   );
