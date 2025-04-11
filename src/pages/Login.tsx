@@ -35,7 +35,7 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-cover bg-center" style={{ backgroundImage: 'url("/lovable-uploads/e7909117-d6bf-4712-a6f5-696a1e342bf7.png")' }}>
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-cover bg-center" style={{ backgroundImage: 'url("/lovable-uploads/01018185-9285-44e6-a198-621a4621db1a.png")' }}>
       <div className="w-full max-w-md">
         <div className="mb-6 flex items-center justify-between">
           <AppLogo className="text-white" />
