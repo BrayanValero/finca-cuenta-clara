@@ -72,11 +72,36 @@ const TransactionTable = () => {
     setEditingTransaction(null);
   };
 
+  // Calculate balances for each transaction based on sorted date
+  const calculateBalances = (transactions: Transaction[]) => {
+    // Sort transactions by date (oldest first)
+    const sortedTransactions = [...transactions].sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
+    
+    let runningBalance = 0;
+    const balances = new Map<string, number>();
+    
+    sortedTransactions.forEach(transaction => {
+      if (transaction.type === 'ingreso') {
+        runningBalance += Number(transaction.amount);
+      } else {
+        runningBalance -= Number(transaction.amount);
+      }
+      balances.set(transaction.id, runningBalance);
+    });
+    
+    return balances;
+  };
+
   const filteredTransactions = transactions.filter(
     (transaction: Transaction) =>
       transaction.description?.toLowerCase().includes(searchTerm) ||
       new Date(transaction.date).toLocaleDateString('es-ES').toLowerCase().includes(searchTerm)
   );
+
+  // Calculate balances for all transactions
+  const balances = calculateBalances(transactions);
 
   if (isLoading) {
     return <div className="text-center py-8">Cargando transacciones...</div>;
@@ -105,6 +130,7 @@ const TransactionTable = () => {
               <TableHead>Tipo</TableHead>
               <TableHead className="max-w-[300px]">Descripción</TableHead>
               <TableHead className="text-right">Monto</TableHead>
+              <TableHead className="text-right">Saldo</TableHead>
               <TableHead className="w-[70px]"></TableHead>
             </TableRow>
           </TableHeader>
@@ -116,11 +142,12 @@ const TransactionTable = () => {
                   transaction={transaction}
                   onEdit={handleEdit}
                   onDelete={handleDelete}
+                  balance={balances.get(transaction.id) || 0}
                 />
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={5} className="h-24 text-center">
+                <TableCell colSpan={6} className="h-24 text-center">
                   {searchTerm 
                     ? "No se encontraron transacciones coincidentes." 
                     : "No hay transacciones registradas aún."}

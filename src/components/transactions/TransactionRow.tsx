@@ -8,6 +8,7 @@ interface TransactionRowProps {
   transaction: Transaction;
   onEdit: (transaction: Transaction) => void;
   onDelete: (id: string) => void;
+  balance: number; // Add balance prop
 }
 
 const formatDate = (dateString: string) => {
@@ -21,7 +22,7 @@ const formatCurrency = (amount: number) => {
     .replace('COP', '$');
 };
 
-const TransactionRow = ({ transaction, onEdit, onDelete }: TransactionRowProps) => {
+const TransactionRow = ({ transaction, onEdit, onDelete, balance }: TransactionRowProps) => {
   return (
     <TableRow>
       <TableCell>{formatDate(transaction.date)}</TableCell>
@@ -34,6 +35,11 @@ const TransactionRow = ({ transaction, onEdit, onDelete }: TransactionRowProps) 
       <TableCell className="text-right font-medium">
         <span className={transaction.type === 'ingreso' ? 'text-green-600' : 'text-red-600'}>
           {transaction.type === 'ingreso' ? '+' : '-'} {formatCurrency(transaction.amount)}
+        </span>
+      </TableCell>
+      <TableCell className="text-right font-medium">
+        <span className={balance >= 0 ? 'text-green-600' : 'text-red-600'}>
+          {formatCurrency(balance)}
         </span>
       </TableCell>
       <TableCell>
