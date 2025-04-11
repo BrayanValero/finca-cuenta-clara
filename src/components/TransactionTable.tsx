@@ -19,6 +19,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import { useAuth } from '@/contexts/AuthContext';
 import TransactionForm from './TransactionForm';
 import TransactionRow from './transactions/TransactionRow';
 
@@ -28,10 +29,16 @@ const TransactionTable = () => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
+  // Log to help with debugging
+  console.log("Current user ID:", user?.id);
+  
   const { data: transactions = [], isLoading, error } = useQuery({
-    queryKey: ['transactions'],
-    queryFn: getTransactions
+    queryKey: ['transactions', user?.id],
+    queryFn: getTransactions,
+    // Only fetch when we have a user
+    enabled: !!user?.id
   });
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {

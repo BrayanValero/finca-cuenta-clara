@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { ArrowDown, ArrowUp, DollarSign, BanknoteIcon, TrendingDown, TrendingUp } from 'lucide-react';
 import CardStat from '@/components/CardStat';
 import ChartMonthlyBalance from '@/components/ChartMonthlyBalance';
@@ -8,12 +8,23 @@ import TransactionTable from '@/components/TransactionTable';
 import MobileNav from '@/components/MobileNav';
 import { useQuery } from '@tanstack/react-query';
 import { getTransactions, Transaction } from '@/services/transactionService';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Dashboard = () => {
+  const { user } = useAuth();
+  
+  // Add user ID to query key to ensure proper cache invalidation
   const { data: transactions = [], isLoading } = useQuery({
-    queryKey: ['transactions'],
-    queryFn: getTransactions
+    queryKey: ['transactions', user?.id],
+    queryFn: getTransactions,
+    // Only fetch when we have a user
+    enabled: !!user?.id
   });
+
+  useEffect(() => {
+    console.log("Dashboard rendered, user:", user?.id);
+    console.log("Transaction count:", transactions.length);
+  }, [user, transactions]);
 
   // Calculate financial summary
   const calculateSummary = () => {

@@ -46,6 +46,18 @@ export const determineCategory = (description: string): string => {
 
 // Get all transactions
 export const getTransactions = async (): Promise<Transaction[]> => {
+  console.log("Fetching transactions");
+  
+  // Get current session
+  const { data: { session } } = await supabase.auth.getSession();
+  
+  if (!session?.user) {
+    console.error("No authenticated user found when fetching transactions");
+    return [];
+  }
+  
+  console.log("Fetching transactions for user:", session.user.id);
+  
   const { data, error } = await supabase
     .from('transactions')
     .select('*')
@@ -55,6 +67,8 @@ export const getTransactions = async (): Promise<Transaction[]> => {
     console.error('Error fetching transactions:', error);
     throw error;
   }
+
+  console.log(`Retrieved ${data?.length || 0} transactions`);
 
   // Explicitly cast the data to ensure it meets our Transaction interface
   return (data || []).map(item => ({
@@ -71,6 +85,8 @@ export const createTransaction = async (transaction: TransactionInput): Promise<
   if (!user) {
     throw new Error('User not authenticated');
   }
+
+  console.log("Creating transaction for user:", user.id);
 
   // If description exists, check if we need to update the category
   if (transaction.description) {
