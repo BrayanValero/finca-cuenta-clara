@@ -72,7 +72,7 @@ const TransactionTable = () => {
     setEditingTransaction(null);
   };
 
-  // Calculate balances for each transaction based on sorted date
+  // Calculate balances for each transaction based on sorted date (oldest to newest)
   const calculateBalances = (transactions: Transaction[]) => {
     // Sort transactions by date (oldest first)
     const sortedTransactions = [...transactions].sort(
@@ -94,6 +94,7 @@ const TransactionTable = () => {
     return balances;
   };
 
+  // Filter transactions based on search term
   const filteredTransactions = transactions.filter(
     (transaction: Transaction) =>
       transaction.description?.toLowerCase().includes(searchTerm) ||
@@ -102,6 +103,11 @@ const TransactionTable = () => {
 
   // Calculate balances for all transactions
   const balances = calculateBalances(transactions);
+
+  // Sort filtered transactions by date (newest first)
+  const sortedFilteredTransactions = [...filteredTransactions].sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+  );
 
   if (isLoading) {
     return <div className="text-center py-8">Cargando transacciones...</div>;
@@ -135,8 +141,8 @@ const TransactionTable = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredTransactions.length > 0 ? (
-              filteredTransactions.map((transaction: Transaction) => (
+            {sortedFilteredTransactions.length > 0 ? (
+              sortedFilteredTransactions.map((transaction: Transaction) => (
                 <TransactionRow 
                   key={transaction.id}
                   transaction={transaction}
