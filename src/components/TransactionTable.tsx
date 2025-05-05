@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getTransactions, deleteTransaction, Transaction } from '@/services/transactionService';
@@ -72,11 +71,15 @@ const TransactionTable = () => {
     setEditingTransaction(null);
   };
 
-  // Calculate total balance (regardless of display order)
+  // Calculate total balance correctly
   const calculateTotalBalance = (transactions: Transaction[]): number => {
-    return transactions.reduce((balance, transaction) => {
-      return balance + (transaction.type === 'ingreso' ? Number(transaction.amount) : -Number(transaction.amount));
+    console.log("Calculating total balance from", transactions.length, "transactions");
+    const total = transactions.reduce((balance, transaction) => {
+      const amount = Number(transaction.amount);
+      return balance + (transaction.type === 'ingreso' ? amount : -amount);
     }, 0);
+    console.log("Total balance calculated:", total);
+    return total;
   };
 
   // Calculate the current total balance
@@ -94,14 +97,16 @@ const TransactionTable = () => {
     const balances = new Map<string, number>();
     
     sortedTransactions.forEach(transaction => {
+      const amount = Number(transaction.amount);
       if (transaction.type === 'ingreso') {
-        runningBalance += Number(transaction.amount);
+        runningBalance += amount;
       } else {
-        runningBalance -= Number(transaction.amount);
+        runningBalance -= amount;
       }
       balances.set(transaction.id, runningBalance);
     });
-    
+
+    console.log("Final running balance:", runningBalance);
     return balances;
   };
 
@@ -137,6 +142,14 @@ const TransactionTable = () => {
           onChange={handleSearch}
           className="max-w-sm"
         />
+        <div className="text-right">
+          <p className="text-sm text-muted-foreground">Balance Total:</p>
+          <p className={`text-lg font-semibold ${totalBalance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+            {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'COP' })
+              .format(totalBalance)
+              .replace('COP', '$')}
+          </p>
+        </div>
       </div>
       
       <div className="rounded-md border">
