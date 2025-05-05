@@ -72,13 +72,24 @@ const TransactionTable = () => {
     setEditingTransaction(null);
   };
 
-  // Calculate balances for each transaction based on sorted date (oldest to newest)
+  // Calculate total balance (regardless of display order)
+  const calculateTotalBalance = (transactions: Transaction[]): number => {
+    return transactions.reduce((balance, transaction) => {
+      return balance + (transaction.type === 'ingreso' ? Number(transaction.amount) : -Number(transaction.amount));
+    }, 0);
+  };
+
+  // Calculate the current total balance
+  const totalBalance = calculateTotalBalance(transactions);
+
+  // Calculate balances for each transaction based on date (oldest to newest)
   const calculateBalances = (transactions: Transaction[]) => {
-    // Sort transactions by date (oldest first)
+    // First, sort all transactions by date (oldest first) to calculate accurate running balances
     const sortedTransactions = [...transactions].sort(
       (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
     );
     
+    // Calculate running balance for each transaction
     let runningBalance = 0;
     const balances = new Map<string, number>();
     
