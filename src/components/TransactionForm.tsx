@@ -129,7 +129,6 @@ const TransactionForm = ({ editTransaction, onSuccess }: TransactionFormProps) =
     const transactionData: TransactionInput = {
       date: formData.fecha.toISOString().split('T')[0],
       type: formData.type,
-      category: 'otros', // Mantenemos un valor predeterminado para la categoría en backend
       description: formData.description || null,
       amount: Number(formData.amount)
     };

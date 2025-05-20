@@ -11,7 +11,7 @@ import ReportTypeSelector from './reports/ReportTypeSelector';
 import ReportFormActions from './reports/ReportFormActions';
 
 interface ReportFormData {
-  tipo: 'all' | 'incomes' | 'expenses' | 'categories';
+  tipo: 'all' | 'incomes' | 'expenses' | 'descriptions';
   fechaInicio?: Date;
   fechaFin?: Date;
   incluirGraficos: boolean;
@@ -23,7 +23,7 @@ interface ReportFormProps {
   transactions?: Transaction[];
   setActiveReport?: (report: { 
     title: string; 
-    type: 'all' | 'incomes' | 'expenses' | 'categories'; 
+    type: 'all' | 'incomes' | 'expenses' | 'descriptions'; 
     dateRange?: { start?: Date; end?: Date }; 
   } | null) => void;
 }
@@ -50,11 +50,11 @@ const ReportForm: React.FC<ReportFormProps> = ({
     });
   };
 
-  const mapTypeValue = (value: string): 'all' | 'incomes' | 'expenses' | 'categories' => {
+  const mapTypeValue = (value: string): 'all' | 'incomes' | 'expenses' | 'descriptions' => {
     switch (value) {
       case 'ingresos': return 'incomes';
       case 'gastos': return 'expenses';
-      case 'categorias': return 'categories';
+      case 'descripciones': return 'descriptions';
       default: return 'all';
     }
   };
@@ -63,7 +63,7 @@ const ReportForm: React.FC<ReportFormProps> = ({
     switch (formData.tipo) {
       case 'incomes': return 'ingresos';
       case 'expenses': return 'gastos';
-      case 'categories': return 'categorias';
+      case 'descriptions': return 'descripciones';
       default: return 'completo';
     }
   };

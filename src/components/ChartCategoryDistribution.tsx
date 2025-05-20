@@ -35,7 +35,7 @@ const CustomTooltip = ({ active, payload, data }: any) => {
   return null;
 };
 
-const processCategoryData = (transactions: Transaction[], type: 'gastos' | 'ingresos') => {
+const processDescriptionData = (transactions: Transaction[], type: 'gastos' | 'ingresos') => {
   if (!transactions || transactions.length === 0) return [];
   
   const filteredTransactions = transactions.filter(t => 
@@ -44,18 +44,18 @@ const processCategoryData = (transactions: Transaction[], type: 'gastos' | 'ingr
   
   if (filteredTransactions.length === 0) return [];
   
-  // Agrupar por categoría
-  const categories: Record<string, number> = {};
+  // Agrupar por descripción
+  const descriptions: Record<string, number> = {};
   filteredTransactions.forEach(transaction => {
-    const category = transaction.category;
-    if (!categories[category]) {
-      categories[category] = 0;
+    const description = transaction.description || 'Sin descripción';
+    if (!descriptions[description]) {
+      descriptions[description] = 0;
     }
-    categories[category] += Number(transaction.amount);
+    descriptions[description] += Number(transaction.amount);
   });
   
   // Convertir a formato para gráfico
-  return Object.entries(categories).map(([name, value]) => ({
+  return Object.entries(descriptions).map(([name, value]) => ({
     name,
     value
   }));
@@ -66,11 +66,11 @@ const ChartCategoryDistribution: React.FC<{
   type?: 'gastos' | 'ingresos';
   transactions?: Transaction[];
 }> = ({ 
-  title = "Distribución de gastos por categoría",
+  title = "Distribución de gastos por descripción",
   type = "gastos",
   transactions = [] 
 }) => {
-  const data = processCategoryData(transactions, type);
+  const data = processDescriptionData(transactions, type);
   const hasData = data.length > 0;
 
   return (

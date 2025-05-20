@@ -22,7 +22,7 @@ const ReportTypeSelector = ({ value, onChange }: ReportTypeSelectorProps) => {
           <SelectItem value="completo">Informe completo</SelectItem>
           <SelectItem value="ingresos">Solo ingresos</SelectItem>
           <SelectItem value="gastos">Solo gastos</SelectItem>
-          <SelectItem value="categorias">Por categorías</SelectItem>
+          <SelectItem value="descripciones">Por descripción</SelectItem>
         </SelectContent>
       </Select>
     </div>

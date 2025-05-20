@@ -10,7 +10,7 @@ interface ReportOptions {
   transactions: Transaction[];
   title: string;
   dateRange?: { start?: Date; end?: Date };
-  type?: 'all' | 'incomes' | 'expenses' | 'categories';
+  type?: 'all' | 'incomes' | 'expenses' | 'descriptions';
   format: 'pdf' | 'preview';
   includeCharts?: boolean;
 }
@@ -83,38 +83,38 @@ export const exportToPDF = (options: ReportOptions) => {
     };
     
     // Add data based on report type
-    if (type === 'categories') {
-      // Create category summary
-      const categorySummary = filteredTransactions.reduce((acc, transaction) => {
-        const category = transaction.category;
-        if (!acc[category]) {
-          acc[category] = {
+    if (type === 'descriptions') {
+      // Group by description
+      const descriptionSummary = filteredTransactions.reduce((acc, transaction) => {
+        const description = transaction.description || 'Sin descripción';
+        if (!acc[description]) {
+          acc[description] = {
             income: 0,
             expense: 0
           };
         }
         
         if (transaction.type === 'ingreso') {
-          acc[category].income += Number(transaction.amount);
+          acc[description].income += Number(transaction.amount);
         } else {
-          acc[category].expense += Number(transaction.amount);
+          acc[description].expense += Number(transaction.amount);
         }
         
         return acc;
       }, {} as Record<string, { income: number; expense: number }>);
       
-      // Convert category data to table format
-      const tableData = Object.entries(categorySummary).map(([category, values]) => [
-        category,
+      // Convert description data to table format
+      const tableData = Object.entries(descriptionSummary).map(([description, values]) => [
+        description,
         formatCurrency(values.income),
         formatCurrency(values.expense),
         formatCurrency(values.income - values.expense)
       ]);
       
-      // Add categories table
+      // Add descriptions table
       autoTable(doc, {
         startY: 60,
-        head: [['Categoría', 'Ingresos', 'Gastos', 'Balance']],
+        head: [['Descripción', 'Ingresos', 'Gastos', 'Balance']],
         body: tableData,
         theme: 'striped',
         headStyles: {
@@ -134,13 +134,12 @@ export const exportToPDF = (options: ReportOptions) => {
       const tableData = filteredTransactions.map(transaction => [
         format(new Date(transaction.date), 'dd/MM/yyyy'),
         transaction.description || '-',
-        transaction.category,
         formatCurrency(Number(transaction.amount))
       ]);
       
       autoTable(doc, {
         startY: 60,
-        head: [['Fecha', 'Descripción', 'Categoría', 'Monto']],
+        head: [['Fecha', 'Descripción', 'Monto']],
         body: tableData,
         theme: 'striped',
         headStyles: {
@@ -149,7 +148,7 @@ export const exportToPDF = (options: ReportOptions) => {
           fontStyle: 'bold'
         },
         columnStyles: {
-          3: { halign: 'right' }
+          2: { halign: 'right' }
         }
       });
     }

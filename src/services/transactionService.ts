@@ -7,7 +7,6 @@ export interface Transaction {
   id: string;
   date: string;
   type: 'ingreso' | 'gasto';
-  category: string; // Mantenemos el campo en la interfaz para compatibilidad interna
   description: string | null;
   amount: number;
   created_at: string;
@@ -18,30 +17,8 @@ export interface Transaction {
 export type TransactionInput = {
   date: string;
   type: 'ingreso' | 'gasto';
-  category: string; // Mantenemos el campo en el input pero no lo mostramos en la UI
   description: string | null;
   amount: number;
-};
-
-// Helper function to determine category based on description
-export const determineCategory = (description: string): string => {
-  const lowerDesc = description.toLowerCase();
-  
-  // Check for sueldos category first (includes "semana marcos")
-  if (lowerDesc.includes('semana marcos') || lowerDesc.includes('sueldo')) {
-    return 'sueldos';
-  } else if (lowerDesc.includes('cacao') || lowerDesc.includes('maiz') || lowerDesc.includes('venta')) {
-    return 'ventas';
-  } else if (lowerDesc.includes('gasolina')) {
-    return 'insumos';
-  } else if ((lowerDesc.includes('pago') && (lowerDesc.includes('roberto') || lowerDesc.includes('fernando'))) || 
-            lowerDesc.includes('mano de obra')) {
-    return 'mano_obra';
-  } else if (lowerDesc.includes('abogado')) {
-    return 'otros';
-  }
-  
-  return 'otros';
 };
 
 // Get all transactions
@@ -88,14 +65,6 @@ export const createTransaction = async (transaction: TransactionInput): Promise<
 
   console.log("Creating transaction for user:", user.id);
 
-  // If description exists, check if we need to update the category
-  if (transaction.description) {
-    const suggestedCategory = determineCategory(transaction.description);
-    if (suggestedCategory !== 'otros') {
-      transaction.category = suggestedCategory;
-    }
-  }
-
   const { data, error } = await supabase
     .from('transactions')
     .insert({
@@ -119,14 +88,6 @@ export const createTransaction = async (transaction: TransactionInput): Promise<
 
 // Update an existing transaction
 export const updateTransaction = async (id: string, transaction: Partial<TransactionInput>): Promise<Transaction> => {
-  // If description exists, check if we need to update the category
-  if (transaction.description) {
-    const suggestedCategory = determineCategory(transaction.description);
-    if (suggestedCategory !== 'otros') {
-      transaction.category = suggestedCategory;
-    }
-  }
-
   const { data, error } = await supabase
     .from('transactions')
     .update(transaction)

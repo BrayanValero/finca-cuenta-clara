@@ -10,7 +10,7 @@ interface ReportPreviewProps {
   transactions: Transaction[];
   title: string;
   dateRange?: { start?: Date; end?: Date };
-  type?: 'all' | 'incomes' | 'expenses' | 'categories';
+  type?: 'all' | 'incomes' | 'expenses' | 'descriptions';
 }
 
 const ReportPreview: React.FC<ReportPreviewProps> = ({
@@ -45,21 +45,21 @@ const ReportPreview: React.FC<ReportPreviewProps> = ({
     
   const balance = totalIncome - totalExpense;
 
-  // Group by category for category type
-  const categorySummary = type === 'categories' ? 
+  // Group by description for description type
+  const descriptionSummary = type === 'descriptions' ? 
     filteredTransactions.reduce((acc, transaction) => {
-      const category = transaction.category;
-      if (!acc[category]) {
-        acc[category] = {
+      const description = transaction.description || 'Sin descripción';
+      if (!acc[description]) {
+        acc[description] = {
           income: 0,
           expense: 0
         };
       }
       
       if (transaction.type === 'ingreso') {
-        acc[category].income += Number(transaction.amount);
+        acc[description].income += Number(transaction.amount);
       } else {
-        acc[category].expense += Number(transaction.amount);
+        acc[description].expense += Number(transaction.amount);
       }
       
       return acc;
@@ -82,20 +82,20 @@ const ReportPreview: React.FC<ReportPreviewProps> = ({
           </div>
         ) : (
           <>
-            {type === 'categories' ? (
+            {type === 'descriptions' ? (
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Categoría</TableHead>
+                    <TableHead>Descripción</TableHead>
                     <TableHead className="text-right">Ingresos</TableHead>
                     <TableHead className="text-right">Gastos</TableHead>
                     <TableHead className="text-right">Balance</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {Object.entries(categorySummary || {}).map(([category, values]) => (
-                    <TableRow key={category}>
-                      <TableCell className="font-medium">{category}</TableCell>
+                  {Object.entries(descriptionSummary || {}).map(([description, values]) => (
+                    <TableRow key={description}>
+                      <TableCell className="font-medium">{description}</TableCell>
                       <TableCell className="text-right text-green-600">
                         {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'COP' }).format(values.income)}
                       </TableCell>
@@ -115,7 +115,6 @@ const ReportPreview: React.FC<ReportPreviewProps> = ({
                   <TableRow>
                     <TableHead>Fecha</TableHead>
                     <TableHead>Descripción</TableHead>
-                    <TableHead>Categoría</TableHead>
                     <TableHead className="text-right">Monto</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -124,7 +123,6 @@ const ReportPreview: React.FC<ReportPreviewProps> = ({
                     <TableRow key={transaction.id}>
                       <TableCell>{format(new Date(transaction.date), 'dd/MM/yyyy')}</TableCell>
                       <TableCell>{transaction.description || '-'}</TableCell>
-                      <TableCell>{transaction.category}</TableCell>
                       <TableCell className={`text-right ${transaction.type === 'ingreso' ? 'text-green-600' : 'text-red-600'}`}>
                         {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'COP' }).format(Number(transaction.amount))}
                       </TableCell>
