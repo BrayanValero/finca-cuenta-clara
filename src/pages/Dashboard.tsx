@@ -1,6 +1,7 @@
 
 import React, { useEffect } from 'react';
 import { ArrowDown, ArrowUp, DollarSign, BanknoteIcon, TrendingDown, TrendingUp } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import CardStat from '@/components/CardStat';
 import ChartMonthlyBalance from '@/components/ChartMonthlyBalance';
 import ChartCategoryDistribution from '@/components/ChartCategoryDistribution';
@@ -12,6 +13,7 @@ import { useAuth } from '@/contexts/AuthContext';
 
 const Dashboard = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   
   // Add user ID to query key to ensure proper cache invalidation
   const { data: transactions = [], isLoading } = useQuery({
@@ -81,6 +83,10 @@ const Dashboard = () => {
     return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'COP', currencyDisplay: 'symbol' }).format(amount);
   };
 
+  const handleChartClick = () => {
+    navigate('/detalle-distribuciones');
+  };
+
   return (
     <>
       <MobileNav />
@@ -124,7 +130,9 @@ const Dashboard = () => {
           <ChartCategoryDistribution 
             title="Distribución de gastos" 
             type="gastos" 
-            transactions={transactions} 
+            transactions={transactions}
+            showLegend={false} 
+            onClick={handleChartClick}
           />
         </div>
 

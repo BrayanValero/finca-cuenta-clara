@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import { Transaction } from '@/services/transactionService';
@@ -65,16 +66,29 @@ const ChartCategoryDistribution: React.FC<{
   title?: string; 
   type?: 'gastos' | 'ingresos';
   transactions?: Transaction[];
+  showLegend?: boolean;
+  onClick?: () => void;
 }> = ({ 
   title = "Distribución de gastos por descripción",
   type = "gastos",
-  transactions = [] 
+  transactions = [],
+  showLegend = false,
+  onClick
 }) => {
+  const navigate = useNavigate();
   const data = processDescriptionData(transactions, type);
   const hasData = data.length > 0;
+  
+  const handleClick = () => {
+    if (onClick) {
+      onClick();
+    } else {
+      navigate('/detalle-distribuciones');
+    }
+  };
 
   return (
-    <Card>
+    <Card onClick={hasData ? handleClick : undefined} className={hasData ? "cursor-pointer hover:shadow-md transition-shadow" : ""}>
       <CardHeader>
         <CardTitle>{title}</CardTitle>
       </CardHeader>
@@ -96,7 +110,7 @@ const ChartCategoryDistribution: React.FC<{
                 ))}
               </Pie>
               <Tooltip content={<CustomTooltip data={data} />} />
-              <Legend />
+              {showLegend && <Legend />}
             </PieChart>
           </ResponsiveContainer>
         ) : (
