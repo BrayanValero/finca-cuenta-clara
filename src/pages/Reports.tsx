@@ -14,7 +14,7 @@ const Reports = () => {
   const { toast } = useToast();
   const [activeReport, setActiveReport] = useState<{
     title: string;
-    type: 'all' | 'incomes' | 'expenses' | 'categories';
+    type: 'all' | 'incomes' | 'expenses' | 'descriptions';
     dateRange?: { start?: Date; end?: Date };
   } | null>(null);
 
@@ -34,7 +34,7 @@ const Reports = () => {
     }
     
     let title = '';
-    let reportType: 'all' | 'incomes' | 'expenses' | 'categories' = 'all';
+    let reportType: 'all' | 'incomes' | 'expenses' | 'descriptions' = 'all';
     let dateRange: { start?: Date; end?: Date } | undefined = undefined;
     
     // Define report parameters based on type
@@ -57,9 +57,9 @@ const Reports = () => {
         dateRange = { start: yearStart, end: yearEnd };
         break;
         
-      case 'categories':
-        title = 'Análisis de Categorías';
-        reportType = 'categories';
+      case 'descriptions':
+        title = 'Análisis por Descripción';
+        reportType = 'descriptions';
         break;
     }
     

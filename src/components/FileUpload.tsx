@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
@@ -147,9 +148,8 @@ const FileUpload = () => {
               continue; // Skip rows with zero or negative amounts
             }
             
-            // Determine category based on description
+            // Get description from the row
             const description = String(row[descKey] || '');
-            const category = determineCategory(description);
             
             const dateValue = row[dateKey];
             if (!dateValue) {
@@ -161,9 +161,9 @@ const FileUpload = () => {
             const transaction: TransactionInput = {
               date: formatDate(dateValue),
               type,
-              category,
               description: description || null,
               amount: Math.abs(amount),
+              category: determineCategory(description) // Add category here
             };
             
             await createTransaction(transaction);

@@ -12,6 +12,7 @@ export interface Transaction {
   created_at: string;
   updated_at: string;
   user_id: string;
+  category: string; // Keep this field as it's required by the database
 }
 
 export type TransactionInput = {
@@ -19,6 +20,13 @@ export type TransactionInput = {
   type: 'ingreso' | 'gasto';
   description: string | null;
   amount: number;
+  category?: string; // Make it optional in the input but provide default
+};
+
+// Helper function to determine a category based on the description
+export const determineCategory = (description: string): string => {
+  // Default category
+  return "Sin categoría";
 };
 
 // Get all transactions
@@ -65,12 +73,16 @@ export const createTransaction = async (transaction: TransactionInput): Promise<
 
   console.log("Creating transaction for user:", user.id);
 
+  // Ensure category is set even if not provided
+  const transactionWithCategory = {
+    ...transaction,
+    category: transaction.category || determineCategory(transaction.description || ''),
+    user_id: user.id
+  };
+
   const { data, error } = await supabase
     .from('transactions')
-    .insert({
-      ...transaction,
-      user_id: user.id
-    })
+    .insert(transactionWithCategory)
     .select()
     .single();
 
@@ -88,9 +100,14 @@ export const createTransaction = async (transaction: TransactionInput): Promise<
 
 // Update an existing transaction
 export const updateTransaction = async (id: string, transaction: Partial<TransactionInput>): Promise<Transaction> => {
+  // If updating description, update category too
+  const updates = transaction.description ? 
+    { ...transaction, category: transaction.category || determineCategory(transaction.description) } : 
+    transaction;
+
   const { data, error } = await supabase
     .from('transactions')
-    .update(transaction)
+    .update(updates)
     .eq('id', id)
     .select()
     .single();

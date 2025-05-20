@@ -7,7 +7,7 @@ interface CustomReportTabProps {
   transactions: Transaction[];
   setActiveReport: (report: { 
     title: string; 
-    type: 'all' | 'incomes' | 'expenses' | 'categories'; 
+    type: 'all' | 'incomes' | 'expenses' | 'descriptions'; 
     dateRange?: { start?: Date; end?: Date }; 
   } | null) => void;
 }
