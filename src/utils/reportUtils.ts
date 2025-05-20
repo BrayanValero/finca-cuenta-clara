@@ -1,7 +1,8 @@
+
 import { Transaction } from '@/services/transactionService';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import jsPDF from 'jspdf';
+import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 
@@ -42,7 +43,7 @@ export const exportToPDF = (options: ReportOptions) => {
   const filteredTransactions = filterTransactions(transactions, options);
   
   try {
-    // Initialize jsPDF
+    // Initialize jsPDF - Updated to use correct constructor syntax
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
     
