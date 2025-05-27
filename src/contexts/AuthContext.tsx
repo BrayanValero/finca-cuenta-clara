@@ -31,6 +31,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
         setIsLoading(false);
+        
+        // Navigate to login when signed out
+        if (event === 'SIGNED_OUT') {
+          navigate('/login');
+        }
       }
     );
 
@@ -43,7 +48,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [navigate]);
 
   const signIn = async (email: string, password: string) => {
     try {
@@ -98,9 +103,26 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signOut = async () => {
     try {
-      await supabase.auth.signOut();
-      navigate('/login');
+      console.log("Attempting to sign out...");
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        console.error("Sign out error:", error);
+        throw error;
+      }
+      
+      console.log("Sign out successful");
+      // Clear local state immediately
+      setUser(null);
+      setSession(null);
+      
+      // Navigation will be handled by the auth state change listener
+      toast({
+        title: "Sesión cerrada",
+        description: "Has cerrado sesión exitosamente",
+      });
     } catch (error: any) {
+      console.error("Sign out failed:", error);
       toast({
         variant: "destructive",
         title: "Error al cerrar sesión",
