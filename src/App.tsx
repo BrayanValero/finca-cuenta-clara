@@ -21,7 +21,11 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, isLoading } = useAuth();
   
   if (isLoading) {
-    return <div className="flex items-center justify-center h-screen">Cargando...</div>;
+    return (
+      <div className="flex items-center justify-center h-screen bg-farm-beige dark:bg-farm-darkgreen">
+        <div className="text-farm-green dark:text-farm-beige">Cargando...</div>
+      </div>
+    );
   }
   
   if (!user) {
@@ -33,7 +37,16 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
 // Routes component with authentication check
 const AppRoutes = () => {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
+  
+  // Show loading screen during initial authentication check
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-farm-beige dark:bg-farm-darkgreen">
+        <div className="text-farm-green dark:text-farm-beige">Cargando...</div>
+      </div>
+    );
+  }
   
   return (
     <Routes>
@@ -60,8 +73,19 @@ const AppRoutes = () => {
 };
 
 const App = () => {
-  // Create a new QueryClient instance within the component function
-  const [queryClient] = useState(() => new QueryClient());
+  // Create QueryClient with better error handling
+  const [queryClient] = useState(() => new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: (failureCount, error) => {
+          // Don't retry on auth errors
+          if (error?.message?.includes('JWT')) return false;
+          return failureCount < 3;
+        },
+        staleTime: 5 * 60 * 1000, // 5 minutes
+      },
+    },
+  }));
   
   return (
     <BrowserRouter>
