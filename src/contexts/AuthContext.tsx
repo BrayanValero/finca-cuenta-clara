@@ -20,58 +20,30 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isInitialized, setIsInitialized] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
-    let mounted = true;
-    
-    // Get initial session
-    const getInitialSession = async () => {
-      try {
-        const { data: { session: currentSession } } = await supabase.auth.getSession();
-        console.log("Got initial session:", currentSession?.user?.id);
-        
-        if (mounted) {
-          setSession(currentSession);
-          setUser(currentSession?.user ?? null);
-          setIsLoading(false);
-          setIsInitialized(true);
-        }
-      } catch (error) {
-        console.error("Error getting initial session:", error);
-        if (mounted) {
-          setIsLoading(false);
-          setIsInitialized(true);
-        }
-      }
-    };
-
-    // Set up auth state listener
+    // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, currentSession) => {
+      (event, currentSession) => {
         console.log("Auth state changed:", event);
-        
-        if (mounted && isInitialized) {
-          setSession(currentSession);
-          setUser(currentSession?.user ?? null);
-          
-          // Only set loading to false after initialization
-          if (event !== 'INITIAL_SESSION') {
-            setIsLoading(false);
-          }
-        }
+        setSession(currentSession);
+        setUser(currentSession?.user ?? null);
+        setIsLoading(false);
       }
     );
 
-    getInitialSession();
+    // THEN check for existing session
+    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+      console.log("Got existing session:", currentSession?.user?.id);
+      setSession(currentSession);
+      setUser(currentSession?.user ?? null);
+      setIsLoading(false);
+    });
 
-    return () => {
-      mounted = false;
-      subscription.unsubscribe();
-    };
-  }, [isInitialized]);
+    return () => subscription.unsubscribe();
+  }, []);
 
   const signIn = async (email: string, password: string) => {
     try {
@@ -82,6 +54,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         throw error;
       }
       
+      // Success is handled by the onAuthStateChange listener
       toast({
         title: "Inicio de sesión exitoso",
         description: "Bienvenido a Finca Cuenta Clara",
@@ -89,7 +62,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       
       navigate('/');
     } catch (error: any) {
-      console.error("Sign in error:", error);
       toast({
         variant: "destructive",
         title: "Error de autenticación",
@@ -114,7 +86,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         description: "Tu cuenta ha sido creada. Ya puedes iniciar sesión.",
       });
     } catch (error: any) {
-      console.error("Sign up error:", error);
       toast({
         variant: "destructive",
         title: "Error de registro",
@@ -130,7 +101,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       await supabase.auth.signOut();
       navigate('/login');
     } catch (error: any) {
-      console.error("Sign out error:", error);
       toast({
         variant: "destructive",
         title: "Error al cerrar sesión",
