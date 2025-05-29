@@ -9,9 +9,6 @@ import ChartCategoryDistribution from '@/components/ChartCategoryDistribution';
 import { useAuth } from '@/contexts/AuthContext';
 import MobileNav from '@/components/MobileNav';
 
-// Define the colors array for the chart
-const COLORS = ['#4D5726', '#6B7B3A', '#3A4219', '#B8860B', '#D9A441'];
-
 const ChartDetail = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -59,19 +56,17 @@ const ChartDetail = () => {
               <h3 className="text-xl font-bold mb-4">Detalles por Descripción</h3>
               <div className="bg-white rounded-lg border shadow p-6">
                 <div className="grid gap-4">
-                  {Object.entries(
-                    transactions
-                      .filter(t => t.type === 'gasto')
-                      .reduce((acc: Record<string, number>, transaction: Transaction) => {
-                        const description = transaction.description || 'Sin descripción';
-                        if (!acc[description]) {
-                          acc[description] = 0;
-                        }
-                        acc[description] += Number(transaction.amount);
-                        return acc;
-                      }, {})
-                  )
-                    .sort((a, b) => b[1] - a[1])
+                  {transactions
+                    .filter(t => t.type === 'gasto')
+                    .reduce((acc: Record<string, number>, transaction: Transaction) => {
+                      const description = transaction.description || 'Sin descripción';
+                      if (!acc[description]) {
+                        acc[description] = 0;
+                      }
+                      acc[description] += Number(transaction.amount);
+                      return acc;
+                    }, {})
+                    .toSorted((a, b) => b[1] - a[1])
                     .map(([description, amount], index) => (
                       <div key={index} className="flex justify-between items-center p-3 border-b last:border-0">
                         <div className="flex items-center">
