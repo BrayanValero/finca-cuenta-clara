@@ -61,15 +61,8 @@ const ChartDetail = () => {
           </div>
         ) : (
           <div className="grid gap-6">
-            <ChartCategoryDistribution 
-              title="Distribución de gastos por descripción" 
-              type="gastos" 
-              transactions={transactions} 
-              showLegend={true}
-              onClick={undefined} // Desactivamos el onClick en esta vista
-            />
-            
-            <div className="mt-8">
+            {/* Primero mostramos los detalles por descripción */}
+            <div>
               <h3 className="text-xl font-bold mb-4">Detalles por Descripción</h3>
               <div className="bg-white rounded-lg border shadow p-6">
                 <div className="grid gap-4">
@@ -107,6 +100,15 @@ const ChartDetail = () => {
                 </div>
               </div>
             </div>
+            
+            {/* Luego el gráfico */}
+            <ChartCategoryDistribution 
+              title="Distribución de gastos por descripción" 
+              type="gastos" 
+              transactions={transactions} 
+              showLegend={true}
+              onClick={undefined} // Desactivamos el onClick en esta vista
+            />
           </div>
         )}
       </div>
