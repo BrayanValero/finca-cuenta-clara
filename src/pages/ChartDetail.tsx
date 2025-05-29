@@ -12,6 +12,20 @@ import MobileNav from '@/components/MobileNav';
 // Colores complementarios a la paleta de la finca
 const COLORS = ['#4D5726', '#6B7B3A', '#3A4219', '#B8860B', '#D9A441'];
 
+// Función para normalizar descripciones similares
+const normalizeDescription = (description: string): string => {
+  if (!description) return 'Sin descripción';
+  
+  const normalized = description.toLowerCase().trim();
+  
+  // Normalizar variaciones de "semana marcos"
+  if (normalized.includes('marcos') && (normalized.includes('semana') || normalized.includes('pago'))) {
+    return 'semana marcos';
+  }
+  
+  return description;
+};
+
 const ChartDetail = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -63,11 +77,11 @@ const ChartDetail = () => {
                     transactions
                       .filter(t => t.type === 'gasto')
                       .reduce((acc: Record<string, number>, transaction: Transaction) => {
-                        const description = transaction.description || 'Sin descripción';
-                        if (!acc[description]) {
-                          acc[description] = 0;
+                        const normalizedDescription = normalizeDescription(transaction.description || 'Sin descripción');
+                        if (!acc[normalizedDescription]) {
+                          acc[normalizedDescription] = 0;
                         }
-                        acc[description] += Number(transaction.amount);
+                        acc[normalizedDescription] += Number(transaction.amount);
                         return acc;
                       }, {})
                   )

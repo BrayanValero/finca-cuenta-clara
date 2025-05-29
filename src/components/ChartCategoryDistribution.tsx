@@ -20,6 +20,20 @@ const NoDataDisplay = () => (
 // Colores complementarios a la paleta de la finca
 const COLORS = ['#4D5726', '#6B7B3A', '#3A4219', '#B8860B', '#D9A441'];
 
+// Función para normalizar descripciones similares
+const normalizeDescription = (description: string): string => {
+  if (!description) return 'Sin descripción';
+  
+  const normalized = description.toLowerCase().trim();
+  
+  // Normalizar variaciones de "semana marcos"
+  if (normalized.includes('marcos') && (normalized.includes('semana') || normalized.includes('pago'))) {
+    return 'semana marcos';
+  }
+  
+  return description;
+};
+
 const CustomTooltip = ({ active, payload, data }: any) => {
   if (active && payload && payload.length) {
     return (
@@ -45,14 +59,14 @@ const processDescriptionData = (transactions: Transaction[], type: 'gastos' | 'i
   
   if (filteredTransactions.length === 0) return [];
   
-  // Agrupar por descripción
+  // Agrupar por descripción normalizada
   const descriptions: Record<string, number> = {};
   filteredTransactions.forEach(transaction => {
-    const description = transaction.description || 'Sin descripción';
-    if (!descriptions[description]) {
-      descriptions[description] = 0;
+    const normalizedDescription = normalizeDescription(transaction.description || 'Sin descripción');
+    if (!descriptions[normalizedDescription]) {
+      descriptions[normalizedDescription] = 0;
     }
-    descriptions[description] += Number(transaction.amount);
+    descriptions[normalizedDescription] += Number(transaction.amount);
   });
   
   // Convertir a formato para gráfico
