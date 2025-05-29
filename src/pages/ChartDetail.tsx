@@ -4,27 +4,10 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
-import { getTransactions, Transaction } from '@/services/transactionService';
+import { getTransactions } from '@/services/transactionService';
 import ChartCategoryDistribution from '@/components/ChartCategoryDistribution';
 import { useAuth } from '@/contexts/AuthContext';
 import MobileNav from '@/components/MobileNav';
-
-// Colores complementarios a la paleta de la finca
-const COLORS = ['#4D5726', '#6B7B3A', '#3A4219', '#B8860B', '#D9A441'];
-
-// Función para normalizar descripciones similares
-const normalizeDescription = (description: string): string => {
-  if (!description) return 'Sin descripción';
-  
-  const normalized = description.toLowerCase().trim();
-  
-  // Normalizar variaciones de "semana marcos"
-  if (normalized.includes('marcos') && (normalized.includes('semana') || normalized.includes('pago'))) {
-    return 'semana marcos';
-  }
-  
-  return description;
-};
 
 const ChartDetail = () => {
   const navigate = useNavigate();
@@ -60,56 +43,13 @@ const ChartDetail = () => {
             <p>Cargando datos...</p>
           </div>
         ) : (
-          <div className="grid gap-6">
-            {/* Primero mostramos los detalles por descripción */}
-            <div>
-              <h3 className="text-xl font-bold mb-4">Detalles por Descripción</h3>
-              <div className="bg-white rounded-lg border shadow p-6">
-                <div className="grid gap-4">
-                  {Object.entries(
-                    transactions
-                      .filter(t => t.type === 'gasto')
-                      .reduce((acc: Record<string, number>, transaction: Transaction) => {
-                        const normalizedDescription = normalizeDescription(transaction.description || 'Sin descripción');
-                        if (!acc[normalizedDescription]) {
-                          acc[normalizedDescription] = 0;
-                        }
-                        acc[normalizedDescription] += Number(transaction.amount);
-                        return acc;
-                      }, {})
-                  )
-                    .sort((a, b) => b[1] - a[1])
-                    .map(([description, amount], index) => (
-                      <div key={index} className="flex justify-between items-center p-3 border-b last:border-0">
-                        <div className="flex items-center">
-                          <div 
-                            className="w-3 h-3 rounded-full mr-3" 
-                            style={{ backgroundColor: COLORS[index % COLORS.length] }}
-                          />
-                          <span className="font-medium">{description}</span>
-                        </div>
-                        <span className="font-mono">
-                          {new Intl.NumberFormat('es-ES', { 
-                            style: 'currency', 
-                            currency: 'COP' 
-                          }).format(amount)}
-                        </span>
-                      </div>
-                    ))
-                  }
-                </div>
-              </div>
-            </div>
-            
-            {/* Luego el gráfico */}
-            <ChartCategoryDistribution 
-              title="Distribución de gastos por descripción" 
-              type="gastos" 
-              transactions={transactions} 
-              showLegend={true}
-              onClick={undefined} // Desactivamos el onClick en esta vista
-            />
-          </div>
+          <ChartCategoryDistribution 
+            title="Distribución de gastos por descripción" 
+            type="gastos" 
+            transactions={transactions} 
+            showLegend={true}
+            onClick={undefined} // Desactivamos el onClick en esta vista
+          />
         )}
       </div>
     </>
