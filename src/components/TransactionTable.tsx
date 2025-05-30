@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getTransactions, deleteTransaction, Transaction } from '@/services/transactionService';
@@ -99,29 +98,31 @@ const TransactionTable = () => {
   // Calculate the current total balance
   const totalBalance = calculateTotalBalance(transactions);
 
-  // Calculate balances for each transaction - corrected logic
+  // Calculate balances for each transaction - working backwards from total balance
   const calculateBalances = (transactions: Transaction[]) => {
-    // Sort all transactions by date (oldest first) to calculate accurate running balances
+    // Sort all transactions by date (newest first) for display order
     const sortedTransactions = [...transactions].sort(
-      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
     );
     
-    // Calculate running balance for each transaction
-    let runningBalance = 0;
+    // Calculate balance working backwards from the total balance
+    let currentBalance = totalBalance;
     const balances = new Map<string, number>();
     
     sortedTransactions.forEach(transaction => {
       const amount = Number(transaction.amount);
+      // The balance at this transaction shows the balance AFTER this transaction was processed
+      balances.set(transaction.id, currentBalance);
+      
+      // For the next (older) transaction, we need to reverse this transaction's effect
       if (transaction.type === 'ingreso') {
-        runningBalance += amount;
+        currentBalance -= amount; // Remove the income to get the balance before this transaction
       } else {
-        runningBalance -= amount;
+        currentBalance += amount; // Add back the expense to get the balance before this transaction
       }
-      // The balance at this transaction is the running balance AFTER this transaction
-      balances.set(transaction.id, runningBalance);
     });
 
-    console.log("Final running balance:", runningBalance);
+    console.log("Balance calculation completed");
     return balances;
   };
 
