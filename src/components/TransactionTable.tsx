@@ -99,9 +99,9 @@ const TransactionTable = () => {
   // Calculate the current total balance
   const totalBalance = calculateTotalBalance(transactions);
 
-  // Calculate balances for each transaction based on date (oldest to newest)
+  // Calculate balances for each transaction - corrected logic
   const calculateBalances = (transactions: Transaction[]) => {
-    // First, sort all transactions by date (oldest first) to calculate accurate running balances
+    // Sort all transactions by date (oldest first) to calculate accurate running balances
     const sortedTransactions = [...transactions].sort(
       (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
     );
@@ -117,6 +117,7 @@ const TransactionTable = () => {
       } else {
         runningBalance -= amount;
       }
+      // The balance at this transaction is the running balance AFTER this transaction
       balances.set(transaction.id, runningBalance);
     });
 
@@ -131,10 +132,10 @@ const TransactionTable = () => {
       new Date(transaction.date).toLocaleDateString('es-ES').toLowerCase().includes(searchTerm)
   );
 
-  // Calculate balances for all transactions
+  // Calculate balances for all transactions (not just filtered ones)
   const balances = calculateBalances(transactions);
 
-  // Sort filtered transactions by date (newest first)
+  // Sort filtered transactions by date (newest first) for display
   const sortedFilteredTransactions = [...filteredTransactions].sort(
     (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
   );
