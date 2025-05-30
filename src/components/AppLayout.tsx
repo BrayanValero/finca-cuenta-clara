@@ -11,10 +11,10 @@ interface AppLayoutProps {
 
 const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   return (
-    <div className="flex h-screen bg-farm-beige dark:bg-farm-darkgreen">
+    <div className="flex h-screen bg-farm-beige dark:bg-farm-darkgreen overflow-hidden">
       <Sidebar />
-      <div className="flex-1 overflow-auto">
-        <main className="p-4 md:p-6">
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <main className="flex-1 overflow-y-auto p-4 md:p-6">
           {children || <Outlet />}
         </main>
       </div>

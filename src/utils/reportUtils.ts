@@ -32,18 +32,49 @@ export const filterTransactions = (transactions: Transaction[], options: Omit<Re
   });
 };
 
-// Generate PDF with logo
+// Generate simple chart representation for PDF
+const drawSimpleChart = (doc: jsPDF, chartData: Array<{name: string, value: number}>, startY: number) => {
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const chartWidth = 80;
+  const chartHeight = 40;
+  const chartX = (pageWidth - chartWidth) / 2;
+  
+  // Draw chart title
+  doc.setFontSize(12);
+  doc.text('Distribución de Gastos', pageWidth / 2, startY, { align: 'center' });
+  
+  const total = chartData.reduce((sum, item) => sum + item.value, 0);
+  let currentAngle = 0;
+  const colors = ['#4D5726', '#6B7B3A', '#3A4219', '#B8860B', '#D9A441'];
+  
+  // Draw simple pie chart representation
+  chartData.forEach((item, index) => {
+    const percentage = (item.value / total) * 100;
+    const color = colors[index % colors.length];
+    
+    // Draw legend item
+    const legendY = startY + 20 + (index * 8);
+    doc.setFillColor(color);
+    doc.rect(chartX - 20, legendY - 2, 4, 4, 'F');
+    doc.setFontSize(8);
+    doc.text(`${item.name}: ${percentage.toFixed(1)}%`, chartX - 12, legendY + 1);
+  });
+  
+  return startY + 20 + (chartData.length * 8) + 10;
+};
+
+// Generate PDF with logo and charts
 export const exportToPDF = (options: ReportOptions) => {
   // If this is just a preview, don't generate a file
   if (options.format === 'preview') {
     return true;
   }
   
-  const { transactions, title, dateRange, type } = options;
+  const { transactions, title, dateRange, type, includeCharts = false } = options;
   const filteredTransactions = filterTransactions(transactions, options);
   
   try {
-    // Initialize jsPDF - Updated to use correct constructor syntax
+    // Initialize jsPDF
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
     
@@ -60,10 +91,12 @@ export const exportToPDF = (options: ReportOptions) => {
     doc.text(title, pageWidth / 2, 40, { align: 'center' });
     
     // Add date range if provided
+    let currentY = 50;
     if (dateRange?.start && dateRange?.end) {
       doc.setFontSize(12);
       const dateText = `${format(dateRange.start, 'PPP', { locale: es })} - ${format(dateRange.end, 'PPP', { locale: es })}`;
-      doc.text(dateText, pageWidth / 2, 50, { align: 'center' });
+      doc.text(dateText, pageWidth / 2, currentY, { align: 'center' });
+      currentY += 10;
     }
     
     // Calculate totals
@@ -81,6 +114,28 @@ export const exportToPDF = (options: ReportOptions) => {
     const formatCurrency = (amount: number) => {
       return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'COP' }).format(amount);
     };
+    
+    // Add chart if requested and type is descriptions
+    if (includeCharts && type === 'descriptions') {
+      const descriptionSummary = filteredTransactions.reduce((acc, transaction) => {
+        const description = transaction.description || 'Sin descripción';
+        if (!acc[description]) {
+          acc[description] = 0;
+        }
+        acc[description] += Number(transaction.amount);
+        return acc;
+      }, {} as Record<string, number>);
+      
+      const chartData = Object.entries(descriptionSummary)
+        .map(([name, value]) => ({ name, value }))
+        .filter(item => item.value > 0)
+        .sort((a, b) => b.value - a.value)
+        .slice(0, 5); // Top 5 items
+      
+      if (chartData.length > 0) {
+        currentY = drawSimpleChart(doc, chartData, currentY + 10);
+      }
+    }
     
     // Add data based on report type
     if (type === 'descriptions') {
@@ -113,7 +168,7 @@ export const exportToPDF = (options: ReportOptions) => {
       
       // Add descriptions table
       autoTable(doc, {
-        startY: 60,
+        startY: currentY,
         head: [['Descripción', 'Ingresos', 'Gastos', 'Balance']],
         body: tableData,
         theme: 'striped',
@@ -138,7 +193,7 @@ export const exportToPDF = (options: ReportOptions) => {
       ]);
       
       autoTable(doc, {
-        startY: 60,
+        startY: currentY,
         head: [['Fecha', 'Descripción', 'Monto']],
         body: tableData,
         theme: 'striped',

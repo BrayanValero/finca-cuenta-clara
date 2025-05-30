@@ -5,6 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Transaction } from '@/services/transactionService';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 
 interface ReportPreviewProps {
   transactions: Transaction[];
@@ -12,6 +13,9 @@ interface ReportPreviewProps {
   dateRange?: { start?: Date; end?: Date };
   type?: 'all' | 'incomes' | 'expenses' | 'descriptions';
 }
+
+// Colores complementarios a la paleta de la finca
+const COLORS = ['#4D5726', '#6B7B3A', '#3A4219', '#B8860B', '#D9A441', '#8B4513', '#228B22', '#DAA520'];
 
 const ReportPreview: React.FC<ReportPreviewProps> = ({
   transactions,
@@ -65,97 +69,149 @@ const ReportPreview: React.FC<ReportPreviewProps> = ({
       return acc;
     }, {} as Record<string, { income: number; expense: number }>) : null;
 
+  // Prepare chart data for pie chart
+  const chartData = React.useMemo(() => {
+    if (type === 'descriptions' && descriptionSummary) {
+      return Object.entries(descriptionSummary)
+        .map(([name, values]) => ({
+          name,
+          value: values.expense,
+          displayValue: new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'COP' }).format(values.expense)
+        }))
+        .filter(item => item.value > 0)
+        .sort((a, b) => b.value - a.value);
+    } else if (type === 'all') {
+      return [
+        { name: 'Ingresos', value: totalIncome, displayValue: new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'COP' }).format(totalIncome) },
+        { name: 'Gastos', value: totalExpense, displayValue: new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'COP' }).format(totalExpense) }
+      ].filter(item => item.value > 0);
+    }
+    return [];
+  }, [type, descriptionSummary, totalIncome, totalExpense]);
+
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
-        {dateRange?.start && dateRange?.end && (
-          <div className="text-sm text-muted-foreground">
-            {format(dateRange.start, 'PPP', { locale: es })} - {format(dateRange.end, 'PPP', { locale: es })}
-          </div>
-        )}
-      </CardHeader>
-      <CardContent>
-        {filteredTransactions.length === 0 ? (
-          <div className="text-center py-10 text-muted-foreground">
-            No hay transacciones para el periodo seleccionado
-          </div>
-        ) : (
-          <>
-            {type === 'descriptions' ? (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Descripción</TableHead>
-                    <TableHead className="text-right">Ingresos</TableHead>
-                    <TableHead className="text-right">Gastos</TableHead>
-                    <TableHead className="text-right">Balance</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {Object.entries(descriptionSummary || {}).map(([description, values]) => (
-                    <TableRow key={description}>
-                      <TableCell className="font-medium">{description}</TableCell>
-                      <TableCell className="text-right text-green-600">
-                        {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'COP' }).format(values.income)}
-                      </TableCell>
-                      <TableCell className="text-right text-red-600">
-                        {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'COP' }).format(values.expense)}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'COP' }).format(values.income - values.expense)}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Fecha</TableHead>
-                    <TableHead>Descripción</TableHead>
-                    <TableHead className="text-right">Monto</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredTransactions.map((transaction) => (
-                    <TableRow key={transaction.id}>
-                      <TableCell>{format(new Date(transaction.date), 'dd/MM/yyyy')}</TableCell>
-                      <TableCell>{transaction.description || '-'}</TableCell>
-                      <TableCell className={`text-right ${transaction.type === 'ingreso' ? 'text-green-600' : 'text-red-600'}`}>
-                        {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'COP' }).format(Number(transaction.amount))}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-            
-            <div className="mt-6 border-t pt-4 grid grid-cols-3 gap-4">
-              <div>
-                <h4 className="text-sm font-medium text-muted-foreground">Total Ingresos</h4>
-                <p className="text-xl font-bold text-green-600">
-                  {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'COP' }).format(totalIncome)}
-                </p>
-              </div>
-              <div>
-                <h4 className="text-sm font-medium text-muted-foreground">Total Gastos</h4>
-                <p className="text-xl font-bold text-red-600">
-                  {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'COP' }).format(totalExpense)}
-                </p>
-              </div>
-              <div>
-                <h4 className="text-sm font-medium text-muted-foreground">Balance</h4>
-                <p className={`text-xl font-bold ${balance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'COP' }).format(balance)}
-                </p>
-              </div>
+    <div className="space-y-6">
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle>{title}</CardTitle>
+          {dateRange?.start && dateRange?.end && (
+            <div className="text-sm text-muted-foreground">
+              {format(dateRange.start, 'PPP', { locale: es })} - {format(dateRange.end, 'PPP', { locale: es })}
             </div>
-          </>
-        )}
-      </CardContent>
-    </Card>
+          )}
+        </CardHeader>
+        <CardContent>
+          {filteredTransactions.length === 0 ? (
+            <div className="text-center py-10 text-muted-foreground">
+              No hay transacciones para el periodo seleccionado
+            </div>
+          ) : (
+            <>
+              {/* Chart Section */}
+              {chartData.length > 0 && (
+                <div className="mb-8">
+                  <h4 className="text-lg font-semibold mb-4">Distribución Gráfica</h4>
+                  <div className="h-80">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={chartData}
+                          cx="50%"
+                          cy="50%"
+                          labelLine={false}
+                          label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(1)}%`}
+                          outerRadius={80}
+                          fill="#8884d8"
+                          dataKey="value"
+                        >
+                          {chartData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip formatter={(value) => new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'COP' }).format(Number(value))} />
+                        <Legend />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              )}
+
+              {/* Table Section */}
+              {type === 'descriptions' ? (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Descripción</TableHead>
+                      <TableHead className="text-right">Ingresos</TableHead>
+                      <TableHead className="text-right">Gastos</TableHead>
+                      <TableHead className="text-right">Balance</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {Object.entries(descriptionSummary || {}).map(([description, values]) => (
+                      <TableRow key={description}>
+                        <TableCell className="font-medium">{description}</TableCell>
+                        <TableCell className="text-right text-green-600">
+                          {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'COP' }).format(values.income)}
+                        </TableCell>
+                        <TableCell className="text-right text-red-600">
+                          {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'COP' }).format(values.expense)}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'COP' }).format(values.income - values.expense)}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Fecha</TableHead>
+                      <TableHead>Descripción</TableHead>
+                      <TableHead className="text-right">Monto</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredTransactions.map((transaction) => (
+                      <TableRow key={transaction.id}>
+                        <TableCell>{format(new Date(transaction.date), 'dd/MM/yyyy')}</TableCell>
+                        <TableCell>{transaction.description || '-'}</TableCell>
+                        <TableCell className={`text-right ${transaction.type === 'ingreso' ? 'text-green-600' : 'text-red-600'}`}>
+                          {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'COP' }).format(Number(transaction.amount))}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+              
+              <div className="mt-6 border-t pt-4 grid grid-cols-3 gap-4">
+                <div>
+                  <h4 className="text-sm font-medium text-muted-foreground">Total Ingresos</h4>
+                  <p className="text-xl font-bold text-green-600">
+                    {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'COP' }).format(totalIncome)}
+                  </p>
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-muted-foreground">Total Gastos</h4>
+                  <p className="text-xl font-bold text-red-600">
+                    {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'COP' }).format(totalExpense)}
+                  </p>
+                </div>
+                <div>
+                  <h4 className="text-sm font-medium text-muted-foreground">Balance</h4>
+                  <p className={`text-xl font-bold ${balance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'COP' }).format(balance)}
+                  </p>
+                </div>
+              </div>
+            </>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 
