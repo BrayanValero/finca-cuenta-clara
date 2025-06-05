@@ -22,6 +22,21 @@ const normalizeDescription = (description: string): string => {
     return 'semana marcos';
   }
   
+  // Normalizar variaciones de "gasolina"
+  if (normalized === 'gasolina' || normalized === ' gasolina' || normalized === 'gasolina ') {
+    return 'gasolina';
+  }
+  
+  // Normalizar variaciones de "guadañador" (incluyendo "guarañador")
+  if (normalized === 'guarañador' || normalized === 'guadañador') {
+    return 'guadañador';
+  }
+  
+  // Normalizar variaciones de "gasolina guadaña"
+  if (normalized === 'gasolina guadaña' || normalized === 'gasolina guadaña') {
+    return 'gasolina guadaña';
+  }
+  
   return description;
 };
 

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -29,6 +28,21 @@ const normalizeDescription = (description: string): string => {
   // Normalizar variaciones de "semana marcos"
   if (normalized.includes('marcos') && (normalized.includes('semana') || normalized.includes('pago'))) {
     return 'semana marcos';
+  }
+  
+  // Normalizar variaciones de "gasolina"
+  if (normalized === 'gasolina' || normalized === ' gasolina' || normalized === 'gasolina ') {
+    return 'gasolina';
+  }
+  
+  // Normalizar variaciones de "guadañador" (incluyendo "guarañador")
+  if (normalized === 'guarañador' || normalized === 'guadañador') {
+    return 'guadañador';
+  }
+  
+  // Normalizar variaciones de "gasolina guadaña"
+  if (normalized === 'gasolina guadaña' || normalized === 'gasolina guadaña') {
+    return 'gasolina guadaña';
   }
   
   return description;
