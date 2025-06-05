@@ -9,7 +9,7 @@ const resources = {
       // Navigation
       "dashboard": "Panel",
       "transactions": "Transacciones",
-      "loans": "Préstamos",
+      "loans": "Préstamos", 
       "statistics": "Estadísticas",
       "reports": "Informes",
       
