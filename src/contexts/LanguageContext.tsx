@@ -12,7 +12,7 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { t, i18n } = useTranslation();
-  const [currentLanguage, setCurrentLanguage] = useState(i18n.language);
+  const [currentLanguage, setCurrentLanguage] = useState(i18n.language || 'es');
 
   const changeLanguage = (language: string) => {
     i18n.changeLanguage(language);
@@ -25,7 +25,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     if (savedLanguage && savedLanguage !== currentLanguage) {
       changeLanguage(savedLanguage);
     }
-  }, []);
+  }, [currentLanguage]);
 
   const value = {
     currentLanguage,

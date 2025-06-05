@@ -16,6 +16,8 @@ import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { LanguageProvider } from "./contexts/LanguageContext";
+
+// Import i18n config to initialize it
 import './i18n/config';
 
 // Protected route component
@@ -67,17 +69,17 @@ const App = () => {
   
   return (
     <BrowserRouter>
-      <LanguageProvider>
+      <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <QueryClientProvider client={queryClient}>
+          <LanguageProvider>
             <TooltipProvider>
               <AppRoutes />
               <Toaster />
               <Sonner />
             </TooltipProvider>
-          </QueryClientProvider>
+          </LanguageProvider>
         </AuthProvider>
-      </LanguageProvider>
+      </QueryClientProvider>
     </BrowserRouter>
   );
 };
