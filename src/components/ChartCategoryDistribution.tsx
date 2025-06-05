@@ -1,8 +1,10 @@
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import { Transaction } from '@/services/transactionService';
+import { processDescriptionData, formatCurrency } from '@/utils/transactionUtils';
 
 // Componente para mostrar cuando no hay datos
 const NoDataDisplay = () => (
@@ -19,42 +21,13 @@ const NoDataDisplay = () => (
 // Colores complementarios a la paleta de la finca
 const COLORS = ['#4D5726', '#6B7B3A', '#3A4219', '#B8860B', '#D9A441'];
 
-// Función para normalizar descripciones similares
-const normalizeDescription = (description: string): string => {
-  if (!description) return 'Sin descripción';
-  
-  const normalized = description.toLowerCase().trim();
-  
-  // Normalizar variaciones de "semana marcos"
-  if (normalized.includes('marcos') && (normalized.includes('semana') || normalized.includes('pago'))) {
-    return 'semana marcos';
-  }
-  
-  // Normalizar variaciones de "gasolina"
-  if (normalized === 'gasolina' || normalized === ' gasolina' || normalized === 'gasolina ') {
-    return 'gasolina';
-  }
-  
-  // Normalizar variaciones de "guadañador" (incluyendo "guarañador")
-  if (normalized === 'guarañador' || normalized === 'guadañador') {
-    return 'guadañador';
-  }
-  
-  // Normalizar variaciones de "gasolina guadaña"
-  if (normalized === 'gasolina guadaña' || normalized === 'gasolina guadaña') {
-    return 'gasolina guadaña';
-  }
-  
-  return description;
-};
-
 const CustomTooltip = ({ active, payload, data }: any) => {
   if (active && payload && payload.length) {
     return (
       <div className="bg-white p-3 border rounded shadow-sm">
         <p className="font-bold">{payload[0].name}</p>
         <p>
-          {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'COP', currencyDisplay: 'symbol' }).format(payload[0].value)}
+          {formatCurrency(payload[0].value)}
           {" - "}
           {((payload[0].value / data.reduce((sum: number, entry: any) => sum + entry.value, 0)) * 100).toFixed(1)}%
         </p>
@@ -62,32 +35,6 @@ const CustomTooltip = ({ active, payload, data }: any) => {
     );
   }
   return null;
-};
-
-const processDescriptionData = (transactions: Transaction[], type: 'gastos' | 'ingresos') => {
-  if (!transactions || transactions.length === 0) return [];
-  
-  const filteredTransactions = transactions.filter(t => 
-    type === 'gastos' ? t.type === 'gasto' : t.type === 'ingreso'
-  );
-  
-  if (filteredTransactions.length === 0) return [];
-  
-  // Agrupar por descripción normalizada
-  const descriptions: Record<string, number> = {};
-  filteredTransactions.forEach(transaction => {
-    const normalizedDescription = normalizeDescription(transaction.description || 'Sin descripción');
-    if (!descriptions[normalizedDescription]) {
-      descriptions[normalizedDescription] = 0;
-    }
-    descriptions[normalizedDescription] += Number(transaction.amount);
-  });
-  
-  // Convertir a formato para gráfico
-  return Object.entries(descriptions).map(([name, value]) => ({
-    name,
-    value
-  }));
 };
 
 const ChartCategoryDistribution: React.FC<{ 

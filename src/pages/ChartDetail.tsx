@@ -3,53 +3,20 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
-import { getTransactions, Transaction } from '@/services/transactionService';
 import { useAuth } from '@/contexts/AuthContext';
 import MobileNav from '@/components/MobileNav';
+import { useTransactions } from '@/hooks/useTransactions';
+import { normalizeDescription, formatCurrency } from '@/utils/transactionUtils';
+import { Transaction } from '@/services/transactionService';
 
 // Colores complementarios a la paleta de la finca
 const COLORS = ['#4D5726', '#6B7B3A', '#3A4219', '#B8860B', '#D9A441'];
-
-// Función para normalizar descripciones similares
-const normalizeDescription = (description: string): string => {
-  if (!description) return 'Sin descripción';
-  
-  const normalized = description.toLowerCase().trim();
-  
-  // Normalizar variaciones de "semana marcos"
-  if (normalized.includes('marcos') && (normalized.includes('semana') || normalized.includes('pago'))) {
-    return 'semana marcos';
-  }
-  
-  // Normalizar variaciones de "gasolina"
-  if (normalized === 'gasolina' || normalized === ' gasolina' || normalized === 'gasolina ') {
-    return 'gasolina';
-  }
-  
-  // Normalizar variaciones de "guadañador" (incluyendo "guarañador")
-  if (normalized === 'guarañador' || normalized === 'guadañador') {
-    return 'guadañador';
-  }
-  
-  // Normalizar variaciones de "gasolina guadaña"
-  if (normalized === 'gasolina guadaña' || normalized === 'gasolina guadaña') {
-    return 'gasolina guadaña';
-  }
-  
-  return description;
-};
 
 const ChartDetail = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   
-  // Fetch transactions data
-  const { data: transactions = [], isLoading } = useQuery({
-    queryKey: ['transactions', user?.id],
-    queryFn: getTransactions,
-    enabled: !!user?.id
-  });
+  const { data: transactions = [], isLoading } = useTransactions();
 
   // Process data for display
   const processedData = React.useMemo(() => {
@@ -107,10 +74,7 @@ const ChartDetail = () => {
                         <span className="font-medium">{description}</span>
                       </div>
                       <span className="font-mono">
-                        {new Intl.NumberFormat('es-ES', { 
-                          style: 'currency', 
-                          currency: 'COP' 
-                        }).format(amount)}
+                        {formatCurrency(amount)}
                       </span>
                     </div>
                   ))

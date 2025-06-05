@@ -1,87 +1,28 @@
 
 import React, { useEffect } from 'react';
-import { ArrowDown, ArrowUp, DollarSign, BanknoteIcon, TrendingDown, TrendingUp } from 'lucide-react';
+import { DollarSign, BanknoteIcon, TrendingDown, TrendingUp } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import CardStat from '@/components/CardStat';
 import ChartMonthlyBalance from '@/components/ChartMonthlyBalance';
 import ChartCategoryDistribution from '@/components/ChartCategoryDistribution';
 import TransactionTable from '@/components/TransactionTable';
 import MobileNav from '@/components/MobileNav';
-import { useQuery } from '@tanstack/react-query';
-import { getTransactions, Transaction } from '@/services/transactionService';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTransactions } from '@/hooks/useTransactions';
+import { useFinancialSummary } from '@/hooks/useFinancialSummary';
+import { formatCurrency } from '@/utils/transactionUtils';
 
 const Dashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   
-  // Add user ID to query key to ensure proper cache invalidation
-  const { data: transactions = [], isLoading } = useQuery({
-    queryKey: ['transactions', user?.id],
-    queryFn: getTransactions,
-    // Only fetch when we have a user
-    enabled: !!user?.id
-  });
+  const { data: transactions = [], isLoading } = useTransactions();
+  const summary = useFinancialSummary(transactions);
 
   useEffect(() => {
     console.log("Dashboard rendered, user:", user?.id);
     console.log("Transaction count:", transactions.length);
   }, [user, transactions]);
-
-  // Calculate financial summary
-  const calculateSummary = () => {
-    if (isLoading || !transactions.length) {
-      return {
-        totalBalance: 0,
-        monthlyIncome: 0,
-        monthlyExpenses: 0,
-        liquidity: 0,
-        incomeTrend: 0,
-        expensesTrend: 0
-      };
-    }
-
-    const currentDate = new Date();
-    const currentMonth = currentDate.getMonth();
-    const currentYear = currentDate.getFullYear();
-
-    const monthlyTransactions = transactions.filter((t: Transaction) => {
-      const transDate = new Date(t.date);
-      return transDate.getMonth() === currentMonth && transDate.getFullYear() === currentYear;
-    });
-
-    const totalIncome = transactions
-      .filter((t: Transaction) => t.type === 'ingreso')
-      .reduce((sum: number, t: Transaction) => sum + Number(t.amount), 0);
-
-    const totalExpenses = transactions
-      .filter((t: Transaction) => t.type === 'gasto')
-      .reduce((sum: number, t: Transaction) => sum + Number(t.amount), 0);
-
-    const monthlyIncome = monthlyTransactions
-      .filter((t: Transaction) => t.type === 'ingreso')
-      .reduce((sum: number, t: Transaction) => sum + Number(t.amount), 0);
-
-    const monthlyExpenses = monthlyTransactions
-      .filter((t: Transaction) => t.type === 'gasto')
-      .reduce((sum: number, t: Transaction) => sum + Number(t.amount), 0);
-
-    return {
-      totalBalance: totalIncome - totalExpenses,
-      monthlyIncome,
-      monthlyExpenses,
-      liquidity: totalIncome - totalExpenses,
-      incomeTrend: 24, // Example value, would need historical data for real calculation
-      expensesTrend: -8 // Example value, would need historical data for real calculation
-    };
-  };
-
-  const summary = calculateSummary();
-
-  // Helper to format currency
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'COP', currencyDisplay: 'symbol' }).format(amount);
-  };
 
   const handleChartClick = () => {
     navigate('/detalle-distribuciones');
