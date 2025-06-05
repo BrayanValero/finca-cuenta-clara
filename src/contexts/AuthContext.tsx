@@ -98,14 +98,30 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signOut = async () => {
     try {
-      await supabase.auth.signOut();
+      console.log("Attempting to sign out...");
+      
+      // Clear local state first to ensure immediate UI update
+      setSession(null);
+      setUser(null);
+      
+      // Navigate immediately to prevent any UI issues
       navigate('/login');
+      
+      // Then attempt to sign out from Supabase
+      // If this fails, the local state is already cleared
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        console.log("Sign out error (but local state already cleared):", error);
+        // Don't show error toast since user is already logged out locally
+      } else {
+        console.log("Successfully signed out from Supabase");
+      }
+      
     } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Error al cerrar sesión",
-        description: error.message || "Ha ocurrido un error. Por favor, inténtalo de nuevo.",
-      });
+      console.log("Sign out error (but local state already cleared):", error);
+      // Even if there's an error, we've already cleared local state and navigated
+      // This ensures the user is always logged out from the UI perspective
     }
   };
 
