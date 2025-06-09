@@ -1,3 +1,4 @@
+
 import { Transaction } from '@/services/transactionService';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -46,14 +47,14 @@ const drawEnhancedChart = (doc: jsPDF, chartData: Array<{name: string, value: nu
   
   // Updated color palette for better contrast and distinction
   const colors = [
-    [77, 87, 38],    // Dark olive green
-    [107, 123, 58],  // Medium olive green
-    [184, 134, 11],  // Golden yellow
-    [217, 164, 65],  // Light golden
-    [139, 69, 19],   // Saddle brown
-    [34, 139, 34],   // Forest green
-    [218, 165, 32],  // Goldenrod
-    [160, 82, 45]    // Sienna
+    [70, 130, 180],   // Steel blue
+    [34, 139, 34],    // Forest green
+    [220, 20, 60],    // Crimson
+    [255, 140, 0],    // Dark orange
+    [138, 43, 226],   // Blue violet
+    [218, 165, 32],   // Goldenrod
+    [46, 139, 87],    // Sea green
+    [205, 92, 92]     // Indian red
   ];
   
   if (chartType === 'pie' && chartData.length > 0) {
@@ -62,7 +63,7 @@ const drawEnhancedChart = (doc: jsPDF, chartData: Array<{name: string, value: nu
     const centerY = startY + 35;
     const radius = 30;
     
-    let currentAngle = 0;
+    let currentAngle = -90; // Start from top (12 o'clock position)
     
     chartData.forEach((item, index) => {
       const sliceAngle = (item.value / total) * 360;
@@ -73,26 +74,46 @@ const drawEnhancedChart = (doc: jsPDF, chartData: Array<{name: string, value: nu
       doc.setDrawColor(0, 0, 0);
       doc.setLineWidth(0.5);
       
-      // Draw pie slice using arc approximation with triangular segments
+      // Convert angles to radians
       const startAngleRad = (currentAngle * Math.PI) / 180;
       const endAngleRad = ((currentAngle + sliceAngle) * Math.PI) / 180;
       
-      // Create multiple points to approximate the arc
-      const segments = Math.max(8, Math.ceil(sliceAngle / 15)); // More segments for smoother arcs
-      const angleStep = (endAngleRad - startAngleRad) / segments;
+      // Calculate start and end points
+      const startX = centerX + Math.cos(startAngleRad) * radius;
+      const startY = centerY + Math.sin(startAngleRad) * radius;
+      const endX = centerX + Math.cos(endAngleRad) * radius;
+      const endY = centerY + Math.sin(endAngleRad) * radius;
       
-      // Draw the pie slice as a series of triangles
-      for (let i = 0; i < segments; i++) {
-        const angle1 = startAngleRad + (i * angleStep);
-        const angle2 = startAngleRad + ((i + 1) * angleStep);
+      // Create path for pie slice
+      doc.setFillColor(color[0], color[1], color[2]);
+      
+      // For small slices, draw as triangle
+      if (sliceAngle < 1) {
+        doc.triangle(centerX, centerY, startX, startY, endX, endY, 'F');
+      } else {
+        // For larger slices, draw proper arc
+        // Move to center
+        doc.line(centerX, centerY, startX, startY);
         
-        const x1 = centerX + Math.cos(angle1) * radius;
-        const y1 = centerY + Math.sin(angle1) * radius;
-        const x2 = centerX + Math.cos(angle2) * radius;
-        const y2 = centerY + Math.sin(angle2) * radius;
+        // Create multiple line segments to approximate the arc
+        const segments = Math.max(3, Math.ceil(sliceAngle / 10));
+        const angleStep = sliceAngle / segments;
         
-        // Draw triangle from center to arc edge
-        doc.triangle(centerX, centerY, x1, y1, x2, y2, 'FD');
+        let prevX = startX;
+        let prevY = startY;
+        
+        for (let i = 1; i <= segments; i++) {
+          const angle = currentAngle + (i * angleStep);
+          const angleRad = (angle * Math.PI) / 180;
+          const x = centerX + Math.cos(angleRad) * radius;
+          const y = centerY + Math.sin(angleRad) * radius;
+          
+          // Draw triangle from center to create filled segment
+          doc.triangle(centerX, centerY, prevX, prevY, x, y, 'F');
+          
+          prevX = x;
+          prevY = y;
+        }
       }
       
       currentAngle += sliceAngle;
@@ -101,7 +122,8 @@ const drawEnhancedChart = (doc: jsPDF, chartData: Array<{name: string, value: nu
     // Draw circle outline for cleaner appearance
     doc.setDrawColor(0, 0, 0);
     doc.setLineWidth(1);
-    doc.circle(centerX, centerY, radius);
+    doc.setFillColor(255, 255, 255, 0); // Transparent fill
+    doc.circle(centerX, centerY, radius, 'S');
   }
   
   // Draw legend with improved formatting
