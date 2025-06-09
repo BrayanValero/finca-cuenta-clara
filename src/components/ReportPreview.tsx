@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -15,8 +14,8 @@ interface ReportPreviewProps {
   type?: 'all' | 'incomes' | 'expenses' | 'descriptions';
 }
 
-// Colores complementarios a la paleta de la finca
-const COLORS = ['#4D5726', '#6B7B3A', '#3A4219', '#B8860B', '#D9A441', '#8B4513', '#228B22', '#DAA520'];
+// Updated color palette for better contrast and distinction
+const COLORS = ['#4D5726', '#6B7B3A', '#B8860B', '#D9A441', '#8B4513', '#228B22', '#DAA520', '#A0522D'];
 
 const ReportPreview: React.FC<ReportPreviewProps> = ({
   transactions,

@@ -1,4 +1,3 @@
-
 import { Transaction } from '@/services/transactionService';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -32,7 +31,7 @@ export const filterTransactions = (transactions: Transaction[], options: Omit<Re
   });
 };
 
-// Generate enhanced chart representation for PDF
+// Generate enhanced chart representation for PDF with proper pie chart segments
 const drawEnhancedChart = (doc: jsPDF, chartData: Array<{name: string, value: number}>, startY: number, chartType: 'pie' | 'bar' = 'pie') => {
   const pageWidth = doc.internal.pageSize.getWidth();
   const chartWidth = 120;
@@ -44,62 +43,90 @@ const drawEnhancedChart = (doc: jsPDF, chartData: Array<{name: string, value: nu
   doc.text('Análisis Gráfico', pageWidth / 2, startY, { align: 'center' });
   
   const total = chartData.reduce((sum, item) => sum + item.value, 0);
-  const colors = ['#4D5726', '#6B7B3A', '#3A4219', '#B8860B', '#D9A441', '#8B4513', '#228B22'];
+  
+  // Updated color palette for better contrast and distinction
+  const colors = [
+    [77, 87, 38],    // Dark olive green
+    [107, 123, 58],  // Medium olive green
+    [184, 134, 11],  // Golden yellow
+    [217, 164, 65],  // Light golden
+    [139, 69, 19],   // Saddle brown
+    [34, 139, 34],   // Forest green
+    [218, 165, 32],  // Goldenrod
+    [160, 82, 45]    // Sienna
+  ];
   
   if (chartType === 'pie' && chartData.length > 0) {
-    // Draw pie chart representation
+    // Draw pie chart with proper segments
     const centerX = chartX + chartWidth / 2;
-    const centerY = startY + 30;
-    const radius = 25;
+    const centerY = startY + 35;
+    const radius = 30;
     
     let currentAngle = 0;
     
     chartData.forEach((item, index) => {
-      const percentage = (item.value / total) * 100;
       const sliceAngle = (item.value / total) * 360;
+      const color = colors[index % colors.length];
       
-      // Draw slice (simplified as a line from center)
-      const angle1 = (currentAngle * Math.PI) / 180;
-      const angle2 = ((currentAngle + sliceAngle) * Math.PI) / 180;
+      // Set fill color for the segment
+      doc.setFillColor(color[0], color[1], color[2]);
+      doc.setDrawColor(0, 0, 0);
+      doc.setLineWidth(0.5);
       
-      const x1 = centerX + Math.cos(angle1) * radius;
-      const y1 = centerY + Math.sin(angle1) * radius;
-      const x2 = centerX + Math.cos(angle2) * radius;
-      const y2 = centerY + Math.sin(angle2) * radius;
+      // Draw pie slice using arc approximation with triangular segments
+      const startAngleRad = (currentAngle * Math.PI) / 180;
+      const endAngleRad = ((currentAngle + sliceAngle) * Math.PI) / 180;
       
-      // Draw lines to represent the slice
-      doc.setDrawColor(colors[index % colors.length]);
-      doc.setLineWidth(3);
-      doc.line(centerX, centerY, x1, y1);
-      doc.line(centerX, centerY, x2, y2);
+      // Create multiple points to approximate the arc
+      const segments = Math.max(8, Math.ceil(sliceAngle / 15)); // More segments for smoother arcs
+      const angleStep = (endAngleRad - startAngleRad) / segments;
+      
+      // Draw the pie slice as a series of triangles
+      for (let i = 0; i < segments; i++) {
+        const angle1 = startAngleRad + (i * angleStep);
+        const angle2 = startAngleRad + ((i + 1) * angleStep);
+        
+        const x1 = centerX + Math.cos(angle1) * radius;
+        const y1 = centerY + Math.sin(angle1) * radius;
+        const x2 = centerX + Math.cos(angle2) * radius;
+        const y2 = centerY + Math.sin(angle2) * radius;
+        
+        // Draw triangle from center to arc edge
+        doc.triangle(centerX, centerY, x1, y1, x2, y2, 'FD');
+      }
       
       currentAngle += sliceAngle;
     });
     
-    // Draw circle outline
+    // Draw circle outline for cleaner appearance
     doc.setDrawColor(0, 0, 0);
     doc.setLineWidth(1);
     doc.circle(centerX, centerY, radius);
   }
   
-  // Draw legend
-  let legendY = startY + 70;
+  // Draw legend with improved formatting
+  let legendY = startY + 75;
   chartData.forEach((item, index) => {
     const percentage = (item.value / total) * 100;
     const color = colors[index % colors.length];
     
-    // Draw legend item
-    doc.setFillColor(color);
-    doc.rect(chartX - 40, legendY - 2, 6, 4, 'F');
-    doc.setFontSize(10);
+    // Draw colored rectangle for legend
+    doc.setFillColor(color[0], color[1], color[2]);
+    doc.setDrawColor(0, 0, 0);
+    doc.rect(chartX - 45, legendY - 3, 8, 6, 'FD');
+    
+    doc.setFontSize(9);
     doc.setTextColor(0, 0, 0);
     
     const formatCurrency = (amount: number) => {
       return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'COP' }).format(amount);
     };
     
-    doc.text(`${item.name}: ${formatCurrency(item.value)} (${percentage.toFixed(1)}%)`, chartX - 30, legendY + 1);
-    legendY += 8;
+    // Truncate long names for better display
+    const displayName = item.name.length > 20 ? item.name.substring(0, 20) + '...' : item.name;
+    doc.text(`${displayName}`, chartX - 35, legendY);
+    doc.text(`${formatCurrency(item.value)} (${percentage.toFixed(1)}%)`, chartX - 35, legendY + 4);
+    legendY += 12;
   });
   
   return legendY + 10;
@@ -193,6 +220,32 @@ export const exportToPDF = (options: ReportOptions) => {
           .filter(item => item.value > 0)
           .sort((a, b) => b.value - a.value)
           .slice(0, 6); // Top 6 items
+      } else if (type === 'incomes') {
+        const incomesByDesc = filteredTransactions
+          .filter(t => t.type === 'ingreso')
+          .reduce((acc, t) => {
+            const desc = t.description || 'Sin descripción';
+            acc[desc] = (acc[desc] || 0) + Number(t.amount);
+            return acc;
+          }, {} as Record<string, number>);
+        
+        chartData = Object.entries(incomesByDesc)
+          .map(([name, value]) => ({ name, value }))
+          .sort((a, b) => b.value - a.value)
+          .slice(0, 6);
+      } else if (type === 'expenses') {
+        const expensesByDesc = filteredTransactions
+          .filter(t => t.type === 'gasto')
+          .reduce((acc, t) => {
+            const desc = t.description || 'Sin descripción';
+            acc[desc] = (acc[desc] || 0) + Number(t.amount);
+            return acc;
+          }, {} as Record<string, number>);
+        
+        chartData = Object.entries(expensesByDesc)
+          .map(([name, value]) => ({ name, value }))
+          .sort((a, b) => b.value - a.value)
+          .slice(0, 6);
       } else if (type === 'all') {
         chartData = [
           { name: 'Ingresos', value: totalIncome },
