@@ -70,27 +70,79 @@ const ReportPreview: React.FC<ReportPreviewProps> = ({
       return acc;
     }, {} as Record<string, { income: number; expense: number }>) : null;
 
-  // Prepare chart data for pie chart
-  const pieChartData = React.useMemo(() => {
+  // Prepare chart data based on report type
+  const prepareChartData = () => {
     if (type === 'descriptions' && descriptionSummary) {
       return Object.entries(descriptionSummary)
         .map(([name, values]) => ({
-          name,
+          name: name.length > 15 ? name.substring(0, 15) + '...' : name,
+          fullName: name,
           value: values.expense,
           displayValue: new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'COP' }).format(values.expense)
         }))
         .filter(item => item.value > 0)
-        .sort((a, b) => b.value - a.value);
-    } else if (type === 'all') {
+        .sort((a, b) => b.value - a.value)
+        .slice(0, 8); // Top 8 items for better visibility
+    } else if (type === 'incomes') {
+      // Group incomes by description
+      const incomesByDesc = filteredTransactions
+        .filter(t => t.type === 'ingreso')
+        .reduce((acc, t) => {
+          const desc = t.description || 'Sin descripción';
+          acc[desc] = (acc[desc] || 0) + Number(t.amount);
+          return acc;
+        }, {} as Record<string, number>);
+      
+      return Object.entries(incomesByDesc)
+        .map(([name, value]) => ({
+          name: name.length > 15 ? name.substring(0, 15) + '...' : name,
+          fullName: name,
+          value,
+          displayValue: new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'COP' }).format(value)
+        }))
+        .sort((a, b) => b.value - a.value)
+        .slice(0, 8);
+    } else if (type === 'expenses') {
+      // Group expenses by description
+      const expensesByDesc = filteredTransactions
+        .filter(t => t.type === 'gasto')
+        .reduce((acc, t) => {
+          const desc = t.description || 'Sin descripción';
+          acc[desc] = (acc[desc] || 0) + Number(t.amount);
+          return acc;
+        }, {} as Record<string, number>);
+      
+      return Object.entries(expensesByDesc)
+        .map(([name, value]) => ({
+          name: name.length > 15 ? name.substring(0, 15) + '...' : name,
+          fullName: name,
+          value,
+          displayValue: new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'COP' }).format(value)
+        }))
+        .sort((a, b) => b.value - a.value)
+        .slice(0, 8);
+    } else {
+      // For 'all' type, show income vs expenses
       return [
-        { name: 'Ingresos', value: totalIncome, displayValue: new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'COP' }).format(totalIncome) },
-        { name: 'Gastos', value: totalExpense, displayValue: new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'COP' }).format(totalExpense) }
+        { 
+          name: 'Ingresos', 
+          fullName: 'Ingresos',
+          value: totalIncome, 
+          displayValue: new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'COP' }).format(totalIncome)
+        },
+        { 
+          name: 'Gastos', 
+          fullName: 'Gastos',
+          value: totalExpense, 
+          displayValue: new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'COP' }).format(totalExpense)
+        }
       ].filter(item => item.value > 0);
     }
-    return [];
-  }, [type, descriptionSummary, totalIncome, totalExpense]);
+  };
 
-  // Prepare comparison chart data
+  const chartData = prepareChartData();
+
+  // Prepare comparison chart data for bar chart
   const comparisonData = [
     {
       name: 'Resumen',
@@ -108,6 +160,21 @@ const ReportPreview: React.FC<ReportPreviewProps> = ({
     return type === 'ingreso' ? 
       <TrendingUp className="h-4 w-4 text-green-600" /> : 
       <TrendingDown className="h-4 w-4 text-red-600" />;
+  };
+
+  const CustomTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      return (
+        <div className="bg-background border rounded-lg shadow-lg p-2">
+          <p className="font-medium">{data.fullName}</p>
+          <p className="text-sm text-muted-foreground">
+            {data.displayValue}
+          </p>
+        </div>
+      );
+    }
+    return null;
   };
 
   return (
@@ -128,7 +195,7 @@ const ReportPreview: React.FC<ReportPreviewProps> = ({
             </div>
           ) : (
             <>
-              {/* Summary Chart Section */}
+              {/* Summary Chart Section - Only for 'all' type */}
               {type === 'all' && (
                 <div className="mb-8">
                   <h4 className="text-lg font-semibold mb-4">Comparación Ingresos vs Gastos</h4>
@@ -148,17 +215,20 @@ const ReportPreview: React.FC<ReportPreviewProps> = ({
                 </div>
               )}
 
-              {/* Pie Chart Section */}
-              {pieChartData.length > 0 && type !== 'all' && (
+              {/* Pie Chart Section - For all types when there's data */}
+              {chartData.length > 0 && (
                 <div className="mb-8">
                   <h4 className="text-lg font-semibold mb-4">
-                    {type === 'descriptions' ? 'Distribución por Descripción' : 'Distribución Gráfica'}
+                    {type === 'descriptions' && 'Distribución por Descripción'}
+                    {type === 'incomes' && 'Distribución de Ingresos'}
+                    {type === 'expenses' && 'Distribución de Gastos'}
+                    {type === 'all' && 'Distribución General'}
                   </h4>
                   <div className="h-80">
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
                         <Pie
-                          data={pieChartData}
+                          data={chartData}
                           cx="50%"
                           cy="50%"
                           labelLine={false}
@@ -167,11 +237,11 @@ const ReportPreview: React.FC<ReportPreviewProps> = ({
                           fill="#8884d8"
                           dataKey="value"
                         >
-                          {pieChartData.map((entry, index) => (
+                          {chartData.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                           ))}
                         </Pie>
-                        <Tooltip formatter={(value) => new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'COP' }).format(Number(value))} />
+                        <Tooltip content={<CustomTooltip />} />
                         <Legend />
                       </PieChart>
                     </ResponsiveContainer>
