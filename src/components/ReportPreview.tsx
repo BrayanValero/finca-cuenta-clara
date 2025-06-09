@@ -5,7 +5,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Transaction } from '@/services/transactionService';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
+import { TrendingUp, TrendingDown } from 'lucide-react';
 
 interface ReportPreviewProps {
   transactions: Transaction[];
@@ -70,7 +71,7 @@ const ReportPreview: React.FC<ReportPreviewProps> = ({
     }, {} as Record<string, { income: number; expense: number }>) : null;
 
   // Prepare chart data for pie chart
-  const chartData = React.useMemo(() => {
+  const pieChartData = React.useMemo(() => {
     if (type === 'descriptions' && descriptionSummary) {
       return Object.entries(descriptionSummary)
         .map(([name, values]) => ({
@@ -88,6 +89,26 @@ const ReportPreview: React.FC<ReportPreviewProps> = ({
     }
     return [];
   }, [type, descriptionSummary, totalIncome, totalExpense]);
+
+  // Prepare comparison chart data
+  const comparisonData = [
+    {
+      name: 'Resumen',
+      ingresos: totalIncome,
+      gastos: totalExpense,
+      balance: balance
+    }
+  ];
+
+  const getTransactionTypeDisplay = (type: string) => {
+    return type === 'ingreso' ? 'Ingreso' : 'Gasto';
+  };
+
+  const getTransactionIcon = (type: string) => {
+    return type === 'ingreso' ? 
+      <TrendingUp className="h-4 w-4 text-green-600" /> : 
+      <TrendingDown className="h-4 w-4 text-red-600" />;
+  };
 
   return (
     <div className="space-y-6">
@@ -107,15 +128,37 @@ const ReportPreview: React.FC<ReportPreviewProps> = ({
             </div>
           ) : (
             <>
-              {/* Chart Section */}
-              {chartData.length > 0 && (
+              {/* Summary Chart Section */}
+              {type === 'all' && (
                 <div className="mb-8">
-                  <h4 className="text-lg font-semibold mb-4">Distribución Gráfica</h4>
+                  <h4 className="text-lg font-semibold mb-4">Comparación Ingresos vs Gastos</h4>
+                  <div className="h-80">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={comparisonData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="name" />
+                        <YAxis tickFormatter={(value) => `$${value.toLocaleString()}`} />
+                        <Tooltip formatter={(value) => new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'COP' }).format(Number(value))} />
+                        <Legend />
+                        <Bar dataKey="ingresos" fill="#4D5726" name="Ingresos" />
+                        <Bar dataKey="gastos" fill="#B8860B" name="Gastos" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              )}
+
+              {/* Pie Chart Section */}
+              {pieChartData.length > 0 && type !== 'all' && (
+                <div className="mb-8">
+                  <h4 className="text-lg font-semibold mb-4">
+                    {type === 'descriptions' ? 'Distribución por Descripción' : 'Distribución Gráfica'}
+                  </h4>
                   <div className="h-80">
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
                         <Pie
-                          data={chartData}
+                          data={pieChartData}
                           cx="50%"
                           cy="50%"
                           labelLine={false}
@@ -124,7 +167,7 @@ const ReportPreview: React.FC<ReportPreviewProps> = ({
                           fill="#8884d8"
                           dataKey="value"
                         >
-                          {chartData.map((entry, index) => (
+                          {pieChartData.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                           ))}
                         </Pie>
@@ -169,6 +212,7 @@ const ReportPreview: React.FC<ReportPreviewProps> = ({
                   <TableHeader>
                     <TableRow>
                       <TableHead>Fecha</TableHead>
+                      <TableHead>Tipo</TableHead>
                       <TableHead>Descripción</TableHead>
                       <TableHead className="text-right">Monto</TableHead>
                     </TableRow>
@@ -177,8 +221,16 @@ const ReportPreview: React.FC<ReportPreviewProps> = ({
                     {filteredTransactions.map((transaction) => (
                       <TableRow key={transaction.id}>
                         <TableCell>{format(new Date(transaction.date), 'dd/MM/yyyy')}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            {getTransactionIcon(transaction.type)}
+                            <span className={transaction.type === 'ingreso' ? 'text-green-600 font-medium' : 'text-red-600 font-medium'}>
+                              {getTransactionTypeDisplay(transaction.type)}
+                            </span>
+                          </div>
+                        </TableCell>
                         <TableCell>{transaction.description || '-'}</TableCell>
-                        <TableCell className={`text-right ${transaction.type === 'ingreso' ? 'text-green-600' : 'text-red-600'}`}>
+                        <TableCell className={`text-right font-medium ${transaction.type === 'ingreso' ? 'text-green-600' : 'text-red-600'}`}>
                           {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'COP' }).format(Number(transaction.amount))}
                         </TableCell>
                       </TableRow>
