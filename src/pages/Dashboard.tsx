@@ -1,88 +1,85 @@
 
-import React, { useEffect } from 'react';
-import { DollarSign, BanknoteIcon, TrendingDown, TrendingUp } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useTransactions } from '@/hooks/useTransactions';
+import { useFinancialSummary } from '@/hooks/useFinancialSummary';
 import CardStat from '@/components/CardStat';
 import ChartMonthlyBalance from '@/components/ChartMonthlyBalance';
 import ChartCategoryDistribution from '@/components/ChartCategoryDistribution';
-import TransactionTable from '@/components/TransactionTable';
-import MobileNav from '@/components/MobileNav';
-import { useAuth } from '@/contexts/AuthContext';
-import { useTransactions } from '@/hooks/useTransactions';
-import { useFinancialSummary } from '@/hooks/useFinancialSummary';
-import { formatCurrency } from '@/utils/transactionUtils';
+import LastSessionInfo from '@/components/LastSessionInfo';
+import { DollarSign, TrendingUp, TrendingDown, PiggyBank } from 'lucide-react';
 
 const Dashboard = () => {
-  const { user } = useAuth();
-  const navigate = useNavigate();
-  
   const { data: transactions = [], isLoading } = useTransactions();
-  const summary = useFinancialSummary(transactions);
+  const { totalIncome, totalExpenses, currentBalance, monthlyData } = useFinancialSummary(transactions);
 
-  useEffect(() => {
-    console.log("Dashboard rendered, user:", user?.id);
-    console.log("Transaction count:", transactions.length);
-  }, [user, transactions]);
-
-  const handleChartClick = () => {
-    navigate('/detalle-distribuciones');
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('es-ES', { 
+      style: 'currency', 
+      currency: 'COP',
+      currencyDisplay: 'symbol'
+    })
+    .format(amount)
+    .replace('COP', '$');
   };
 
+  if (isLoading) {
+    return <div className="flex items-center justify-center h-64">Cargando...</div>;
+  }
+
   return (
-    <>
-      <MobileNav />
-      <div className="space-y-8">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight">Panel</h2>
-          <p className="text-muted-foreground">Resumen financiero de tu finca</p>
-        </div>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Panel Principal</h1>
+        <p className="text-muted-foreground">
+          Resumen financiero de tu finca
+        </p>
+      </div>
 
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <CardStat
-            title="Balance Total"
-            value={formatCurrency(summary.totalBalance)}
-            icon={<DollarSign className="h-4 w-4" />}
-            className="bg-white dark:bg-farm-green"
-          />
-          <CardStat
-            title="Ingresos Mensuales"
-            value={formatCurrency(summary.monthlyIncome)}
-            icon={<TrendingUp className="h-4 w-4 text-green-500" />}
-            trend={summary.incomeTrend}
-            className="bg-white dark:bg-farm-green"
-          />
-          <CardStat
-            title="Gastos Mensuales"
-            value={formatCurrency(summary.monthlyExpenses)}
-            icon={<TrendingDown className="h-4 w-4 text-red-500" />}
-            trend={summary.expensesTrend}
-            className="bg-white dark:bg-farm-green"
-          />
-          <CardStat
-            title="Liquidez"
-            value={formatCurrency(summary.liquidity)}
-            icon={<BanknoteIcon className="h-4 w-4" />}
-            className="bg-white dark:bg-farm-green"
-          />
-        </div>
+      {/* Statistics Cards */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <CardStat
+          title="Balance Actual"
+          value={formatCurrency(currentBalance)}
+          icon={DollarSign}
+          trend={currentBalance >= 0 ? "up" : "down"}
+          description={currentBalance >= 0 ? "Balance positivo" : "Balance negativo"}
+        />
+        <CardStat
+          title="Total Ingresos"
+          value={formatCurrency(totalIncome)}
+          icon={TrendingUp}
+          trend="up"
+          description="Ingresos totales"
+        />
+        <CardStat
+          title="Total Gastos"
+          value={formatCurrency(totalExpenses)}
+          icon={TrendingDown}
+          trend="down"
+          description="Gastos totales"
+        />
+        <CardStat
+          title="Diferencia"
+          value={formatCurrency(totalIncome - totalExpenses)}
+          icon={PiggyBank}
+          trend={totalIncome >= totalExpenses ? "up" : "down"}
+          description="Ingresos - Gastos"
+        />
+      </div>
 
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          <ChartMonthlyBalance transactions={transactions} />
-          <ChartCategoryDistribution 
-            title="Distribución de gastos" 
-            type="gastos" 
-            transactions={transactions}
-            showLegend={false} 
-            onClick={handleChartClick}
-          />
-        </div>
+      {/* Charts Row */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <ChartMonthlyBalance data={monthlyData} />
+        <ChartCategoryDistribution transactions={transactions} />
+      </div>
 
-        <div className="space-y-4">
-          <h3 className="text-xl font-bold">Últimas Transacciones</h3>
-          <TransactionTable />
+      {/* Session Info */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <LastSessionInfo />
+        <div className="flex items-center justify-center p-8 border-2 border-dashed rounded-lg">
+          <p className="text-sm text-muted-foreground">Espacio disponible para futuras funcionalidades</p>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 
