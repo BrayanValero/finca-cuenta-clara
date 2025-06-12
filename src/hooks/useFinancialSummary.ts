@@ -21,9 +21,9 @@ export const useFinancialSummary = (transactions: Transaction[]) => {
       };
     }
 
-    const currentDate = new Date();
-    const currentMonth = currentDate.getMonth();
-    const currentYear = currentDate.getFullYear();
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
 
     const monthlyTransactions = transactions.filter((t: Transaction) => {
       const transDate = new Date(t.date);
@@ -54,14 +54,14 @@ export const useFinancialSummary = (transactions: Transaction[]) => {
     const maxDate = new Date(Math.max(...dates.map(d => d.getTime())));
     
     const monthlyData: any[] = [];
-    let currentDate = startOfMonth(minDate);
+    let iterationDate = startOfMonth(minDate);
     const endDate = endOfMonth(maxDate);
     
-    while (currentDate <= endDate) {
-      const monthIndex = currentDate.getMonth();
-      const year = currentDate.getFullYear();
-      const monthName = format(currentDate, 'MMMM', { locale: es });
-      const monthYear = format(currentDate, 'MMM yyyy', { locale: es });
+    while (iterationDate <= endDate) {
+      const monthIndex = iterationDate.getMonth();
+      const year = iterationDate.getFullYear();
+      const monthName = format(iterationDate, 'MMMM', { locale: es });
+      const monthYear = format(iterationDate, 'MMM yyyy', { locale: es });
       
       monthlyData.push({
         month: monthName.charAt(0).toUpperCase() + monthName.slice(1),
@@ -72,7 +72,7 @@ export const useFinancialSummary = (transactions: Transaction[]) => {
         year
       });
       
-      currentDate = new Date(year, monthIndex + 1, 1);
+      iterationDate = new Date(year, monthIndex + 1, 1);
     }
     
     // Fill in transaction data
