@@ -39,36 +39,36 @@ const Dashboard = () => {
         <CardStat
           title="Balance Actual"
           value={formatCurrency(currentBalance)}
-          icon={DollarSign}
-          trend={currentBalance >= 0 ? "up" : "down"}
+          icon={<DollarSign className="h-4 w-4" />}
+          trend={currentBalance >= 0 ? 5 : -5}
           description={currentBalance >= 0 ? "Balance positivo" : "Balance negativo"}
         />
         <CardStat
           title="Total Ingresos"
           value={formatCurrency(totalIncome)}
-          icon={TrendingUp}
-          trend="up"
+          icon={<TrendingUp className="h-4 w-4" />}
+          trend={10}
           description="Ingresos totales"
         />
         <CardStat
           title="Total Gastos"
           value={formatCurrency(totalExpenses)}
-          icon={TrendingDown}
-          trend="down"
+          icon={<TrendingDown className="h-4 w-4" />}
+          trend={-8}
           description="Gastos totales"
         />
         <CardStat
           title="Diferencia"
           value={formatCurrency(totalIncome - totalExpenses)}
-          icon={PiggyBank}
-          trend={totalIncome >= totalExpenses ? "up" : "down"}
+          icon={<PiggyBank className="h-4 w-4" />}
+          trend={totalIncome >= totalExpenses ? 15 : -12}
           description="Ingresos - Gastos"
         />
       </div>
 
       {/* Charts Row */}
       <div className="grid gap-4 md:grid-cols-2">
-        <ChartMonthlyBalance data={monthlyData} />
+        <ChartMonthlyBalance transactions={transactions} />
         <ChartCategoryDistribution transactions={transactions} />
       </div>
 
