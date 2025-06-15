@@ -1,4 +1,3 @@
-
 import React, { useRef, useState } from "react";
 import { UserCircle, Edit, Image as ImageIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -9,13 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
 
-// Este componente ahora se actualiza con datos persistentes
-interface Props {
-  currentName: string;
-  currentPhotoUrl?: string;
-}
-
-const PersonalProfileForm: React.FC<Props> = () => {
+const PersonalProfileForm: React.FC = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const { profile, loading, updateProfile } = useProfile(user?.id);

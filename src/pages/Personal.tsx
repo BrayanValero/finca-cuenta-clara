@@ -1,3 +1,4 @@
+
 import React from "react";
 import { UserCircle, LogOut, Star } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
