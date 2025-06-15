@@ -25,7 +25,7 @@ const MobileNav: React.FC = () => {
         <AppLogo />
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild>
-            <button className="p-2">
+            <button className="p-2 transition-transform duration-150 hover:scale-110">
               <Menu size={24} />
             </button>
           </SheetTrigger>
@@ -34,102 +34,101 @@ const MobileNav: React.FC = () => {
               <div className="p-4 border-b border-farm-darkgreen/20 dark:border-farm-lightgreen/20">
                 <AppLogo />
               </div>
-              
               <nav className="flex-1 p-4">
                 <ul className="space-y-2">
                   <li>
                     <Link 
                       to="/"
-                      className={`flex items-center p-2 rounded-md transition-colors ${
+                      className={`flex items-center p-2 rounded-md transition-all hover-scale ${
                         isActive("/") 
                           ? "bg-farm-lightgreen text-white" 
                           : "hover:bg-farm-lightgreen/30"
                       }`}
                       onClick={() => setOpen(false)}
                     >
-                      <Home size={20} className="mr-3" />
+                      <Home size={20} className="mr-3 transition-transform duration-200 group-hover:scale-110" />
                       <span>Panel</span>
                     </Link>
                   </li>
                   <li>
                     <Link 
                       to="/transacciones"
-                      className={`flex items-center p-2 rounded-md transition-colors ${
+                      className={`flex items-center p-2 rounded-md transition-all hover-scale ${
                         isActive("/transacciones") 
                           ? "bg-farm-lightgreen text-white" 
                           : "hover:bg-farm-lightgreen/30"
                       }`}
                       onClick={() => setOpen(false)}
                     >
-                      <PlusCircle size={20} className="mr-3" />
+                      <PlusCircle size={20} className="mr-3 transition-transform duration-200 group-hover:scale-110" />
                       <span>Transacciones</span>
                     </Link>
                   </li>
                   <li>
                     <Link 
                       to="/prestamos"
-                      className={`flex items-center p-2 rounded-md transition-colors ${
+                      className={`flex items-center p-2 rounded-md transition-all hover-scale ${
                         isActive("/prestamos") 
                           ? "bg-farm-lightgreen text-white" 
                           : "hover:bg-farm-lightgreen/30"
                       }`}
                       onClick={() => setOpen(false)}
                     >
-                      <DollarSign size={20} className="mr-3" />
+                      <DollarSign size={20} className="mr-3 transition-transform duration-200 group-hover:scale-110" />
                       <span>Préstamos</span>
                     </Link>
                   </li>
                   <li>
                     <Link 
                       to="/estadisticas"
-                      className={`flex items-center p-2 rounded-md transition-colors ${
+                      className={`flex items-center p-2 rounded-md transition-all hover-scale ${
                         isActive("/estadisticas") 
                           ? "bg-farm-lightgreen text-white" 
                           : "hover:bg-farm-lightgreen/30"
                       }`}
                       onClick={() => setOpen(false)}
                     >
-                      <BarChart3 size={20} className="mr-3" />
+                      <BarChart3 size={20} className="mr-3 transition-transform duration-200 group-hover:scale-110" />
                       <span>Estadísticas</span>
                     </Link>
                   </li>
                   <li>
                     <Link 
                       to="/informes"
-                      className={`flex items-center p-2 rounded-md transition-colors ${
+                      className={`flex items-center p-2 rounded-md transition-all hover-scale ${
                         isActive("/informes") 
                           ? "bg-farm-lightgreen text-white" 
                           : "hover:bg-farm-lightgreen/30"
                       }`}
                       onClick={() => setOpen(false)}
                     >
-                      <FileText size={20} className="mr-3" />
+                      <FileText size={20} className="mr-3 transition-transform duration-200 group-hover:scale-110" />
                       <span>Informes</span>
                     </Link>
                   </li>
                   <li>
                     <Link 
                       to="/personal"
-                      className={`flex items-center p-2 rounded-md transition-colors ${
+                      className={`flex items-center p-2 rounded-md transition-all hover-scale ${
                         isActive("/personal") 
                           ? "bg-farm-lightgreen text-white" 
                           : "hover:bg-farm-lightgreen/30"
                       }`}
                       onClick={() => setOpen(false)}
                     >
-                      <UserCircle size={20} className="mr-3" />
+                      <UserCircle size={20} className="mr-3 transition-transform duration-200 group-hover:scale-110" />
                       <span>Personal</span>
                     </Link>
                   </li>
                 </ul>
               </nav>
-              
               <div className="p-4 border-t border-farm-darkgreen/20 dark:border-farm-lightgreen/20">
                 <button 
                   onClick={handleSignOut} 
-                  className="flex items-center p-2 w-full rounded-md transition-colors hover:bg-farm-lightgreen/30"
+                  className="flex items-center p-2 w-full rounded-md transition-all hover:bg-farm-lightgreen/30 hover:scale-105 focus:scale-105"
+                  style={{ transitionProperty: 'background, transform' }}
                 >
-                  <LogOut size={20} className="mr-3" />
+                  <LogOut size={20} className="mr-3 transition-transform duration-200 group-hover:scale-110" />
                   <span>Cerrar Sesión</span>
                 </button>
               </div>

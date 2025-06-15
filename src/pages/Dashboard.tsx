@@ -44,7 +44,7 @@ const Dashboard = () => {
     <>
       <MobileNav />
       <div className="space-y-8">
-        <div>
+        <div className="fade-in">
           <h2 className="text-3xl font-bold tracking-tight">Panel</h2>
           <p className="text-muted-foreground">Resumen financiero de tu finca</p>
         </div>
@@ -54,49 +54,55 @@ const Dashboard = () => {
             title="Balance Total"
             value={formatCurrency(summary.totalBalance)}
             icon={<DollarSign className="h-4 w-4" />}
-            className="bg-white dark:bg-farm-green"
+            className="bg-white dark:bg-farm-green fade-in"
           />
           <CardStat
             title="Ingresos Mensuales"
             value={formatCurrency(summary.monthlyIncome)}
             icon={<TrendingUp className="h-4 w-4 text-green-500" />}
             trend={summary.incomeTrend}
-            className="bg-white dark:bg-farm-green"
+            className="bg-white dark:bg-farm-green fade-in"
           />
           <CardStat
             title="Gastos Mensuales"
             value={formatCurrency(summary.monthlyExpenses)}
             icon={<TrendingDown className="h-4 w-4 text-red-500" />}
             trend={summary.expensesTrend}
-            className="bg-white dark:bg-farm-green"
+            className="bg-white dark:bg-farm-green fade-in"
           />
           <CardStat
             title="Liquidez"
             value={formatCurrency(summary.liquidity)}
             icon={<BanknoteIcon className="h-4 w-4" />}
-            className="bg-white dark:bg-farm-green"
+            className="bg-white dark:bg-farm-green fade-in"
           />
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <ChartMonthlyBalance transactions={transactions} />
-          <ChartCategoryDistribution 
-            title="Distribución de gastos" 
-            type="gastos" 
-            transactions={transactions}
-            showLegend={false} 
-            onClick={handleExpenseChartClick}
-          />
-          <ChartCategoryDistribution 
-            title="Distribución de ingresos" 
-            type="ingresos" 
-            transactions={transactions}
-            showLegend={false} 
-            onClick={handleIncomeChartClick}
-          />
+          <div className="fade-in">
+            <ChartMonthlyBalance transactions={transactions} />
+          </div>
+          <div className="fade-in">
+            <ChartCategoryDistribution 
+              title="Distribución de gastos" 
+              type="gastos" 
+              transactions={transactions}
+              showLegend={false} 
+              onClick={handleExpenseChartClick}
+            />
+          </div>
+          <div className="fade-in">
+            <ChartCategoryDistribution 
+              title="Distribución de ingresos" 
+              type="ingresos" 
+              transactions={transactions}
+              showLegend={false} 
+              onClick={handleIncomeChartClick}
+            />
+          </div>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-4 fade-in">
           <h3 className="text-xl font-bold">Últimas Transacciones</h3>
           <TransactionTable />
         </div>
