@@ -1,4 +1,3 @@
-
 // Función para normalizar descripciones similares
 export const normalizeDescription = (description: string): string => {
   if (!description) return 'Sin descripción';
@@ -25,7 +24,8 @@ export const normalizeDescription = (description: string): string => {
     return 'gasolina guadaña';
   }
   
-  return description;
+  // Devolver la descripción original normalizada a minúsculas
+  return normalized;
 };
 
 // Función para formatear moneda
