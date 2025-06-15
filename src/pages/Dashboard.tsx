@@ -74,11 +74,18 @@ const Dashboard = () => {
           />
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <ChartMonthlyBalance transactions={transactions} />
           <ChartCategoryDistribution 
             title="Distribución de gastos" 
             type="gastos" 
+            transactions={transactions}
+            showLegend={false} 
+            onClick={handleChartClick}
+          />
+          <ChartCategoryDistribution 
+            title="Distribución de ingresos" 
+            type="ingresos" 
             transactions={transactions}
             showLegend={false} 
             onClick={handleChartClick}
