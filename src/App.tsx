@@ -14,7 +14,6 @@ import ChartDetail from "./pages/ChartDetail";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import Personal from "./pages/Personal";
-import Documentacion from "./pages/Documentacion";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { LanguageProvider } from "./contexts/LanguageContext";
 
@@ -57,7 +56,6 @@ const AppRoutes = () => {
         <Route path="/prestamos" element={<Loans />} />
         <Route path="/detalle-distribuciones" element={<ChartDetail />} />
         <Route path="/personal" element={<Personal />} />
-        <Route path="/documentacion" element={<Documentacion />} />
       </Route>
       
       {/* Ruta 404 */}
