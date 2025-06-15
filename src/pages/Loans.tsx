@@ -3,23 +3,23 @@ import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import LoanForm from '@/components/LoanForm';
 import LoanTable from '@/components/LoanTable';
-// Eliminado: import MobileNav from '@/components/MobileNav';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const Loans = () => {
+  const { t } = useLanguage();
   return (
     <>
-      {/* Eliminado: <MobileNav /> */}
       <div className="space-y-8">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Préstamos</h2>
-          <p className="text-muted-foreground">Gestiona los préstamos recibidos y otorgados</p>
+          <h2 className="text-3xl font-bold tracking-tight">{t('loans')}</h2>
+          <p className="text-muted-foreground">{t('manageLoans') || 'Gestiona los préstamos recibidos y otorgados'}</p>
         </div>
 
         <Tabs defaultValue="listado" className="space-y-6">
           <TabsList>
-            <TabsTrigger value="listado">Listado de Préstamos</TabsTrigger>
-            <TabsTrigger value="pendientes">Préstamos Pendientes</TabsTrigger>
-            <TabsTrigger value="agregar">Registrar Préstamo</TabsTrigger>
+            <TabsTrigger value="listado">{t('loansListing') || 'Listado de Préstamos'}</TabsTrigger>
+            <TabsTrigger value="pendientes">{t('pendingLoans') || 'Préstamos Pendientes'}</TabsTrigger>
+            <TabsTrigger value="agregar">{t('registerLoan') || 'Registrar Préstamo'}</TabsTrigger>
           </TabsList>
           
           <TabsContent value="listado" className="space-y-6">
@@ -32,7 +32,7 @@ const Loans = () => {
           
           <TabsContent value="agregar" className="space-y-6">
             <div className="max-w-2xl mx-auto bg-white dark:bg-farm-green p-6 rounded-lg shadow-sm">
-              <h3 className="text-xl font-bold mb-4">Nuevo Préstamo</h3>
+              <h3 className="text-xl font-bold mb-4">{t('newLoan') || 'Nuevo Préstamo'}</h3>
               <LoanForm />
             </div>
           </TabsContent>
@@ -43,4 +43,3 @@ const Loans = () => {
 };
 
 export default Loans;
-
