@@ -22,7 +22,7 @@ const MobileNav: React.FC = () => {
         <AppLogo />
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild>
-            <button className="p-2">
+            <button className="p-2 text-slate-200">
               <Menu size={24} />
             </button>
           </SheetTrigger>
