@@ -1,4 +1,3 @@
-
 import React from "react";
 import { UserCircle, LogOut, Star } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -59,6 +58,7 @@ const Personal: React.FC = () => {
             Aquí podrás gestionar tu información personal, configurar tus preferencias y descubrir futuras funciones relacionadas con tu perfil.
           </p>
         </div>
+        {/* Mensaje sobre futuras funciones */}
         <div className="mt-5 text-[13px] italic text-muted-foreground text-center opacity-90">
           Próximamente: edición de perfil, preferencias y mucho más.
         </div>
