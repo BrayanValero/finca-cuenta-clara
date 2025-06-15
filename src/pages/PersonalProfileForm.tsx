@@ -1,4 +1,3 @@
-
 import React, { useRef, useState } from "react";
 import { UserCircle, Edit, Image as ImageIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -41,12 +40,12 @@ const PersonalProfileForm: React.FC<Props> = ({ currentName, currentPhotoUrl }) 
     <div className="w-full max-w-sm mx-auto bg-muted/30 rounded-xl p-4 mt-6 mb-4 shadow-inner">
       <form onSubmit={handleSubmit} className="flex flex-col items-center gap-4">
         <div className="relative group">
-          <Avatar className="w-24 h-24 mb-0 border-4 border-farm-lightgreen shadow">
+          <Avatar className="w-32 h-32 mb-0 border-4 border-farm-lightgreen shadow">
             {photoPreview ? (
               <AvatarImage src={photoPreview} alt={name} className="object-cover" />
             ) : (
               <AvatarFallback>
-                <UserCircle size={56} />
+                <UserCircle size={64} />
               </AvatarFallback>
             )}
           </Avatar>
@@ -59,7 +58,7 @@ const PersonalProfileForm: React.FC<Props> = ({ currentName, currentPhotoUrl }) 
               onClick={() => fileRef.current?.click()}
               aria-label="Cambiar foto"
             >
-              <ImageIcon size={18} />
+              <ImageIcon size={20} />
             </Button>
           )}
           <input

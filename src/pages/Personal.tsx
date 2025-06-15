@@ -1,8 +1,10 @@
+
 import React from "react";
-import { UserCircle } from "lucide-react";
+import { UserCircle, LogOut } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import PersonalProfileForm from "./PersonalProfileForm";
+import { Button } from "@/components/ui/button";
 
 const NAME_BY_EMAIL: { [email: string]: string } = {
   "brayanvalero0021@gmail.com": "Brayan Andres Valero",
@@ -15,7 +17,7 @@ const IMAGE_BY_EMAIL: { [email: string]: string } = {
 };
 
 const Personal: React.FC = () => {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const email = user?.email ?? "";
   const fullName = NAME_BY_EMAIL[email] || email || "Usuario";
   const photoUrl = IMAGE_BY_EMAIL[email];
@@ -24,6 +26,17 @@ const Personal: React.FC = () => {
     <div className="flex flex-col items-center justify-center h-full p-8 bg-white dark:bg-farm-darkgreen rounded-xl shadow-md">
       <h1 className="text-3xl font-bold text-farm-green dark:text-farm-beige mb-2">Sección Personal</h1>
       <PersonalProfileForm currentName={fullName} currentPhotoUrl={photoUrl} />
+
+      <Button
+        variant="destructive"
+        size="lg"
+        className="mt-4 mb-2 flex items-center gap-2"
+        onClick={signOut}
+      >
+        <LogOut className="inline-block" size={20} />
+        Cerrar sesión
+      </Button>
+
       <div className="flex flex-col items-center mb-4 mt-0">
         {email && (
           <span className="text-base text-farm-darkgreen/80 dark:text-farm-lightgreen/80">
