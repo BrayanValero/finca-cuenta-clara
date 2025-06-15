@@ -1,11 +1,14 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Transaction } from '@/services/transactionService';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
-import { TrendingUp, TrendingDown } from 'lucide-react';
+import { useReportData } from '@/hooks/useReportData';
+import ReportChart from '@/components/reports/ReportChart';
+import ReportTable from '@/components/reports/ReportTable';
+import ReportDescriptionsTable from '@/components/reports/ReportDescriptionsTable';
+import ReportSummary from '@/components/reports/ReportSummary';
 
 interface ReportPreviewProps {
   transactions: Transaction[];
@@ -14,185 +17,23 @@ interface ReportPreviewProps {
   type?: 'all' | 'incomes' | 'expenses' | 'descriptions';
 }
 
-// Updated color palette for better contrast and distinction
-const COLORS = ['#4D5726', '#6B7B3A', '#B8860B', '#D9A441', '#8B4513', '#228B22', '#DAA520', '#A0522D'];
-
 const ReportPreview: React.FC<ReportPreviewProps> = ({
   transactions,
   title,
   dateRange,
   type = 'all',
 }) => {
-  // Filter transactions based on date range and type
-  const filteredTransactions = transactions.filter((transaction) => {
-    const transactionDate = new Date(transaction.date);
-    
-    // Filter by date range if provided
-    if (dateRange?.start && transactionDate < dateRange.start) return false;
-    if (dateRange?.end && transactionDate > dateRange.end) return false;
-    
-    // Filter by transaction type
-    if (type === 'incomes' && transaction.type !== 'ingreso') return false;
-    if (type === 'expenses' && transaction.type !== 'gasto') return false;
-    
-    return true;
-  });
+  const reportData = useReportData({ transactions, dateRange, type });
 
-  // Sort transactions by date for balance calculation
-  const sortedTransactions = [...filteredTransactions].sort((a, b) => 
-    new Date(a.date).getTime() - new Date(b.date).getTime()
-  );
-
-  // Calculate running balance for each transaction
-  const transactionsWithBalance = sortedTransactions.map((transaction, index) => {
-    const previousTransactions = sortedTransactions.slice(0, index + 1);
-    const balance = previousTransactions.reduce((acc, t) => {
-      return t.type === 'ingreso' ? acc + Number(t.amount) : acc - Number(t.amount);
-    }, 0);
-    
-    return {
-      ...transaction,
-      runningBalance: balance
-    };
-  });
-
-  // Calculate totals
-  const totalIncome = filteredTransactions
-    .filter(t => t.type === 'ingreso')
-    .reduce((sum, t) => sum + Number(t.amount), 0);
-    
-  const totalExpense = filteredTransactions
-    .filter(t => t.type === 'gasto')
-    .reduce((sum, t) => sum + Number(t.amount), 0);
-    
-  const balance = totalIncome - totalExpense;
-
-  // Group by description for description type
-  const descriptionSummary = type === 'descriptions' ? 
-    filteredTransactions.reduce((acc, transaction) => {
-      const description = transaction.description || 'Sin descripción';
-      if (!acc[description]) {
-        acc[description] = {
-          income: 0,
-          expense: 0
-        };
-      }
-      
-      if (transaction.type === 'ingreso') {
-        acc[description].income += Number(transaction.amount);
-      } else {
-        acc[description].expense += Number(transaction.amount);
-      }
-      
-      return acc;
-    }, {} as Record<string, { income: number; expense: number }>) : null;
-
-  // Prepare chart data based on report type
-  const prepareChartData = () => {
-    if (type === 'descriptions' && descriptionSummary) {
-      return Object.entries(descriptionSummary)
-        .map(([name, values]) => ({
-          name: name.length > 15 ? name.substring(0, 15) + '...' : name,
-          fullName: name,
-          value: values.expense,
-          displayValue: new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'COP' }).format(values.expense)
-        }))
-        .filter(item => item.value > 0)
-        .sort((a, b) => b.value - a.value)
-        .slice(0, 8); // Top 8 items for better visibility
-    } else if (type === 'incomes') {
-      // Group incomes by description
-      const incomesByDesc = filteredTransactions
-        .filter(t => t.type === 'ingreso')
-        .reduce((acc, t) => {
-          const desc = t.description || 'Sin descripción';
-          acc[desc] = (acc[desc] || 0) + Number(t.amount);
-          return acc;
-        }, {} as Record<string, number>);
-      
-      return Object.entries(incomesByDesc)
-        .map(([name, value]) => ({
-          name: name.length > 15 ? name.substring(0, 15) + '...' : name,
-          fullName: name,
-          value,
-          displayValue: new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'COP' }).format(value)
-        }))
-        .sort((a, b) => b.value - a.value)
-        .slice(0, 8);
-    } else if (type === 'expenses') {
-      // Group expenses by description
-      const expensesByDesc = filteredTransactions
-        .filter(t => t.type === 'gasto')
-        .reduce((acc, t) => {
-          const desc = t.description || 'Sin descripción';
-          acc[desc] = (acc[desc] || 0) + Number(t.amount);
-          return acc;
-        }, {} as Record<string, number>);
-      
-      return Object.entries(expensesByDesc)
-        .map(([name, value]) => ({
-          name: name.length > 15 ? name.substring(0, 15) + '...' : name,
-          fullName: name,
-          value,
-          displayValue: new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'COP' }).format(value)
-        }))
-        .sort((a, b) => b.value - a.value)
-        .slice(0, 8);
-    } else {
-      // For 'all' type, show income vs expenses
-      return [
-        { 
-          name: 'Ingresos', 
-          fullName: 'Ingresos',
-          value: totalIncome, 
-          displayValue: new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'COP' }).format(totalIncome)
-        },
-        { 
-          name: 'Gastos', 
-          fullName: 'Gastos',
-          value: totalExpense, 
-          displayValue: new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'COP' }).format(totalExpense)
-        }
-      ].filter(item => item.value > 0);
-    }
-  };
-
-  const chartData = prepareChartData();
-
-  // Prepare comparison chart data for bar chart
-  const comparisonData = [
-    {
-      name: 'Resumen',
-      ingresos: totalIncome,
-      gastos: totalExpense,
-      balance: balance
-    }
-  ];
-
-  const getTransactionTypeDisplay = (type: string) => {
-    return type === 'ingreso' ? 'Ingreso' : 'Gasto';
-  };
-
-  const getTransactionIcon = (type: string) => {
-    return type === 'ingreso' ? 
-      <TrendingUp className="h-4 w-4 text-green-600" /> : 
-      <TrendingDown className="h-4 w-4 text-red-600" />;
-  };
-
-  const CustomTooltip = ({ active, payload }: any) => {
-    if (active && payload && payload.length) {
-      const data = payload[0].payload;
-      return (
-        <div className="bg-background border rounded-lg shadow-lg p-2">
-          <p className="font-medium">{data.fullName}</p>
-          <p className="text-sm text-muted-foreground">
-            {data.displayValue}
-          </p>
-        </div>
-      );
-    }
-    return null;
-  };
+  const {
+    filteredTransactions,
+    transactionsWithBalance,
+    totalIncome,
+    totalExpense,
+    balance,
+    descriptionSummary,
+    chartData
+  } = reportData;
 
   return (
     <div className="space-y-6">
@@ -212,144 +53,26 @@ const ReportPreview: React.FC<ReportPreviewProps> = ({
             </div>
           ) : (
             <>
-              {/* Summary Chart Section - Only for 'all' type */}
-              {type === 'all' && (
-                <div className="mb-8">
-                  <h4 className="text-lg font-semibold mb-4">Comparación Ingresos vs Gastos</h4>
-                  <div className="h-80">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={comparisonData}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="name" />
-                        <YAxis tickFormatter={(value) => `$${value.toLocaleString()}`} />
-                        <Tooltip formatter={(value) => new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'COP' }).format(Number(value))} />
-                        <Legend />
-                        <Bar dataKey="ingresos" fill="#4D5726" name="Ingresos" />
-                        <Bar dataKey="gastos" fill="#B8860B" name="Gastos" />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                </div>
-              )}
-
-              {/* Pie Chart Section - For all types when there's data */}
-              {chartData.length > 0 && (
-                <div className="mb-8">
-                  <h4 className="text-lg font-semibold mb-4">
-                    {type === 'descriptions' && 'Distribución por Descripción'}
-                    {type === 'incomes' && 'Distribución de Ingresos'}
-                    {type === 'expenses' && 'Distribución de Gastos'}
-                    {type === 'all' && 'Distribución General'}
-                  </h4>
-                  <div className="h-80">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={chartData}
-                          cx="50%"
-                          cy="50%"
-                          labelLine={false}
-                          label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(1)}%`}
-                          outerRadius={80}
-                          fill="#8884d8"
-                          dataKey="value"
-                        >
-                          {chartData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                          ))}
-                        </Pie>
-                        <Tooltip content={<CustomTooltip />} />
-                        <Legend />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </div>
-                </div>
-              )}
+              <ReportChart 
+                type={type}
+                chartData={chartData}
+                totalIncome={totalIncome}
+                totalExpense={totalExpense}
+                balance={balance}
+              />
 
               {/* Table Section */}
-              {type === 'descriptions' ? (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Descripción</TableHead>
-                      <TableHead className="text-right">Ingresos</TableHead>
-                      <TableHead className="text-right">Gastos</TableHead>
-                      <TableHead className="text-right">Balance</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {Object.entries(descriptionSummary || {}).map(([description, values]) => (
-                      <TableRow key={description}>
-                        <TableCell className="font-medium">{description}</TableCell>
-                        <TableCell className="text-right text-green-600">
-                          {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'COP' }).format(values.income)}
-                        </TableCell>
-                        <TableCell className="text-right text-red-600">
-                          {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'COP' }).format(values.expense)}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'COP' }).format(values.income - values.expense)}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+              {type === 'descriptions' && descriptionSummary ? (
+                <ReportDescriptionsTable descriptionSummary={descriptionSummary} />
               ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Fecha</TableHead>
-                      <TableHead>Tipo</TableHead>
-                      <TableHead>Descripción</TableHead>
-                      <TableHead className="text-right">Monto</TableHead>
-                      <TableHead className="text-right">Saldo</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {transactionsWithBalance.map((transaction) => (
-                      <TableRow key={transaction.id}>
-                        <TableCell>{format(new Date(transaction.date), 'dd/MM/yyyy')}</TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            {getTransactionIcon(transaction.type)}
-                            <span className={transaction.type === 'ingreso' ? 'text-green-600 font-medium' : 'text-red-600 font-medium'}>
-                              {getTransactionTypeDisplay(transaction.type)}
-                            </span>
-                          </div>
-                        </TableCell>
-                        <TableCell>{transaction.description || '-'}</TableCell>
-                        <TableCell className={`text-right font-medium ${transaction.type === 'ingreso' ? 'text-green-600' : 'text-red-600'}`}>
-                          {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'COP' }).format(Number(transaction.amount))}
-                        </TableCell>
-                        <TableCell className={`text-right font-medium ${transaction.runningBalance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                          {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'COP' }).format(transaction.runningBalance)}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                <ReportTable transactionsWithBalance={transactionsWithBalance} />
               )}
               
-              <div className="mt-6 border-t pt-4 grid grid-cols-3 gap-4">
-                <div>
-                  <h4 className="text-sm font-medium text-muted-foreground">Total Ingresos</h4>
-                  <p className="text-xl font-bold text-green-600">
-                    {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'COP' }).format(totalIncome)}
-                  </p>
-                </div>
-                <div>
-                  <h4 className="text-sm font-medium text-muted-foreground">Total Gastos</h4>
-                  <p className="text-xl font-bold text-red-600">
-                    {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'COP' }).format(totalExpense)}
-                  </p>
-                </div>
-                <div>
-                  <h4 className="text-sm font-medium text-muted-foreground">Balance</h4>
-                  <p className={`text-xl font-bold ${balance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'COP' }).format(balance)}
-                  </p>
-                </div>
-              </div>
+              <ReportSummary 
+                totalIncome={totalIncome}
+                totalExpense={totalExpense}
+                balance={balance}
+              />
             </>
           )}
         </CardContent>
