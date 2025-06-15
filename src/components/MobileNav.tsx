@@ -4,23 +4,20 @@ import { BarChart3, FileText, Home, LogOut, Menu, PlusCircle, DollarSign, UserCi
 import AppLogo from './AppLogo';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useAuth } from '@/contexts/AuthContext';
-
 const MobileNav: React.FC = () => {
   const location = useLocation();
   const [open, setOpen] = useState(false);
-  const { signOut } = useAuth();
-  
+  const {
+    signOut
+  } = useAuth();
   const isActive = (path: string) => {
     return location.pathname === path;
   };
-
   const handleSignOut = () => {
     setOpen(false);
     signOut();
   };
-
-  return (
-    <div className="md:hidden border-b border-farm-darkgreen/20 dark:border-farm-lightgreen/20 bg-farm-beige dark:bg-farm-darkgreen text-farm-green dark:text-farm-beige p-4">
+  return <div className="md:hidden border-b border-farm-darkgreen/20 dark:border-farm-lightgreen/20 text-farm-green dark:text-farm-beige p-4 bg-lime-800">
       <div className="flex justify-between items-center">
         <AppLogo />
         <Sheet open={open} onOpenChange={setOpen}>
@@ -38,85 +35,37 @@ const MobileNav: React.FC = () => {
               <nav className="flex-1 p-4">
                 <ul className="space-y-2">
                   <li>
-                    <Link 
-                      to="/"
-                      className={`flex items-center p-2 rounded-md transition-colors ${
-                        isActive("/") 
-                          ? "bg-farm-lightgreen text-white" 
-                          : "hover:bg-farm-lightgreen/30"
-                      }`}
-                      onClick={() => setOpen(false)}
-                    >
+                    <Link to="/" className={`flex items-center p-2 rounded-md transition-colors ${isActive("/") ? "bg-farm-lightgreen text-white" : "hover:bg-farm-lightgreen/30"}`} onClick={() => setOpen(false)}>
                       <Home size={20} className="mr-3" />
                       <span>Panel</span>
                     </Link>
                   </li>
                   <li>
-                    <Link 
-                      to="/transacciones"
-                      className={`flex items-center p-2 rounded-md transition-colors ${
-                        isActive("/transacciones") 
-                          ? "bg-farm-lightgreen text-white" 
-                          : "hover:bg-farm-lightgreen/30"
-                      }`}
-                      onClick={() => setOpen(false)}
-                    >
+                    <Link to="/transacciones" className={`flex items-center p-2 rounded-md transition-colors ${isActive("/transacciones") ? "bg-farm-lightgreen text-white" : "hover:bg-farm-lightgreen/30"}`} onClick={() => setOpen(false)}>
                       <PlusCircle size={20} className="mr-3" />
                       <span>Transacciones</span>
                     </Link>
                   </li>
                   <li>
-                    <Link 
-                      to="/prestamos"
-                      className={`flex items-center p-2 rounded-md transition-colors ${
-                        isActive("/prestamos") 
-                          ? "bg-farm-lightgreen text-white" 
-                          : "hover:bg-farm-lightgreen/30"
-                      }`}
-                      onClick={() => setOpen(false)}
-                    >
+                    <Link to="/prestamos" className={`flex items-center p-2 rounded-md transition-colors ${isActive("/prestamos") ? "bg-farm-lightgreen text-white" : "hover:bg-farm-lightgreen/30"}`} onClick={() => setOpen(false)}>
                       <DollarSign size={20} className="mr-3" />
                       <span>Préstamos</span>
                     </Link>
                   </li>
                   <li>
-                    <Link 
-                      to="/estadisticas"
-                      className={`flex items-center p-2 rounded-md transition-colors ${
-                        isActive("/estadisticas") 
-                          ? "bg-farm-lightgreen text-white" 
-                          : "hover:bg-farm-lightgreen/30"
-                      }`}
-                      onClick={() => setOpen(false)}
-                    >
+                    <Link to="/estadisticas" className={`flex items-center p-2 rounded-md transition-colors ${isActive("/estadisticas") ? "bg-farm-lightgreen text-white" : "hover:bg-farm-lightgreen/30"}`} onClick={() => setOpen(false)}>
                       <BarChart3 size={20} className="mr-3" />
                       <span>Estadísticas</span>
                     </Link>
                   </li>
                   <li>
-                    <Link 
-                      to="/informes"
-                      className={`flex items-center p-2 rounded-md transition-colors ${
-                        isActive("/informes") 
-                          ? "bg-farm-lightgreen text-white" 
-                          : "hover:bg-farm-lightgreen/30"
-                      }`}
-                      onClick={() => setOpen(false)}
-                    >
+                    <Link to="/informes" className={`flex items-center p-2 rounded-md transition-colors ${isActive("/informes") ? "bg-farm-lightgreen text-white" : "hover:bg-farm-lightgreen/30"}`} onClick={() => setOpen(false)}>
                       <FileText size={20} className="mr-3" />
                       <span>Informes</span>
                     </Link>
                   </li>
                   <li>
-                    <Link 
-                      to="/personal"
-                      className={`flex items-center p-2 rounded-md transition-colors ${
-                        isActive("/personal") 
-                          ? "bg-farm-lightgreen text-white" 
-                          : "hover:bg-farm-lightgreen/30"
-                      }`}
-                      onClick={() => setOpen(false)}
-                    >
+                    <Link to="/personal" className={`flex items-center p-2 rounded-md transition-colors ${isActive("/personal") ? "bg-farm-lightgreen text-white" : "hover:bg-farm-lightgreen/30"}`} onClick={() => setOpen(false)}>
                       <UserCircle size={20} className="mr-3" />
                       <span>Personal</span>
                     </Link>
@@ -125,10 +74,7 @@ const MobileNav: React.FC = () => {
               </nav>
               
               <div className="p-4 border-t border-farm-darkgreen/20 dark:border-farm-lightgreen/20">
-                <button 
-                  onClick={handleSignOut} 
-                  className="flex items-center p-2 w-full rounded-md transition-colors hover:bg-farm-lightgreen/30"
-                >
+                <button onClick={handleSignOut} className="flex items-center p-2 w-full rounded-md transition-colors hover:bg-farm-lightgreen/30">
                   <LogOut size={20} className="mr-3" />
                   <span>Cerrar Sesión</span>
                 </button>
@@ -137,8 +83,6 @@ const MobileNav: React.FC = () => {
           </SheetContent>
         </Sheet>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default MobileNav;
