@@ -5,6 +5,8 @@ import Sidebar from './Sidebar';
 import LanguageSelector from './LanguageSelector';
 import { Toaster } from '@/components/ui/toaster';
 import { Toaster as Sonner } from '@/components/ui/sonner';
+// NUEVO: importar MobileNav
+import MobileNav from './MobileNav';
 
 interface AppLayoutProps {
   children?: React.ReactNode;
@@ -14,7 +16,11 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   return (
     <div className="flex h-screen bg-farm-beige dark:bg-farm-darkgreen">
       <Sidebar />
+      {/* NUEVO: barra de navegación móvil solo visible en dispositivos pequeños */}
       <div className="flex-1 flex flex-col min-h-0 min-w-0">
+        <div className="md:hidden">
+          <MobileNav />
+        </div>
         <header className="flex justify-end p-4 flex-shrink-0">
           <LanguageSelector />
         </header>
