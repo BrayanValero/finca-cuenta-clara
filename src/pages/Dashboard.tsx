@@ -11,18 +11,26 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTransactions } from '@/hooks/useTransactions';
 import { useFinancialSummary } from '@/hooks/useFinancialSummary';
 import { formatCurrency } from '@/utils/transactionUtils';
+import { useQuery } from '@tanstack/react-query';
+import { getLoans } from '@/services/loanService';
 
 const Dashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   
   const { data: transactions = [], isLoading } = useTransactions();
-  const summary = useFinancialSummary(transactions);
+  const { data: loans = [] } = useQuery({
+    queryKey: ['loans'],
+    queryFn: getLoans
+  });
+  
+  const summary = useFinancialSummary(transactions, loans);
 
   useEffect(() => {
     console.log("Dashboard rendered, user:", user?.id);
     console.log("Transaction count:", transactions.length);
-  }, [user, transactions]);
+    console.log("Loans count:", loans.length);
+  }, [user, transactions, loans]);
 
   const handleChartClick = () => {
     navigate('/detalle-distribuciones');

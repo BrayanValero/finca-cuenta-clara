@@ -1,8 +1,14 @@
 
 import { useMemo } from 'react';
 import { Transaction } from '@/services/transactionService';
+import { Loan } from '@/services/loanService';
 
-export const useFinancialSummary = (transactions: Transaction[]) => {
+interface UseFinancialSummaryProps {
+  transactions: Transaction[];
+  loans?: Loan[];
+}
+
+export const useFinancialSummary = (transactions: Transaction[], loans: Loan[] = []) => {
   return useMemo(() => {
     if (!transactions.length) {
       return {
@@ -40,13 +46,28 @@ export const useFinancialSummary = (transactions: Transaction[]) => {
       .filter((t: Transaction) => t.type === 'gasto')
       .reduce((sum: number, t: Transaction) => sum + Number(t.amount), 0);
 
+    const totalBalance = totalIncome - totalExpenses;
+
+    // Calculate liquidity considering pending loans
+    const pendingLoans = loans.filter((loan: Loan) => loan.status === 'pendiente');
+    
+    const pendingLoanAdjustment = pendingLoans.reduce((sum: number, loan: Loan) => {
+      if (loan.loan_type === 'recibido') {
+        return sum + Number(loan.amount); // Money we received (adds to liquidity)
+      } else {
+        return sum - Number(loan.amount); // Money we lent out (reduces liquidity)
+      }
+    }, 0);
+
+    const liquidity = totalBalance + pendingLoanAdjustment;
+
     return {
-      totalBalance: totalIncome - totalExpenses,
+      totalBalance,
       monthlyIncome,
       monthlyExpenses,
-      liquidity: totalIncome - totalExpenses,
+      liquidity,
       incomeTrend: 24, // Example value, would need historical data for real calculation
       expensesTrend: -8 // Example value, would need historical data for real calculation
     };
-  }, [transactions]);
+  }, [transactions, loans]);
 };
