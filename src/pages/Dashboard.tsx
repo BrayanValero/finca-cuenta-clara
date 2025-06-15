@@ -6,7 +6,6 @@ import CardStat from '@/components/CardStat';
 import ChartMonthlyBalance from '@/components/ChartMonthlyBalance';
 import ChartCategoryDistribution from '@/components/ChartCategoryDistribution';
 import TransactionTable from '@/components/TransactionTable';
-import MobileNav from '@/components/MobileNav';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTransactions } from '@/hooks/useTransactions';
 import { useFinancialSummary } from '@/hooks/useFinancialSummary';
@@ -41,68 +40,85 @@ const Dashboard = () => {
   };
 
   return (
-    <>
-      <MobileNav />
-      <div className="space-y-8">
+    <div className="space-y-6 px-1 sm:px-2 md:px-4 pb-8 w-full min-w-0">
+      <div className="pt-2">
+        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight break-words">Panel</h2>
+        <p className="text-muted-foreground text-base sm:text-lg">Resumen financiero de tu finca</p>
+      </div>
+
+      {/* Cards - stack on mobile */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 w-full min-w-0">
+        <CardStat
+          title="Balance Total"
+          value={formatCurrency(summary.totalBalance)}
+          icon={<DollarSign className="h-4 w-4" />}
+          className="bg-white dark:bg-farm-green"
+        />
+        <CardStat
+          title="Ingresos Mensuales"
+          value={formatCurrency(summary.monthlyIncome)}
+          icon={<TrendingUp className="h-4 w-4 text-green-500" />}
+          trend={summary.incomeTrend}
+          className="bg-white dark:bg-farm-green"
+        />
+        <CardStat
+          title="Gastos Mensuales"
+          value={formatCurrency(summary.monthlyExpenses)}
+          icon={<TrendingDown className="h-4 w-4 text-red-500" />}
+          trend={summary.expensesTrend}
+          className="bg-white dark:bg-farm-green"
+        />
+        <CardStat
+          title="Liquidez"
+          value={formatCurrency(summary.liquidity)}
+          icon={<BanknoteIcon className="h-4 w-4" />}
+          className="bg-white dark:bg-farm-green"
+        />
+      </div>
+
+      {/* Charts - vertical on mobile, grid on md+ */}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 w-full min-w-0">
+        <div className="md:col-span-2">
+          <div className="bg-white dark:bg-farm-green rounded-lg shadow-sm p-2 sm:p-4 h-full min-w-0 w-full">
+            <ChartMonthlyBalance transactions={transactions} />
+          </div>
+        </div>
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Panel</h2>
-          <p className="text-muted-foreground">Resumen financiero de tu finca</p>
+          <div className="bg-white dark:bg-farm-green rounded-lg shadow-sm p-2 sm:p-4 h-full min-w-0 w-full">
+            <ChartCategoryDistribution 
+              title="Distribución de gastos" 
+              type="gastos" 
+              transactions={transactions}
+              showLegend={false} 
+              onClick={handleExpenseChartClick}
+            />
+          </div>
         </div>
-
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <CardStat
-            title="Balance Total"
-            value={formatCurrency(summary.totalBalance)}
-            icon={<DollarSign className="h-4 w-4" />}
-            className="bg-white dark:bg-farm-green"
-          />
-          <CardStat
-            title="Ingresos Mensuales"
-            value={formatCurrency(summary.monthlyIncome)}
-            icon={<TrendingUp className="h-4 w-4 text-green-500" />}
-            trend={summary.incomeTrend}
-            className="bg-white dark:bg-farm-green"
-          />
-          <CardStat
-            title="Gastos Mensuales"
-            value={formatCurrency(summary.monthlyExpenses)}
-            icon={<TrendingDown className="h-4 w-4 text-red-500" />}
-            trend={summary.expensesTrend}
-            className="bg-white dark:bg-farm-green"
-          />
-          <CardStat
-            title="Liquidez"
-            value={formatCurrency(summary.liquidity)}
-            icon={<BanknoteIcon className="h-4 w-4" />}
-            className="bg-white dark:bg-farm-green"
-          />
-        </div>
-
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <ChartMonthlyBalance transactions={transactions} />
-          <ChartCategoryDistribution 
-            title="Distribución de gastos" 
-            type="gastos" 
-            transactions={transactions}
-            showLegend={false} 
-            onClick={handleExpenseChartClick}
-          />
-          <ChartCategoryDistribution 
-            title="Distribución de ingresos" 
-            type="ingresos" 
-            transactions={transactions}
-            showLegend={false} 
-            onClick={handleIncomeChartClick}
-          />
-        </div>
-
-        <div className="space-y-4">
-          <h3 className="text-xl font-bold">Últimas Transacciones</h3>
-          <TransactionTable />
+        <div>
+          <div className="bg-white dark:bg-farm-green rounded-lg shadow-sm p-2 sm:p-4 h-full min-w-0 w-full">
+            <ChartCategoryDistribution 
+              title="Distribución de ingresos" 
+              type="ingresos" 
+              transactions={transactions}
+              showLegend={false} 
+              onClick={handleIncomeChartClick}
+            />
+          </div>
         </div>
       </div>
-    </>
+
+      {/* Últimas Transacciones - scroll horizontal si es necesario */}
+      <div className="space-y-3">
+        <h3 className="text-lg sm:text-xl font-bold">Últimas Transacciones</h3>
+        <div className="overflow-x-auto w-full rounded-lg bg-white dark:bg-farm-green shadow-sm p-2 sm:p-4">
+          <div className="min-w-[640px]">
+            <TransactionTable />
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 
 export default Dashboard;
+
