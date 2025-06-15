@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -14,6 +13,7 @@ import Loans from "./pages/Loans";
 import ChartDetail from "./pages/ChartDetail";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
+import Personal from "./pages/Personal";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { LanguageProvider } from "./contexts/LanguageContext";
 
@@ -55,6 +55,7 @@ const AppRoutes = () => {
         <Route path="/informes" element={<Reports />} />
         <Route path="/prestamos" element={<Loans />} />
         <Route path="/detalle-distribuciones" element={<ChartDetail />} />
+        <Route path="/personal" element={<Personal />} />
       </Route>
       
       {/* Ruta 404 */}
