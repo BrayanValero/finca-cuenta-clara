@@ -26,6 +26,10 @@ import { es } from 'date-fns/locale';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { getLoans, updateLoan, deleteLoan, Loan } from '@/services/loanService';
 
+interface LoanTableProps {
+  statusFilter?: 'pendiente' | 'pagado';
+}
+
 const formatDate = (dateString: string) => {
   const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'short', day: 'numeric' };
   return new Date(dateString).toLocaleDateString('es-ES', options);
@@ -37,7 +41,7 @@ const formatCurrency = (amount: number) => {
     .replace('US$', '$');
 };
 
-const LoanTable = () => {
+const LoanTable = ({ statusFilter }: LoanTableProps) => {
   const [searchTerm, setSearchTerm] = useState('');
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -99,12 +103,17 @@ const LoanTable = () => {
     }
   };
 
-  const filteredLoans = loans.filter(
+  let filteredLoans = loans.filter(
     (loan: Loan) =>
       loan.description?.toLowerCase().includes(searchTerm) ||
       formatDate(loan.date).toLowerCase().includes(searchTerm) ||
       (loan.loan_type === 'recibido' ? 'recibido'.includes(searchTerm) : 'otorgado'.includes(searchTerm))
   );
+
+  // Apply status filter if provided
+  if (statusFilter) {
+    filteredLoans = filteredLoans.filter((loan: Loan) => loan.status === statusFilter);
+  }
 
   if (isLoading) {
     return <div className="text-center py-8">Cargando préstamos...</div>;
@@ -114,15 +123,31 @@ const LoanTable = () => {
     return <div className="text-center py-8 text-red-500">Error al cargar los préstamos.</div>;
   }
 
+  const getEmptyMessage = () => {
+    if (statusFilter === 'pendiente') {
+      return searchTerm 
+        ? "No se encontraron préstamos pendientes coincidentes." 
+        : "No hay préstamos pendientes.";
+    }
+    return searchTerm 
+      ? "No se encontraron préstamos coincidentes." 
+      : "No hay préstamos registrados aún.";
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <Input
-          placeholder="Buscar préstamos..."
+          placeholder={statusFilter === 'pendiente' ? "Buscar préstamos pendientes..." : "Buscar préstamos..."}
           value={searchTerm}
           onChange={handleSearch}
           className="max-w-sm"
         />
+        {statusFilter === 'pendiente' && (
+          <div className="text-sm text-muted-foreground">
+            Mostrando solo préstamos pendientes
+          </div>
+        )}
       </div>
       
       <div className="rounded-md border">
@@ -188,9 +213,7 @@ const LoanTable = () => {
             ) : (
               <TableRow>
                 <TableCell colSpan={6} className="h-24 text-center">
-                  {searchTerm 
-                    ? "No se encontraron préstamos coincidentes." 
-                    : "No hay préstamos registrados aún."}
+                  {getEmptyMessage()}
                 </TableCell>
               </TableRow>
             )}

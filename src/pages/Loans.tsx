@@ -18,11 +18,16 @@ const Loans = () => {
         <Tabs defaultValue="listado" className="space-y-6">
           <TabsList>
             <TabsTrigger value="listado">Listado de Préstamos</TabsTrigger>
+            <TabsTrigger value="pendientes">Préstamos Pendientes</TabsTrigger>
             <TabsTrigger value="agregar">Registrar Préstamo</TabsTrigger>
           </TabsList>
           
           <TabsContent value="listado" className="space-y-6">
             <LoanTable />
+          </TabsContent>
+          
+          <TabsContent value="pendientes" className="space-y-6">
+            <LoanTable statusFilter="pendiente" />
           </TabsContent>
           
           <TabsContent value="agregar" className="space-y-6">
