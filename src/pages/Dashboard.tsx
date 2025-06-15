@@ -32,8 +32,12 @@ const Dashboard = () => {
     console.log("Loans count:", loans.length);
   }, [user, transactions, loans]);
 
-  const handleChartClick = () => {
-    navigate('/detalle-distribuciones');
+  const handleExpenseChartClick = () => {
+    navigate('/detalle-distribuciones?type=gastos');
+  };
+
+  const handleIncomeChartClick = () => {
+    navigate('/detalle-distribuciones?type=ingresos');
   };
 
   return (
@@ -81,14 +85,14 @@ const Dashboard = () => {
             type="gastos" 
             transactions={transactions}
             showLegend={false} 
-            onClick={handleChartClick}
+            onClick={handleExpenseChartClick}
           />
           <ChartCategoryDistribution 
             title="Distribución de ingresos" 
             type="ingresos" 
             transactions={transactions}
             showLegend={false} 
-            onClick={handleChartClick}
+            onClick={handleIncomeChartClick}
           />
         </div>
 

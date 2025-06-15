@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -15,15 +15,19 @@ const COLORS = ['#4D5726', '#6B7B3A', '#3A4219', '#B8860B', '#D9A441'];
 const ChartDetail = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
+  const type = searchParams.get('type') || 'gastos'; // Default to 'gastos' for backward compatibility
   
   const { data: transactions = [], isLoading } = useTransactions();
 
-  // Process data for display
+  // Process data for display based on type
   const processedData = React.useMemo(() => {
     if (!transactions.length) return [];
     
+    const filterType = type === 'ingresos' ? 'ingreso' : 'gasto';
+    
     const grouped = transactions
-      .filter(t => t.type === 'gasto')
+      .filter(t => t.type === filterType)
       .reduce((acc: Record<string, number>, transaction: Transaction) => {
         const normalizedDescription = normalizeDescription(transaction.description || 'Sin descripción');
         if (!acc[normalizedDescription]) {
@@ -34,7 +38,11 @@ const ChartDetail = () => {
       }, {});
     
     return Object.entries(grouped).sort((a, b) => b[1] - a[1]);
-  }, [transactions]);
+  }, [transactions, type]);
+
+  const title = type === 'ingresos' ? 'Detalle de Distribución de Ingresos' : 'Detalle de Distribución de Gastos';
+  const subtitle = type === 'ingresos' ? 'Análisis detallado de ingresos por descripción' : 'Análisis detallado de gastos por descripción';
+  const noDataMessage = type === 'ingresos' ? 'No hay datos de ingresos disponibles' : 'No hay datos de gastos disponibles';
   
   return (
     <>
@@ -49,8 +57,8 @@ const ChartDetail = () => {
             >
               <ArrowLeft className="mr-2 h-4 w-4" /> Volver
             </Button>
-            <h2 className="text-3xl font-bold tracking-tight">Detalle de Distribuciones</h2>
-            <p className="text-muted-foreground">Análisis detallado de gastos por descripción</p>
+            <h2 className="text-3xl font-bold tracking-tight">{title}</h2>
+            <p className="text-muted-foreground">{subtitle}</p>
           </div>
         </div>
 
@@ -80,7 +88,7 @@ const ChartDetail = () => {
                   ))
                 ) : (
                   <div className="text-center py-8 text-muted-foreground">
-                    No hay datos de gastos disponibles
+                    {noDataMessage}
                   </div>
                 )}
               </div>
