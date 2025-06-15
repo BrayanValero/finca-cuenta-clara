@@ -1,4 +1,3 @@
-
 import React from "react";
 import { UserCircle, LogOut, Star } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -6,10 +5,25 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import PersonalProfileForm from "./PersonalProfileForm";
 import { Button } from "@/components/ui/button";
 
+const NAME_BY_EMAIL: { [email: string]: string } = {
+  "brayanvalero0021@gmail.com": "Brayan Andres Valero",
+  "cavalero_01@hotmail.com": "Carlos Andres Valero",
+};
+
+const IMAGE_BY_EMAIL: { [email: string]: string } = {
+  "brayanvalero0021@gmail.com": "/lovable-uploads/6fc9d8df-4085-4171-9152-431a31a56503.png",
+  "cavalero_01@hotmail.com": "/lovable-uploads/c053719c-1105-4150-835f-9af432e8bc3f.png",
+};
+
 const Personal: React.FC = () => {
   const { user, signOut } = useAuth();
+  const email = user?.email ?? "";
+  const fullName = NAME_BY_EMAIL[email] || email || "Usuario";
+  const photoUrl = IMAGE_BY_EMAIL[email];
+
   return (
     <div className="flex flex-col items-center justify-center min-h-[80vh] md:min-h-[600px] p-4 md:p-10 bg-gradient-to-tr from-farm-lightgreen/10 via-farm-lightgreen/20 to-farm-beige/70 dark:bg-gradient-to-br dark:from-farm-darkgreen/70 dark:to-farm-green/40 rounded-3xl shadow-lg transition-all duration-500">
+
       <div className="flex flex-col gap-2 items-center mb-6">
         <span className="rounded-full bg-farm-green/90 text-farm-beige px-4 py-2 shadow-md text-xs font-bold uppercase tracking-widest flex items-center gap-2 animate-fade-in">
           <Star className="inline-block " size={16} />
@@ -19,9 +33,11 @@ const Personal: React.FC = () => {
           Sección Personal
         </h1>
       </div>
+
       <div className="w-full max-w-lg relative z-10">
-        <PersonalProfileForm />
+        <PersonalProfileForm currentName={fullName} currentPhotoUrl={photoUrl} />
       </div>
+
       <div className="flex flex-col items-center w-full max-w-lg">
         <Button
           variant="destructive"
@@ -32,16 +48,19 @@ const Personal: React.FC = () => {
           <LogOut className="inline-block" size={22} />
           Cerrar sesión
         </Button>
+
         <span className="text-sm md:text-base text-farm-darkgreen/80 dark:text-farm-lightgreen/80 mb-2 select-all transition-all">
-          {user?.email}
+          {email}
         </span>
+
         <div className="flex flex-col gap-1 items-center mb-1">
           <p className="text-base md:text-lg text-center text-farm-darkgreen/90 dark:text-farm-lightgreen/80 max-w-lg mb-0 transition-all">
             Aquí podrás gestionar tu información personal, configurar tus preferencias y descubrir futuras funciones relacionadas con tu perfil.
           </p>
         </div>
+        {/* Mensaje sobre futuras funciones */}
         <div className="mt-5 text-[13px] italic text-muted-foreground text-center opacity-90">
-          Próximamente: edición de preferencias, seguridad y más.
+          Próximamente: edición de perfil, preferencias y mucho más.
         </div>
       </div>
     </div>
