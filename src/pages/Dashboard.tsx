@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { DollarSign, BanknoteIcon, TrendingDown, TrendingUp } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -40,14 +39,14 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="space-y-6 px-1 sm:px-2 md:px-4 pb-8 w-full min-w-0">
+    <div className="space-y-6 px-1 sm:px-2 md:px-4 pb-8 min-h-0 min-w-0">
       <div className="pt-2">
         <h2 className="text-2xl sm:text-3xl font-bold tracking-tight break-words">Panel</h2>
         <p className="text-muted-foreground text-base sm:text-lg">Resumen financiero de tu finca</p>
       </div>
 
-      {/* Cards - stack on mobile */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 w-full min-w-0">
+      {/* Cards */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 min-w-0">
         <CardStat
           title="Balance Total"
           value={formatCurrency(summary.totalBalance)}
@@ -76,8 +75,8 @@ const Dashboard = () => {
         />
       </div>
 
-      {/* Charts - vertical on mobile, grid on md+ */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 w-full min-w-0">
+      {/* Charts */}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 min-w-0">
         <div className="md:col-span-2">
           <div className="bg-white dark:bg-farm-green rounded-lg shadow-sm p-2 sm:p-4 h-full min-w-0 w-full">
             <ChartMonthlyBalance transactions={transactions} />
@@ -107,10 +106,10 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Últimas Transacciones - scroll horizontal si es necesario */}
-      <div className="space-y-3">
+      {/* Últimas Transacciones - scroll horizontal SIEMPRE visible */}
+      <div className="space-y-3 min-w-0">
         <h3 className="text-lg sm:text-xl font-bold">Últimas Transacciones</h3>
-        <div className="overflow-x-auto w-full rounded-lg bg-white dark:bg-farm-green shadow-sm p-2 sm:p-4">
+        <div className="w-full min-w-0 overflow-x-auto rounded-lg bg-white dark:bg-farm-green shadow-sm p-2 sm:p-4">
           <div className="min-w-[640px]">
             <TransactionTable />
           </div>
@@ -121,4 +120,3 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-
