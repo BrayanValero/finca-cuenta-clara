@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,6 +13,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createTransaction, TransactionInput, updateTransaction } from '@/services/transactionService';
 import { useAuth } from '@/contexts/AuthContext';
+import { categorizeTransaction, CATEGORIES } from '@/utils/transactionUtils';
+import CategorySuggestion from './CategorySuggestion';
 
 type FormData = {
   fecha: Date;
@@ -44,6 +45,15 @@ const TransactionForm = ({ editTransaction, onSuccess }: TransactionFormProps) =
     description: '',
     amount: 0
   });
+
+  const [categorySuggestion, setCategorySuggestion] = useState<{
+    category: string;
+    confidence: number;
+    source: 'rules' | 'ai';
+  } | null>(null);
+  
+  const [showSuggestion, setShowSuggestion] = useState(false);
+  const [manualCategory, setManualCategory] = useState<string>('');
 
   // Efecto para cargar datos cuando estamos editando
   useEffect(() => {
@@ -97,6 +107,34 @@ const TransactionForm = ({ editTransaction, onSuccess }: TransactionFormProps) =
     }
   });
 
+  // Función para obtener sugerencia de categoría
+  const getSuggestion = async (description: string, type: 'ingreso' | 'gasto') => {
+    if (!description.trim()) {
+      setShowSuggestion(false);
+      return;
+    }
+
+    try {
+      const suggestion = await categorizeTransaction(description, type);
+      setCategorySuggestion(suggestion);
+      setShowSuggestion(true);
+      setManualCategory(suggestion.category);
+    } catch (error) {
+      console.error('Error getting category suggestion:', error);
+    }
+  };
+
+  // Detectar cambios en descripción para sugerir categoría
+  useEffect(() => {
+    const debounceTimer = setTimeout(() => {
+      if (formData.description && formData.description.length > 3) {
+        getSuggestion(formData.description, formData.type);
+      }
+    }, 1000); // Esperar 1 segundo después de que el usuario deje de escribir
+
+    return () => clearTimeout(debounceTimer);
+  }, [formData.description, formData.type]);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
@@ -104,6 +142,11 @@ const TransactionForm = ({ editTransaction, onSuccess }: TransactionFormProps) =
 
   const handleSelectChange = (name: string, value: string) => {
     setFormData({ ...formData, [name]: value });
+    
+    // Si cambia el tipo, obtener nueva sugerencia
+    if (name === 'type' && formData.description) {
+      getSuggestion(formData.description, value as 'ingreso' | 'gasto');
+    }
   };
 
   const handleDateChange = (date: Date | undefined) => {
@@ -150,6 +193,23 @@ const TransactionForm = ({ editTransaction, onSuccess }: TransactionFormProps) =
       type: 'gasto',
       description: '',
       amount: 0
+    });
+  };
+
+  const handleAcceptSuggestion = () => {
+    setShowSuggestion(false);
+    toast({
+      title: "Categoría aplicada",
+      description: `Se aplicó la categoría: ${categorySuggestion?.category}`,
+    });
+  };
+
+  const handleRejectSuggestion = () => {
+    setShowSuggestion(false);
+    setManualCategory('');
+    toast({
+      title: "Sugerencia rechazada",
+      description: "Puedes asignar una categoría manualmente si lo deseas.",
     });
   };
 
@@ -222,6 +282,23 @@ const TransactionForm = ({ editTransaction, onSuccess }: TransactionFormProps) =
             onChange={handleInputChange}
             rows={3}
           />
+          
+          {/* Mostrar sugerencia de categoría */}
+          <CategorySuggestion
+            suggestion={categorySuggestion!}
+            onAccept={handleAcceptSuggestion}
+            onReject={handleRejectSuggestion}
+            isVisible={showSuggestion && !!categorySuggestion}
+          />
+          
+          {/* Mostrar categoría seleccionada */}
+          {manualCategory && !showSuggestion && (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-2 mt-2">
+              <span className="text-sm text-green-800">
+                Categoría: <strong>{manualCategory}</strong>
+              </span>
+            </div>
+          )}
         </div>
       </div>
 

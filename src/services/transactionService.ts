@@ -1,6 +1,6 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Tables, TablesInsert } from "@/integrations/supabase/types";
+import { categorizeTransaction } from "@/utils/transactionUtils";
 
 // Types for transaction data
 export interface Transaction {
@@ -24,9 +24,14 @@ export type TransactionInput = {
 };
 
 // Helper function to determine a category based on the description
-export const determineCategory = (description: string): string => {
-  // Default category
-  return "Sin categoría";
+export const determineCategory = async (description: string, type: 'ingreso' | 'gasto'): Promise<string> => {
+  try {
+    const result = await categorizeTransaction(description, type);
+    return result.category;
+  } catch (error) {
+    console.error('Error determining category:', error);
+    return "Sin categoría";
+  }
 };
 
 // Get all transactions
@@ -73,10 +78,15 @@ export const createTransaction = async (transaction: TransactionInput): Promise<
 
   console.log("Creating transaction for user:", user.id);
 
-  // Ensure category is set even if not provided
+  // Determine category using our new hybrid system
+  const category = await determineCategory(
+    transaction.description || '', 
+    transaction.type
+  );
+
   const transactionWithCategory = {
     ...transaction,
-    category: transaction.category || determineCategory(transaction.description || ''),
+    category,
     user_id: user.id
   };
 
@@ -101,9 +111,24 @@ export const createTransaction = async (transaction: TransactionInput): Promise<
 // Update an existing transaction
 export const updateTransaction = async (id: string, transaction: Partial<TransactionInput>): Promise<Transaction> => {
   // If updating description, update category too
-  const updates = transaction.description ? 
-    { ...transaction, category: transaction.category || determineCategory(transaction.description) } : 
-    transaction;
+  let updates = transaction;
+  
+  if (transaction.description !== undefined) {
+    // We need the current type to determine category
+    const { data: currentTransaction } = await supabase
+      .from('transactions')
+      .select('type')
+      .eq('id', id)
+      .single();
+    
+    if (currentTransaction) {
+      const category = await determineCategory(
+        transaction.description || '', 
+        currentTransaction.type as 'ingreso' | 'gasto'
+      );
+      updates = { ...transaction, category };
+    }
+  }
 
   const { data, error } = await supabase
     .from('transactions')
