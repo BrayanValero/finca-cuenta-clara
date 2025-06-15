@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import MobileNav from '@/components/MobileNav';
+// Eliminado: import MobileNav from '@/components/MobileNav';
 import YearSelector from '@/components/statistics/YearSelector';
 import BalanceChart from '@/components/statistics/BalanceChart';
 import IncomeExpenseChart from '@/components/statistics/IncomeExpenseChart';
@@ -23,7 +23,7 @@ const Statistics = () => {
   
   return (
     <>
-      <MobileNav />
+      {/* Eliminado: <MobileNav /> */}
       <div className="space-y-8">
         <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
           <div>
@@ -101,3 +101,4 @@ const Statistics = () => {
 };
 
 export default Statistics;
+

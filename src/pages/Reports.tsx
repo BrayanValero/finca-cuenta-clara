@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import MobileNav from '@/components/MobileNav';
+// Eliminado: import MobileNav from '@/components/MobileNav';
 import { useQuery } from '@tanstack/react-query';
 import { getTransactions } from '@/services/transactionService';
 import { useToast } from '@/components/ui/use-toast';
@@ -93,7 +93,7 @@ const Reports = () => {
 
   return (
     <>
-      <MobileNav />
+      {/* Eliminado: <MobileNav /> */}
       <div className="space-y-8">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Informes</h2>
@@ -135,3 +135,4 @@ const Reports = () => {
 };
 
 export default Reports;
+

@@ -4,12 +4,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import TransactionForm from '@/components/TransactionForm';
 import FileUpload from '@/components/FileUpload';
 import TransactionTable from '@/components/TransactionTable';
-import MobileNav from '@/components/MobileNav';
+// Eliminado: import MobileNav from '@/components/MobileNav';
 
 const Transactions = () => {
   return (
     <>
-      <MobileNav />
+      {/* Eliminado: <MobileNav /> */}
       <div className="space-y-8">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Transacciones</h2>

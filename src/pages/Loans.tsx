@@ -3,12 +3,12 @@ import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import LoanForm from '@/components/LoanForm';
 import LoanTable from '@/components/LoanTable';
-import MobileNav from '@/components/MobileNav';
+// Eliminado: import MobileNav from '@/components/MobileNav';
 
 const Loans = () => {
   return (
     <>
-      <MobileNav />
+      {/* Eliminado: <MobileNav /> */}
       <div className="space-y-8">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Préstamos</h2>
@@ -43,3 +43,4 @@ const Loans = () => {
 };
 
 export default Loans;
+
