@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { BarChart3, FileText, Home, LogOut, Menu, PlusCircle, DollarSign, UserCircle } from 'lucide-react';
+import { BarChart3, FileText, Home, LogOut, Menu, PlusCircle, DollarSign, UserCircle, BookOpen } from 'lucide-react';
 import AppLogo from './AppLogo';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useAuth } from '@/contexts/AuthContext';
@@ -119,6 +119,20 @@ const MobileNav: React.FC = () => {
                     >
                       <UserCircle size={20} className="mr-3" />
                       <span>Personal</span>
+                    </Link>
+                  </li>
+                  <li>
+                    <Link 
+                      to="/documentacion"
+                      className={`flex items-center p-2 rounded-md transition-colors ${
+                        isActive("/documentacion") 
+                          ? "bg-farm-lightgreen text-white" 
+                          : "hover:bg-farm-lightgreen/30"
+                      }`}
+                      onClick={() => setOpen(false)}
+                    >
+                      <BookOpen size={20} className="mr-3" />
+                      <span>Documentación</span>
                     </Link>
                   </li>
                 </ul>
