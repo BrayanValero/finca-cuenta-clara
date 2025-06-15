@@ -40,13 +40,14 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="space-y-8">
-      <div className="fade-in">
-        <h2 className="text-3xl font-bold tracking-tight">Panel</h2>
-        <p className="text-muted-foreground">Resumen financiero de tu finca</p>
+    <div className="space-y-6 px-1 sm:px-2 md:px-4 pb-8">
+      <div className="fade-in pt-2">
+        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight break-words">Panel</h2>
+        <p className="text-muted-foreground text-base sm:text-lg">Resumen financiero de tu finca</p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      {/* Cards - stack on mobile */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <CardStat
           title="Balance Total"
           value={formatCurrency(summary.totalBalance)}
@@ -75,36 +76,47 @@ const Dashboard = () => {
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* Charts - vertical on mobile, grid on md+ */}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <div className="fade-in md:col-span-2">
-          <ChartMonthlyBalance transactions={transactions} />
+          <div className="bg-white dark:bg-farm-green rounded-lg shadow-sm p-2 sm:p-4 h-full">
+            <ChartMonthlyBalance transactions={transactions} />
+          </div>
         </div>
         <div className="fade-in">
-          <ChartCategoryDistribution 
-            title="Distribución de gastos" 
-            type="gastos" 
-            transactions={transactions}
-            showLegend={false} 
-            onClick={handleExpenseChartClick}
-          />
+          <div className="bg-white dark:bg-farm-green rounded-lg shadow-sm p-2 sm:p-4 h-full">
+            <ChartCategoryDistribution 
+              title="Distribución de gastos" 
+              type="gastos" 
+              transactions={transactions}
+              showLegend={false} 
+              onClick={handleExpenseChartClick}
+            />
+          </div>
         </div>
         <div className="fade-in">
-          <ChartCategoryDistribution 
-            title="Distribución de ingresos" 
-            type="ingresos" 
-            transactions={transactions}
-            showLegend={false} 
-            onClick={handleIncomeChartClick}
-          />
+          <div className="bg-white dark:bg-farm-green rounded-lg shadow-sm p-2 sm:p-4 h-full">
+            <ChartCategoryDistribution 
+              title="Distribución de ingresos" 
+              type="ingresos" 
+              transactions={transactions}
+              showLegend={false} 
+              onClick={handleIncomeChartClick}
+            />
+          </div>
         </div>
       </div>
 
-      <div className="space-y-4 fade-in">
-        <h3 className="text-xl font-bold">Últimas Transacciones</h3>
-        <TransactionTable />
+      {/* Últimas Transacciones - scroll en móvil */}
+      <div className="space-y-3 fade-in">
+        <h3 className="text-lg sm:text-xl font-bold">Últimas Transacciones</h3>
+        <div className="overflow-x-auto rounded-lg bg-white dark:bg-farm-green shadow-sm p-2 sm:p-4">
+          <TransactionTable />
+        </div>
       </div>
     </div>
   );
 };
 
 export default Dashboard;
+
