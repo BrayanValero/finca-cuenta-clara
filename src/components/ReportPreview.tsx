@@ -38,6 +38,24 @@ const ReportPreview: React.FC<ReportPreviewProps> = ({
     return true;
   });
 
+  // Sort transactions by date for balance calculation
+  const sortedTransactions = [...filteredTransactions].sort((a, b) => 
+    new Date(a.date).getTime() - new Date(b.date).getTime()
+  );
+
+  // Calculate running balance for each transaction
+  const transactionsWithBalance = sortedTransactions.map((transaction, index) => {
+    const previousTransactions = sortedTransactions.slice(0, index + 1);
+    const balance = previousTransactions.reduce((acc, t) => {
+      return t.type === 'ingreso' ? acc + Number(t.amount) : acc - Number(t.amount);
+    }, 0);
+    
+    return {
+      ...transaction,
+      runningBalance: balance
+    };
+  });
+
   // Calculate totals
   const totalIncome = filteredTransactions
     .filter(t => t.type === 'ingreso')
@@ -284,10 +302,11 @@ const ReportPreview: React.FC<ReportPreviewProps> = ({
                       <TableHead>Tipo</TableHead>
                       <TableHead>Descripción</TableHead>
                       <TableHead className="text-right">Monto</TableHead>
+                      <TableHead className="text-right">Saldo</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredTransactions.map((transaction) => (
+                    {transactionsWithBalance.map((transaction) => (
                       <TableRow key={transaction.id}>
                         <TableCell>{format(new Date(transaction.date), 'dd/MM/yyyy')}</TableCell>
                         <TableCell>
@@ -301,6 +320,9 @@ const ReportPreview: React.FC<ReportPreviewProps> = ({
                         <TableCell>{transaction.description || '-'}</TableCell>
                         <TableCell className={`text-right font-medium ${transaction.type === 'ingreso' ? 'text-green-600' : 'text-red-600'}`}>
                           {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'COP' }).format(Number(transaction.amount))}
+                        </TableCell>
+                        <TableCell className={`text-right font-medium ${transaction.runningBalance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'COP' }).format(transaction.runningBalance)}
                         </TableCell>
                       </TableRow>
                     ))}
