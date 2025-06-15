@@ -1,9 +1,11 @@
+
 import React, { useRef, useState } from "react";
 import { UserCircle, Edit, Image as ImageIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
+// Este componente ahora se ve mejor gracias al card visual mejorado
 interface Props {
   currentName: string;
   currentPhotoUrl?: string;
@@ -37,15 +39,15 @@ const PersonalProfileForm: React.FC<Props> = ({ currentName, currentPhotoUrl }) 
   };
 
   return (
-    <div className="w-full max-w-sm mx-auto bg-muted/30 rounded-xl p-4 mt-6 mb-4 shadow-inner">
-      <form onSubmit={handleSubmit} className="flex flex-col items-center gap-4">
-        <div className="relative group">
-          <Avatar className="w-32 h-32 mb-0 border-4 border-farm-lightgreen shadow">
+    <div className="w-full bg-white/70 dark:bg-farm-darkgreen/80 rounded-2xl p-6 md:p-8 shadow-xl border border-farm-lightgreen/20 dark:border-farm-green/30 transition-all duration-500 animate-fade-in hover:scale-[1.02]">
+      <form onSubmit={handleSubmit} className="flex flex-col items-center gap-5 animate-fade-in">
+        <div className="relative group mb-1">
+          <Avatar className="w-36 h-36 mb-0 border-4 border-farm-lightgreen shadow-lg transition-all duration-200 bg-farm-beige dark:bg-farm-darkgreen">
             {photoPreview ? (
               <AvatarImage src={photoPreview} alt={name} className="object-cover" />
             ) : (
               <AvatarFallback>
-                <UserCircle size={64} />
+                <UserCircle size={80} />
               </AvatarFallback>
             )}
           </Avatar>
@@ -54,11 +56,11 @@ const PersonalProfileForm: React.FC<Props> = ({ currentName, currentPhotoUrl }) 
               type="button"
               variant="secondary"
               size="icon"
-              className="absolute bottom-2 right-2 bg-farm-lightgreen/80 hover:bg-farm-lightgreen text-farm-darkgreen"
+              className="absolute bottom-2 right-2 bg-farm-lightgreen/90 hover:bg-farm-lightgreen text-farm-darkgreen shadow hover:scale-105"
               onClick={() => fileRef.current?.click()}
               aria-label="Cambiar foto"
             >
-              <ImageIcon size={20} />
+              <ImageIcon size={22} />
             </Button>
           )}
           <input
@@ -87,9 +89,9 @@ const PersonalProfileForm: React.FC<Props> = ({ currentName, currentPhotoUrl }) 
           </>
         ) : (
           <>
-            <span className="font-semibold text-lg text-farm-darkgreen dark:text-farm-beige">{name}</span>
+            <span className="font-bold text-lg md:text-2xl text-farm-darkgreen dark:text-farm-beige transition-all">{name}</span>
             <Button type="button" onClick={startEditing} size="sm" variant="ghost" className="gap-1 text-farm-green dark:text-farm-beige">
-              <Edit size={16} />
+              <Edit size={18} />
               Editar Perfil
             </Button>
           </>
