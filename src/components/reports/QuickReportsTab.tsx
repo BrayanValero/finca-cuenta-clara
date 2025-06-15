@@ -1,5 +1,5 @@
 
-import { FileText } from 'lucide-react';
+import { FileText, PieChart } from 'lucide-react';
 import QuickReportCard from './QuickReportCard';
 
 interface QuickReportsTabProps {
@@ -24,13 +24,13 @@ const QuickReportsTab = ({ onGenerateReport }: QuickReportsTabProps) => {
         onPreview={() => onGenerateReport('annual', 'preview')}
         onGenerate={() => onGenerateReport('annual', 'pdf')}
       />
-
+      
       <QuickReportCard
-        title="Informe por Descripción"
-        description="Resumen agrupado por descripción de transacción."
-        icon={FileText}
-        onPreview={() => onGenerateReport('descriptions', 'preview')}
-        onGenerate={() => onGenerateReport('descriptions', 'pdf')}
+        title="Análisis de Categorías"
+        description="Distribución detallada por categorías."
+        icon={PieChart}
+        onPreview={() => onGenerateReport('categories', 'preview')}
+        onGenerate={() => onGenerateReport('categories', 'pdf')}
       />
     </div>
   );

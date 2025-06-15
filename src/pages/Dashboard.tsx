@@ -6,6 +6,7 @@ import CardStat from '@/components/CardStat';
 import ChartMonthlyBalance from '@/components/ChartMonthlyBalance';
 import ChartCategoryDistribution from '@/components/ChartCategoryDistribution';
 import TransactionTable from '@/components/TransactionTable';
+import MobileNav from '@/components/MobileNav';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTransactions } from '@/hooks/useTransactions';
 import { useFinancialSummary } from '@/hooks/useFinancialSummary';
@@ -40,90 +41,68 @@ const Dashboard = () => {
   };
 
   return (
-    // Estrucutura principal mejorada para móviles: min-h-0 y flex-col
-    <div className="flex flex-col min-h-0 flex-1">
-      <div className="flex-1 min-h-0">
-        <div className="space-y-6 px-1 sm:px-2 md:px-4 pb-8 min-w-0">
-          <div className="fade-in pt-2 min-w-0">
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight break-words">Panel</h2>
-            <p className="text-muted-foreground text-base sm:text-lg">Resumen financiero de tu finca</p>
-          </div>
+    <>
+      <MobileNav />
+      <div className="space-y-8">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight">Panel</h2>
+          <p className="text-muted-foreground">Resumen financiero de tu finca</p>
+        </div>
 
-          {/* Cards - stack on mobile */}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 min-w-0">
-            <CardStat
-              title="Balance Total"
-              value={formatCurrency(summary.totalBalance)}
-              icon={<DollarSign className="h-4 w-4" />}
-              className="bg-white dark:bg-farm-green fade-in"
-            />
-            <CardStat
-              title="Ingresos Mensuales"
-              value={formatCurrency(summary.monthlyIncome)}
-              icon={<TrendingUp className="h-4 w-4 text-green-500" />}
-              trend={summary.incomeTrend}
-              className="bg-white dark:bg-farm-green fade-in"
-            />
-            <CardStat
-              title="Gastos Mensuales"
-              value={formatCurrency(summary.monthlyExpenses)}
-              icon={<TrendingDown className="h-4 w-4 text-red-500" />}
-              trend={summary.expensesTrend}
-              className="bg-white dark:bg-farm-green fade-in"
-            />
-            <CardStat
-              title="Liquidez"
-              value={formatCurrency(summary.liquidity)}
-              icon={<BanknoteIcon className="h-4 w-4" />}
-              className="bg-white dark:bg-farm-green fade-in"
-            />
-          </div>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <CardStat
+            title="Balance Total"
+            value={formatCurrency(summary.totalBalance)}
+            icon={<DollarSign className="h-4 w-4" />}
+            className="bg-white dark:bg-farm-green"
+          />
+          <CardStat
+            title="Ingresos Mensuales"
+            value={formatCurrency(summary.monthlyIncome)}
+            icon={<TrendingUp className="h-4 w-4 text-green-500" />}
+            trend={summary.incomeTrend}
+            className="bg-white dark:bg-farm-green"
+          />
+          <CardStat
+            title="Gastos Mensuales"
+            value={formatCurrency(summary.monthlyExpenses)}
+            icon={<TrendingDown className="h-4 w-4 text-red-500" />}
+            trend={summary.expensesTrend}
+            className="bg-white dark:bg-farm-green"
+          />
+          <CardStat
+            title="Liquidez"
+            value={formatCurrency(summary.liquidity)}
+            icon={<BanknoteIcon className="h-4 w-4" />}
+            className="bg-white dark:bg-farm-green"
+          />
+        </div>
 
-          {/* Charts - vertical on mobile, grid on md+ */}
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 min-w-0">
-            <div className="fade-in md:col-span-2 min-w-0">
-              <div className="bg-white dark:bg-farm-green rounded-lg shadow-sm p-2 sm:p-4 h-full min-w-0">
-                <ChartMonthlyBalance transactions={transactions} />
-              </div>
-            </div>
-            <div className="fade-in min-w-0">
-              <div className="bg-white dark:bg-farm-green rounded-lg shadow-sm p-2 sm:p-4 h-full min-w-0">
-                <ChartCategoryDistribution 
-                  title="Distribución de gastos" 
-                  type="gastos" 
-                  transactions={transactions}
-                  showLegend={false} 
-                  onClick={handleExpenseChartClick}
-                />
-              </div>
-            </div>
-            <div className="fade-in min-w-0">
-              <div className="bg-white dark:bg-farm-green rounded-lg shadow-sm p-2 sm:p-4 h-full min-w-0">
-                <ChartCategoryDistribution 
-                  title="Distribución de ingresos" 
-                  type="ingresos" 
-                  transactions={transactions}
-                  showLegend={false} 
-                  onClick={handleIncomeChartClick}
-                />
-              </div>
-            </div>
-          </div>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <ChartMonthlyBalance transactions={transactions} />
+          <ChartCategoryDistribution 
+            title="Distribución de gastos" 
+            type="gastos" 
+            transactions={transactions}
+            showLegend={false} 
+            onClick={handleExpenseChartClick}
+          />
+          <ChartCategoryDistribution 
+            title="Distribución de ingresos" 
+            type="ingresos" 
+            transactions={transactions}
+            showLegend={false} 
+            onClick={handleIncomeChartClick}
+          />
+        </div>
 
-          {/* Últimas Transacciones - scroll en móvil */}
-          <div className="space-y-3 fade-in min-w-0">
-            <h3 className="text-lg sm:text-xl font-bold">Últimas Transacciones</h3>
-            <div className="w-full lg:w-auto max-w-full overflow-x-auto rounded-lg bg-white dark:bg-farm-green shadow-sm p-1 sm:p-4 min-w-0">
-              <div className="min-w-[600px] lg:min-w-0">
-                <TransactionTable />
-              </div>
-            </div>
-          </div>
+        <div className="space-y-4">
+          <h3 className="text-xl font-bold">Últimas Transacciones</h3>
+          <TransactionTable />
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
 export default Dashboard;
-
