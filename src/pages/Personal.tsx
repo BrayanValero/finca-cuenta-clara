@@ -1,8 +1,8 @@
-
 import React from "react";
 import { UserCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import PersonalProfileForm from "./PersonalProfileForm";
 
 const NAME_BY_EMAIL: { [email: string]: string } = {
   "brayanvalero0021@gmail.com": "Brayan Andres Valero",
@@ -22,25 +22,19 @@ const Personal: React.FC = () => {
 
   return (
     <div className="flex flex-col items-center justify-center h-full p-8 bg-white dark:bg-farm-darkgreen rounded-xl shadow-md">
-      {photoUrl ? (
-        <Avatar className="w-32 h-32 mb-4 shadow-lg">
-          <AvatarImage src={photoUrl} alt={fullName} className="object-cover" />
-          <AvatarFallback>
-            <UserCircle size={80} />
-          </AvatarFallback>
-        </Avatar>
-      ) : (
-        <UserCircle size={64} className="text-farm-green dark:text-farm-beige mb-4" />
-      )}
-      <h1 className="text-3xl font-bold mb-2 text-farm-green dark:text-farm-beige">Sección Personal</h1>
-      <div className="flex flex-col items-center mb-4 mt-4">
-        <span className="text-xl font-semibold text-farm-darkgreen dark:text-farm-beige">{fullName}</span>
-        {email && <span className="text-base text-farm-darkgreen/70 dark:text-farm-lightgreen/60">{email}</span>}
+      <h1 className="text-3xl font-bold text-farm-green dark:text-farm-beige mb-2">Sección Personal</h1>
+      <PersonalProfileForm currentName={fullName} currentPhotoUrl={photoUrl} />
+      <div className="flex flex-col items-center mb-4 mt-0">
+        {email && (
+          <span className="text-base text-farm-darkgreen/80 dark:text-farm-lightgreen/80">
+            {email}
+          </span>
+        )}
       </div>
-      <p className="text-base text-center text-farm-darkgreen/80 dark:text-farm-lightgreen/80 max-w-lg">
+      <p className="text-base text-center text-farm-darkgreen/80 dark:text-farm-lightgreen/80 max-w-lg mb-2">
         Aquí podrás gestionar tu información personal, configurar tus preferencias y descubrir futuras funciones relacionadas con tu perfil.
       </p>
-      <div className="mt-8 text-sm text-muted-foreground">
+      <div className="mt-4 text-sm text-muted-foreground">
         Próximamente: edición de perfil, preferencias y mucho más.
       </div>
     </div>
@@ -48,4 +42,3 @@ const Personal: React.FC = () => {
 };
 
 export default Personal;
-
