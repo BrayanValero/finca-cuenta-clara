@@ -1,3 +1,4 @@
+
 // Función para normalizar descripciones similares
 export const normalizeDescription = (description: string): string => {
   if (!description) return 'Sin descripción';
@@ -7,6 +8,16 @@ export const normalizeDescription = (description: string): string => {
   // Normalizar variaciones de "semana marcos"
   if (normalized.includes('marcos') && (normalized.includes('semana') || normalized.includes('pago'))) {
     return 'semana marcos';
+  }
+  
+  // Normalizar variaciones de "deuda de marcos"
+  if (normalized.includes('marcos') && normalized.includes('deuda')) {
+    return 'deuda de marcos';
+  }
+  
+  // Normalizar variaciones de "venta cacao"
+  if (normalized.includes('cacao') && normalized.includes('venta')) {
+    return 'venta cacao';
   }
   
   // Normalizar variaciones de "gasolina"
