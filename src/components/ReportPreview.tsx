@@ -53,6 +53,13 @@ const ReportPreview: React.FC<ReportPreviewProps> = ({
             </div>
           ) : (
             <>
+              {/* Summary at the beginning */}
+              <ReportSummary 
+                totalIncome={totalIncome}
+                totalExpense={totalExpense}
+                balance={balance}
+              />
+
               <ReportChart 
                 type={type}
                 chartData={chartData}
@@ -68,6 +75,7 @@ const ReportPreview: React.FC<ReportPreviewProps> = ({
                 <ReportTable transactionsWithBalance={transactionsWithBalance} />
               )}
               
+              {/* Summary at the end */}
               <ReportSummary 
                 totalIncome={totalIncome}
                 totalExpense={totalExpense}
