@@ -1,11 +1,10 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { Upload } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { useQueryClient } from '@tanstack/react-query';
-import { createTransaction, TransactionInput, determineCategory } from '@/services/transactionService';
+import { createTransaction, TransactionInput } from '@/services/transactionService';
 
 // Interface for the row data from Excel
 interface ExcelRowData {
@@ -162,8 +161,7 @@ const FileUpload = () => {
               date: formatDate(dateValue),
               type,
               description: description || null,
-              amount: Math.abs(amount),
-              category: determineCategory(description) // Add category here
+              amount: Math.abs(amount)
             };
             
             await createTransaction(transaction);
