@@ -1,270 +1,219 @@
-import React, { useRef, useState } from "react";
-import { UserCircle, Edit, Image as ImageIcon, Upload as RemoveIcon } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useAuth } from "@/contexts/AuthContext";
-import { useToast } from "@/hooks/use-toast";
-import { useProfile } from "@/hooks/useProfile";
-import { supabase } from "@/integrations/supabase/client";
-import { useLanguage } from "@/contexts/LanguageContext";
 
-// Helpers para localStorage
-const STORAGE_KEY = "personal_profile_fallback";
-function saveProfileFallback(data: { firstName: string; lastName: string; photoDataUrl: string | null }) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-  } catch (e) {}
-}
-function getProfileFallback() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return null;
-    return JSON.parse(raw);
-  } catch (e) {
-    return null;
-  }
-}
-function clearProfileFallback() {
-  try {
-    localStorage.removeItem(STORAGE_KEY);
-  } catch (e) {}
-}
-
-// Función para obtener la foto predeterminada según el email
-function getDefaultPhotoByEmail(email: string | undefined): string | null {
-  if (!email) return null;
-  
-  if (email === "brayanvalero0021@gmail.com") {
-    return "/lovable-uploads/5cf9d67b-8219-47b2-a86e-c103b6451edb.png";
-  } else if (email.startsWith("cavalero")) {
-    return "/lovable-uploads/08d2ed9f-2aeb-48b7-b870-c0b1d566c28d.png";
-  }
-  
-  return null;
-}
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useToast } from '@/hooks/use-toast';
+import { useProfile } from '@/hooks/useProfile';
+import { UserCircle, Camera, Save, Edit3 } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const PersonalProfileForm: React.FC = () => {
   const { user } = useAuth();
-  const { toast } = useToast();
   const { t } = useLanguage();
-  const { profile, loading, updateProfile } = useProfile(user?.id);
-  const fileRef = useRef<HTMLInputElement | null>(null);
-
-  // Estado edicion/campos
-  const [isEditing, setIsEditing] = useState(false);
-  // fallbackData = { firstName, lastName, photoDataUrl }
-  const fallbackData = getProfileFallback();
-
-  const [firstName, setFirstName] = useState<string>(profile?.first_name || fallbackData?.firstName || "");
-  const [lastName, setLastName] = useState<string>(profile?.last_name || fallbackData?.lastName || "");
+  const { toast } = useToast();
+  const { profile, isLoading, updateProfile } = useProfile(user?.id);
   
-  // Obtener foto predeterminada si no hay foto de perfil
-  const defaultPhoto = getDefaultPhotoByEmail(user?.email);
-  const [photoPreview, setPhotoPreview] = useState<string | null>(
-    profile?.photo_url || fallbackData?.photoDataUrl || defaultPhoto
-  );
-  const [photoFile, setPhotoFile] = useState<File | null>(null);
-  const [removePhoto, setRemovePhoto] = useState<boolean>(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState({
+    full_name: '',
+    phone: '',
+    address: ''
+  });
 
-  // Sync con cambios de perfil de Supabase
-  React.useEffect(() => {
+  // Función para obtener la imagen de perfil por defecto basada en el email
+  const getDefaultProfileImage = () => {
+    if (user?.email === 'brayanvalero0021@gmail.com') {
+      return '/lovable-uploads/5cf9d67b-8219-47b2-a86e-c103b6451edb.png';
+    } else if (user?.email?.startsWith('cavalero')) {
+      return '/lovable-uploads/08d2ed9f-2aeb-48b7-b870-c0b1d566c28d.png';
+    }
+    return null;
+  };
+
+  useEffect(() => {
     if (profile) {
-      setFirstName(profile?.first_name || "");
-      setLastName(profile?.last_name || "");
-      setPhotoPreview(profile?.photo_url || defaultPhoto);
-      setRemovePhoto(false);
-      clearProfileFallback();
+      setFormData({
+        full_name: profile.full_name || '',
+        phone: profile.phone || '',
+        address: profile.address || ''
+      });
     }
-  }, [profile, defaultPhoto]);
+  }, [profile]);
 
-  const startEditing = () => setIsEditing(true);
-  const stopEditing = () => {
-    setIsEditing(false);
-    setRemovePhoto(false);
-    setPhotoPreview(profile?.photo_url || fallbackData?.photoDataUrl || defaultPhoto);
-    setPhotoFile(null);
-  };
-
-  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setPhotoFile(file);
-      // Leer el archivo como DataURL para fallback local
-      const reader = new FileReader();
-      reader.onload = () => {
-        setPhotoPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-      setRemovePhoto(false);
-    }
-  };
-
-  const handleRemovePhoto = () => {
-    setRemovePhoto(true);
-    setPhotoPreview(defaultPhoto);
-    setPhotoFile(null);
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    // Validaciones
-    if (!firstName.trim() || !lastName.trim()) {
-      toast({
-        title: "Campos requeridos",
-        description: "Nombre y apellido no pueden estar vacíos.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    let url: string | null | undefined = profile?.photo_url;
+    if (!user?.id) return;
 
     try {
-      // Sube la foto al bucket si hay nueva
-      if (photoFile && user && !removePhoto) {
-        const fileExt = photoFile.name.split('.').pop();
-        const fileName = `${user.id}.${fileExt}`;
-        const { data, error } = await supabase.storage
-          .from("avatars")
-          .upload(fileName, photoFile, { upsert: true });
-        if (error) throw error;
-
-        // Obtiene url pública
-        const { data: urlData } = supabase.storage.from("avatars").getPublicUrl(fileName);
-        url = urlData.publicUrl;
-      } else if (removePhoto) {
-        url = null;
-        // Opcional: podrías eliminar el archivo del bucket con la API de Supabase aquí
-      }
-
-      // Actualiza nombre, apellido y foto
-      await updateProfile({ first_name: firstName, last_name: lastName, photo_url: url });
-
-      toast({
-        title: "Perfil actualizado",
-        description: "Tu perfil ha sido guardado correctamente.",
-        variant: "default",
+      await updateProfile.mutateAsync({
+        id: user.id,
+        ...formData
       });
+      
       setIsEditing(false);
-      setPhotoFile(null);
-      setRemovePhoto(false);
-      clearProfileFallback();
-    } catch (error: any) {
-      // Si falla el guardado remoto, guardar datos localmente como fallback visual (incluye imagen como DataURL)
-      saveProfileFallback({
-        firstName: firstName,
-        lastName: lastName,
-        photoDataUrl: photoPreview,
-      });
       toast({
-        title: "Sin conexión con el servidor",
-        description:
-          "Tus datos han sido guardados localmente. Cuando vuelva la conexión, intenta guardar de nuevo.",
-        variant: "default",
+        title: t('success'),
+        description: t('profileUpdated'),
       });
-      setIsEditing(false);
-      setPhotoFile(null);
-      setRemovePhoto(false);
+    } catch (error) {
+      toast({
+        title: t('error'),
+        description: t('profileUpdateError'),
+        variant: 'destructive',
+      });
     }
   };
 
-  // Loader
-  if (loading && !isEditing) {
+  const handleEditToggle = () => {
+    setIsEditing(!isEditing);
+    if (isEditing && profile) {
+      // Reset form data if canceling edit
+      setFormData({
+        full_name: profile.full_name || '',
+        phone: profile.phone || '',
+        address: profile.address || ''
+      });
+    }
+  };
+
+  if (isLoading) {
     return (
-      <div className="w-full flex justify-center items-center p-8">
-        <span className="text-farm-darkgreen/80 dark:text-farm-beige">Cargando perfil...</span>
-      </div>
+      <Card className="w-full animate-pulse">
+        <CardContent className="p-6">
+          <div className="flex flex-col items-center space-y-4">
+            <div className="w-24 h-24 bg-gray-200 rounded-full"></div>
+            <div className="space-y-2 w-full">
+              <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+              <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <div className="w-full bg-white/70 dark:bg-farm-darkgreen/80 rounded-2xl p-6 md:p-8 shadow-xl border border-farm-lightgreen/20 dark:border-farm-green/30 transition-all duration-500 animate-fade-in hover:scale-[1.02]">
-      <form onSubmit={handleSubmit} className="flex flex-col items-center gap-5 animate-fade-in">
-        <div className="relative group mb-1">
-          <Avatar className="w-36 h-36 mb-0 border-4 border-farm-lightgreen shadow-lg transition-all duration-200 bg-farm-beige dark:bg-farm-darkgreen">
-            {photoPreview ? (
-              <AvatarImage src={photoPreview} alt={firstName || "Usuario"} className="object-cover" />
-            ) : (
-              <AvatarFallback>
-                <UserCircle size={80} />
+    <Card className="w-full shadow-xl bg-white/95 dark:bg-farm-green/95 border-0 backdrop-blur-sm transition-all duration-500 hover:shadow-2xl animate-scale-in">
+      <CardHeader className="text-center pb-2">
+        <div className="flex justify-center mb-4 animate-fade-in" style={{ animationDelay: '0.2s' }}>
+          <div className="relative group">
+            <Avatar className="w-24 h-24 border-4 border-farm-green/20 shadow-lg transition-all duration-300 hover:scale-110 hover:border-farm-green/40">
+              <AvatarImage 
+                src={getDefaultProfileImage() || undefined} 
+                alt={t('profilePicture')}
+                className="transition-all duration-300 group-hover:brightness-110"
+              />
+              <AvatarFallback className="bg-farm-lightgreen text-farm-beige text-2xl transition-all duration-300 group-hover:bg-farm-green">
+                <UserCircle size={40} />
               </AvatarFallback>
-            )}
-          </Avatar>
-          {isEditing && (
-            <div className="absolute bottom-2 right-2 flex gap-2">
-              <Button
-                type="button"
-                variant="secondary"
-                size="icon"
-                className="bg-farm-lightgreen/90 hover:bg-farm-lightgreen text-farm-darkgreen shadow hover:scale-105"
-                onClick={() => fileRef.current?.click()}
-                aria-label="Cambiar foto"
-              >
-                <ImageIcon size={22} />
-              </Button>
-              {(photoPreview && photoPreview !== defaultPhoto) && (
+            </Avatar>
+            <div className="absolute bottom-0 right-0 bg-farm-green text-farm-beige rounded-full p-2 shadow-md transition-all duration-300 hover:scale-110 hover:bg-farm-darkgreen cursor-pointer">
+              <Camera size={16} />
+            </div>
+          </div>
+        </div>
+        
+        <CardTitle className="text-xl font-bold text-farm-green dark:text-farm-beige transition-all duration-300 hover:scale-105 animate-fade-in" style={{ animationDelay: '0.3s' }}>
+          {t('profileInformation')}
+        </CardTitle>
+      </CardHeader>
+      
+      <CardContent className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2 animate-fade-in" style={{ animationDelay: '0.4s' }}>
+            <Label htmlFor="full_name" className="text-farm-darkgreen dark:text-farm-beige font-medium transition-colors duration-200">
+              {t('fullName')}
+            </Label>
+            <Input
+              id="full_name"
+              name="full_name"
+              type="text"
+              value={formData.full_name}
+              onChange={handleInputChange}
+              disabled={!isEditing}
+              className="transition-all duration-300 focus:scale-[1.02] disabled:opacity-60 hover:shadow-md"
+              placeholder={t('enterFullName')}
+            />
+          </div>
+
+          <div className="space-y-2 animate-fade-in" style={{ animationDelay: '0.5s' }}>
+            <Label htmlFor="phone" className="text-farm-darkgreen dark:text-farm-beige font-medium transition-colors duration-200">
+              {t('phone')}
+            </Label>
+            <Input
+              id="phone"
+              name="phone"
+              type="tel"
+              value={formData.phone}
+              onChange={handleInputChange}
+              disabled={!isEditing}
+              className="transition-all duration-300 focus:scale-[1.02] disabled:opacity-60 hover:shadow-md"
+              placeholder={t('enterPhone')}
+            />
+          </div>
+
+          <div className="space-y-2 animate-fade-in" style={{ animationDelay: '0.6s' }}>
+            <Label htmlFor="address" className="text-farm-darkgreen dark:text-farm-beige font-medium transition-colors duration-200">
+              {t('address')}
+            </Label>
+            <Input
+              id="address"
+              name="address"
+              type="text"
+              value={formData.address}
+              onChange={handleInputChange}
+              disabled={!isEditing}
+              className="transition-all duration-300 focus:scale-[1.02] disabled:opacity-60 hover:shadow-md"
+              placeholder={t('enterAddress')}
+            />
+          </div>
+
+          <div className="flex gap-2 pt-4 animate-fade-in" style={{ animationDelay: '0.7s' }}>
+            {isEditing ? (
+              <>
+                <Button
+                  type="submit"
+                  className="flex-1 bg-farm-green hover:bg-farm-darkgreen transition-all duration-300 hover:scale-105 active:scale-95 hover:shadow-lg"
+                  disabled={updateProfile.isPending}
+                >
+                  <Save className="mr-2 h-4 w-4 transition-transform duration-200 hover:rotate-12" />
+                  {updateProfile.isPending ? t('saving') : t('save')}
+                </Button>
                 <Button
                   type="button"
-                  size="icon"
-                  variant="destructive"
-                  className="shadow hover:scale-105"
-                  onClick={handleRemovePhoto}
-                  aria-label="Quitar foto"
+                  variant="outline"
+                  onClick={handleEditToggle}
+                  className="flex-1 transition-all duration-300 hover:scale-105 active:scale-95 hover:shadow-md"
                 >
-                  <RemoveIcon size={20} />
+                  {t('cancel')}
                 </Button>
-              )}
-            </div>
-          )}
-          <input
-            ref={fileRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={handleAvatarChange}
-          />
-        </div>
-        {isEditing ? (
-          <>
-            <div className="flex gap-2 w-full">
-              <Input
-                autoFocus
-                value={firstName}
-                onChange={e => setFirstName(e.target.value)}
-                placeholder={t('name')}
-                className="mt-1"
-                maxLength={40}
-              />
-              <Input
-                value={lastName}
-                onChange={e => setLastName(e.target.value)}
-                placeholder={t('lastName')}
-                className="mt-1"
-                maxLength={40}
-              />
-            </div>
-            <div className="flex gap-2 pt-1">
-              <Button type="submit" size="sm" variant="default">{t('save')}</Button>
-              <Button type="button" size="sm" variant="outline" onClick={stopEditing}>
-                {t('cancel')}
+              </>
+            ) : (
+              <Button
+                type="button"
+                onClick={handleEditToggle}
+                className="w-full bg-farm-brown hover:bg-farm-lightbrown transition-all duration-300 hover:scale-105 active:scale-95 hover:shadow-lg"
+              >
+                <Edit3 className="mr-2 h-4 w-4 transition-transform duration-200 hover:rotate-12" />
+                {t('edit')}
               </Button>
-            </div>
-          </>
-        ) : (
-          <>
-            <span className="font-bold text-lg md:text-2xl text-farm-darkgreen dark:text-farm-beige transition-all">
-              {firstName + (lastName ? ` ${lastName}` : "")}
-            </span>
-            <Button type="button" onClick={startEditing} size="sm" variant="ghost" className="gap-1 text-farm-green dark:text-farm-beige">
-              <Edit size={18} />
-              {t('editProfile')}
-            </Button>
-          </>
-        )}
-      </form>
-    </div>
+            )}
+          </div>
+        </form>
+      </CardContent>
+    </Card>
   );
 };
 
