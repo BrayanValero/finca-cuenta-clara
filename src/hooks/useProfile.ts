@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 interface Profile {
@@ -7,54 +7,71 @@ interface Profile {
   first_name: string | null;
   last_name: string | null;
   photo_url: string | null;
+  full_name?: string;
+  phone?: string;
+  address?: string;
 }
 
 export function useProfile(userId: string | undefined) {
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-  const fetchProfile = async () => {
-    if (!userId) return;
-    setLoading(true);
-    setError(null);
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("id, first_name, last_name, photo_url")
-      .eq("id", userId)
-      .maybeSingle();
+  const { data: profile, isLoading, error } = useQuery({
+    queryKey: ["profile", userId],
+    queryFn: async () => {
+      if (!userId) return null;
+      
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("id, first_name, last_name, photo_url")
+        .eq("id", userId)
+        .maybeSingle();
 
-    if (error) setError(error.message);
-    else setProfile(data as Profile);
-    setLoading(false);
+      if (error) throw error;
+      
+      // Crear full_name combinando first_name y last_name
+      const profile = data ? {
+        ...data,
+        full_name: [data.first_name, data.last_name].filter(Boolean).join(' ') || '',
+        phone: '', // Por ahora campos vacíos hasta que se agreguen a la DB
+        address: ''
+      } : null;
+      
+      return profile as Profile;
+    },
+    enabled: !!userId,
+  });
+
+  const updateProfile = useMutation({
+    mutationFn: async (updateData: {
+      id: string;
+      full_name?: string;
+      phone?: string;
+      address?: string;
+    }) => {
+      // Separar full_name en first_name y last_name
+      const nameParts = updateData.full_name?.trim().split(' ') || [];
+      const first_name = nameParts[0] || '';
+      const last_name = nameParts.slice(1).join(' ') || '';
+
+      const { error } = await supabase
+        .from("profiles")
+        .update({ 
+          first_name: first_name || null,
+          last_name: last_name || null
+        })
+        .eq("id", updateData.id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["profile", userId] });
+    },
+  });
+
+  return { 
+    profile, 
+    isLoading, 
+    error: error?.message || null, 
+    updateProfile 
   };
-
-  useEffect(() => {
-    fetchProfile();
-    // eslint-disable-next-line
-  }, [userId]);
-
-  const updateProfile = async ({
-    first_name,
-    last_name,
-    photo_url,
-  }: {
-    first_name?: string | null;
-    last_name?: string | null;
-    photo_url?: string | null;
-  }) => {
-    if (!userId) return;
-    setLoading(true);
-    setError(null);
-    const { error } = await supabase
-      .from("profiles")
-      .update({ first_name, last_name, photo_url })
-      .eq("id", userId);
-    if (error) setError(error.message);
-    // Vuelve a traer el perfil actualizado
-    await fetchProfile();
-    setLoading(false);
-  };
-
-  return { profile, loading, error, updateProfile, fetchProfile };
 }
