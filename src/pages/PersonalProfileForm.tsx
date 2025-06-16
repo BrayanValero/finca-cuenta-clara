@@ -31,6 +31,19 @@ function clearProfileFallback() {
   } catch (e) {}
 }
 
+// Función para obtener la foto predeterminada según el email
+function getDefaultPhotoByEmail(email: string | undefined): string | null {
+  if (!email) return null;
+  
+  if (email === "brayanvalero0021@gmail.com") {
+    return "/lovable-uploads/5cf9d67b-8219-47b2-a86e-c103b6451edb.png";
+  } else if (email.startsWith("cavalero")) {
+    return "/lovable-uploads/08d2ed9f-2aeb-48b7-b870-c0b1d566c28d.png";
+  }
+  
+  return null;
+}
+
 const PersonalProfileForm: React.FC = () => {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -44,8 +57,11 @@ const PersonalProfileForm: React.FC = () => {
 
   const [firstName, setFirstName] = useState<string>(profile?.first_name || fallbackData?.firstName || "");
   const [lastName, setLastName] = useState<string>(profile?.last_name || fallbackData?.lastName || "");
+  
+  // Obtener foto predeterminada si no hay foto de perfil
+  const defaultPhoto = getDefaultPhotoByEmail(user?.email);
   const [photoPreview, setPhotoPreview] = useState<string | null>(
-    profile?.photo_url || fallbackData?.photoDataUrl || null
+    profile?.photo_url || fallbackData?.photoDataUrl || defaultPhoto
   );
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [removePhoto, setRemovePhoto] = useState<boolean>(false);
@@ -55,17 +71,17 @@ const PersonalProfileForm: React.FC = () => {
     if (profile) {
       setFirstName(profile?.first_name || "");
       setLastName(profile?.last_name || "");
-      setPhotoPreview(profile?.photo_url || null);
+      setPhotoPreview(profile?.photo_url || defaultPhoto);
       setRemovePhoto(false);
       clearProfileFallback();
     }
-  }, [profile]);
+  }, [profile, defaultPhoto]);
 
   const startEditing = () => setIsEditing(true);
   const stopEditing = () => {
     setIsEditing(false);
     setRemovePhoto(false);
-    setPhotoPreview(profile?.photo_url || fallbackData?.photoDataUrl || null);
+    setPhotoPreview(profile?.photo_url || fallbackData?.photoDataUrl || defaultPhoto);
     setPhotoFile(null);
   };
 
@@ -85,7 +101,7 @@ const PersonalProfileForm: React.FC = () => {
 
   const handleRemovePhoto = () => {
     setRemovePhoto(true);
-    setPhotoPreview(null);
+    setPhotoPreview(defaultPhoto);
     setPhotoFile(null);
   };
 
@@ -187,7 +203,7 @@ const PersonalProfileForm: React.FC = () => {
               >
                 <ImageIcon size={22} />
               </Button>
-              {photoPreview && (
+              {(photoPreview && photoPreview !== defaultPhoto) && (
                 <Button
                   type="button"
                   size="icon"
