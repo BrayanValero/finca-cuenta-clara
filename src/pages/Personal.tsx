@@ -4,6 +4,7 @@ import { UserCircle, LogOut, Star } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import PersonalProfileForm from "./PersonalProfileForm";
+import ThemeCustomizer from "@/components/ThemeCustomizer";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -23,11 +24,17 @@ const Personal: React.FC = () => {
         </h1>
       </div>
       
-      <div className="w-full max-w-lg relative z-10 transform transition-all duration-500 hover:scale-[1.02]">
-        <PersonalProfileForm />
+      <div className="w-full max-w-4xl grid grid-cols-1 lg:grid-cols-2 gap-6 relative z-10">
+        <div className="transform transition-all duration-500 hover:scale-[1.02]">
+          <PersonalProfileForm />
+        </div>
+        
+        <div className="transform transition-all duration-500 hover:scale-[1.02] animate-fade-in" style={{ animationDelay: '0.2s' }}>
+          <ThemeCustomizer />
+        </div>
       </div>
       
-      <div className="flex flex-col items-center w-full max-w-lg animate-fade-in" style={{ animationDelay: '0.3s' }}>
+      <div className="flex flex-col items-center w-full max-w-lg animate-fade-in mt-6" style={{ animationDelay: '0.3s' }}>
         <Button
           variant="destructive"
           size="lg"
