@@ -5,18 +5,21 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import PersonalProfileForm from "./PersonalProfileForm";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const Personal: React.FC = () => {
   const { user, signOut } = useAuth();
+  const { t } = useLanguage();
+  
   return (
     <div className="flex flex-col items-center justify-center min-h-[80vh] md:min-h-[600px] p-4 md:p-10 bg-gradient-to-tr from-farm-lightgreen/10 via-farm-lightgreen/20 to-farm-beige/70 dark:bg-gradient-to-br dark:from-farm-darkgreen/70 dark:to-farm-green/40 rounded-3xl shadow-lg transition-all duration-500">
       <div className="flex flex-col gap-2 items-center mb-6">
         <span className="rounded-full bg-farm-green/90 text-farm-beige px-4 py-2 shadow-md text-xs font-bold uppercase tracking-widest flex items-center gap-2 animate-fade-in">
           <Star className="inline-block " size={16} />
-          Zona de usuario
+          {t('userZone')}
         </span>
         <h1 className="text-3xl md:text-4xl font-extrabold text-farm-green dark:text-farm-beige mb-1 text-center drop-shadow">
-          Sección Personal
+          {t('personalSection')}
         </h1>
       </div>
       <div className="w-full max-w-lg relative z-10">
@@ -30,7 +33,7 @@ const Personal: React.FC = () => {
           onClick={signOut}
         >
           <LogOut className="inline-block" size={22} />
-          Cerrar sesión
+          {t('signOut')}
         </Button>
         <span className="text-sm md:text-base text-farm-darkgreen/80 dark:text-farm-lightgreen/80 mb-2 select-all transition-all">
           {user?.email}

@@ -4,23 +4,24 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import TransactionForm from '@/components/TransactionForm';
 import FileUpload from '@/components/FileUpload';
 import TransactionTable from '@/components/TransactionTable';
-// Eliminado: import MobileNav from '@/components/MobileNav';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const Transactions = () => {
+  const { t } = useLanguage();
+
   return (
     <>
-      {/* Eliminado: <MobileNav /> */}
       <div className="space-y-8">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Transacciones</h2>
-          <p className="text-muted-foreground">Gestiona los ingresos y gastos de tu finca</p>
+          <h2 className="text-3xl font-bold tracking-tight">{t('transactions')}</h2>
+          <p className="text-muted-foreground">{t('manageIncomeExpenses')}</p>
         </div>
 
         <Tabs defaultValue="listado" className="space-y-6">
           <TabsList>
-            <TabsTrigger value="listado">Listado</TabsTrigger>
-            <TabsTrigger value="agregar">Agregar Transacción</TabsTrigger>
-            <TabsTrigger value="importar">Importar Excel</TabsTrigger>
+            <TabsTrigger value="listado">{t('listing')}</TabsTrigger>
+            <TabsTrigger value="agregar">{t('addTransaction')}</TabsTrigger>
+            <TabsTrigger value="importar">{t('importExcel')}</TabsTrigger>
           </TabsList>
           
           <TabsContent value="listado" className="space-y-6">
@@ -29,14 +30,14 @@ const Transactions = () => {
           
           <TabsContent value="agregar" className="space-y-6">
             <div className="max-w-2xl mx-auto bg-white dark:bg-farm-green p-6 rounded-lg shadow-sm">
-              <h3 className="text-xl font-bold mb-4">Nueva Transacción</h3>
+              <h3 className="text-xl font-bold mb-4">{t('newTransaction')}</h3>
               <TransactionForm />
             </div>
           </TabsContent>
           
           <TabsContent value="importar" className="space-y-6">
             <div className="max-w-2xl mx-auto bg-white dark:bg-farm-green p-6 rounded-lg shadow-sm">
-              <h3 className="text-xl font-bold mb-4">Importar desde Excel</h3>
+              <h3 className="text-xl font-bold mb-4">{t('importFromExcel')}</h3>
               <FileUpload />
             </div>
           </TabsContent>

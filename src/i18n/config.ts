@@ -12,6 +12,7 @@ const resources = {
       "loans": "Préstamos", 
       "statistics": "Estadísticas",
       "reports": "Informes",
+      "personal": "Personal",
       
       // Login
       "welcome": "Bienvenido",
@@ -38,6 +39,36 @@ const resources = {
       "newTransaction": "Nueva Transacción",
       "importFromExcel": "Importar desde Excel",
       
+      // Loans
+      "manageLoans": "Gestiona los préstamos recibidos y otorgados",
+      "loanListing": "Listado de Préstamos",
+      "pendingLoans": "Préstamos Pendientes",
+      "registerLoan": "Registrar Préstamo",
+      "newLoan": "Nuevo Préstamo",
+      
+      // Statistics
+      "visualAnalysis": "Análisis visual de tus finanzas",
+      "general": "General",
+      "income": "Ingresos",
+      "expenses": "Gastos",
+      "trends": "Tendencias",
+      
+      // Reports
+      "generateReports": "Genera informes y análisis de tus finanzas en H-V Farm",
+      "quickReports": "Informes Rápidos",
+      "customReport": "Informe Personalizado",
+      "preview": "Vista Previa",
+      
+      // Personal
+      "personalSection": "Sección Personal",
+      "userZone": "Zona de usuario",
+      "editProfile": "Editar Perfil",
+      "signOut": "Cerrar sesión",
+      "save": "Guardar",
+      "cancel": "Cancelar",
+      "name": "Nombre",
+      "lastName": "Apellido",
+      
       // Common
       "loading": "Cargando...",
       "date": "Fecha",
@@ -56,6 +87,7 @@ const resources = {
       "loans": "Loans",
       "statistics": "Statistics", 
       "reports": "Reports",
+      "personal": "Personal",
       
       // Login
       "welcome": "Welcome",
@@ -81,6 +113,36 @@ const resources = {
       "importExcel": "Import Excel",
       "newTransaction": "New Transaction",
       "importFromExcel": "Import from Excel",
+      
+      // Loans
+      "manageLoans": "Manage received and granted loans",
+      "loanListing": "Loan Listing",
+      "pendingLoans": "Pending Loans",
+      "registerLoan": "Register Loan",
+      "newLoan": "New Loan",
+      
+      // Statistics
+      "visualAnalysis": "Visual analysis of your finances",
+      "general": "General",
+      "income": "Income",
+      "expenses": "Expenses",
+      "trends": "Trends",
+      
+      // Reports
+      "generateReports": "Generate reports and analysis of your H-V Farm finances",
+      "quickReports": "Quick Reports",
+      "customReport": "Custom Report",
+      "preview": "Preview",
+      
+      // Personal
+      "personalSection": "Personal Section",
+      "userZone": "User zone",
+      "editProfile": "Edit Profile",
+      "signOut": "Sign Out",
+      "save": "Save",
+      "cancel": "Cancel",
+      "name": "Name",
+      "lastName": "Last Name",
       
       // Common
       "loading": "Loading...",

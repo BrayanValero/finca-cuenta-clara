@@ -6,9 +6,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from '@/contexts/AuthContext';
 import AppLogo from '@/components/AppLogo';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const Login = () => {
   const { signIn } = useAuth();
+  const { t } = useLanguage();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -40,20 +42,20 @@ const Login = () => {
         <div className="mb-6 flex items-center justify-between">
           <AppLogo className="text-white" />
           <div className="text-white font-semibold text-xl">
-            {email ? getWelcomeMessage(email) : 'Bienvenido'}
+            {email ? getWelcomeMessage(email) : t('welcome')}
           </div>
         </div>
         <Card className="w-full bg-white/90 dark:bg-farm-green/95 shadow-xl">
           <CardHeader>
-            <CardTitle className="text-2xl text-center">Acceso a H-V Farm</CardTitle>
+            <CardTitle className="text-2xl text-center">{t('accessToFarm')}</CardTitle>
             <CardDescription className="text-center">
-              Ingresa tus credenciales para acceder al sistema
+              {t('enterCredentials')}
             </CardDescription>
           </CardHeader>
           <form onSubmit={handleLogin}>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email">Correo electrónico</Label>
+                <Label htmlFor="email">{t('email')}</Label>
                 <Input 
                   id="email" 
                   type="email" 
@@ -64,7 +66,7 @@ const Login = () => {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="password">Contraseña</Label>
+                <Label htmlFor="password">{t('password')}</Label>
                 <Input 
                   id="password" 
                   type="password" 
@@ -80,7 +82,7 @@ const Login = () => {
                 className="w-full bg-farm-green hover:bg-farm-darkgreen dark:bg-farm-lightgreen dark:hover:bg-farm-green"
                 disabled={isLoading}
               >
-                {isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
+                {isLoading ? t('signingIn') : t('signIn')}
               </Button>
             </CardFooter>
           </form>

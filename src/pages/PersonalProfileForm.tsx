@@ -1,4 +1,3 @@
-
 import React, { useRef, useState } from "react";
 import { UserCircle, Edit, Image as ImageIcon, Upload as RemoveIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -8,6 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 // Helpers para localStorage
 const STORAGE_KEY = "personal_profile_fallback";
@@ -47,6 +47,7 @@ function getDefaultPhotoByEmail(email: string | undefined): string | null {
 const PersonalProfileForm: React.FC = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { t } = useLanguage();
   const { profile, loading, updateProfile } = useProfile(user?.id);
   const fileRef = useRef<HTMLInputElement | null>(null);
 
@@ -232,22 +233,22 @@ const PersonalProfileForm: React.FC = () => {
                 autoFocus
                 value={firstName}
                 onChange={e => setFirstName(e.target.value)}
-                placeholder="Nombre"
+                placeholder={t('name')}
                 className="mt-1"
                 maxLength={40}
               />
               <Input
                 value={lastName}
                 onChange={e => setLastName(e.target.value)}
-                placeholder="Apellido"
+                placeholder={t('lastName')}
                 className="mt-1"
                 maxLength={40}
               />
             </div>
             <div className="flex gap-2 pt-1">
-              <Button type="submit" size="sm" variant="default">Guardar</Button>
+              <Button type="submit" size="sm" variant="default">{t('save')}</Button>
               <Button type="button" size="sm" variant="outline" onClick={stopEditing}>
-                Cancelar
+                {t('cancel')}
               </Button>
             </div>
           </>
@@ -258,7 +259,7 @@ const PersonalProfileForm: React.FC = () => {
             </span>
             <Button type="button" onClick={startEditing} size="sm" variant="ghost" className="gap-1 text-farm-green dark:text-farm-beige">
               <Edit size={18} />
-              Editar Perfil
+              {t('editProfile')}
             </Button>
           </>
         )}

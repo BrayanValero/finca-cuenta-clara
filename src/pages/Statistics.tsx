@@ -1,13 +1,13 @@
 
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-// Eliminado: import MobileNav from '@/components/MobileNav';
 import YearSelector from '@/components/statistics/YearSelector';
 import BalanceChart from '@/components/statistics/BalanceChart';
 import IncomeExpenseChart from '@/components/statistics/IncomeExpenseChart';
 import MonthlyLineChart from '@/components/statistics/MonthlyLineChart';
 import TrendChart from '@/components/statistics/TrendChart';
 import { useStatisticsData } from '@/hooks/useStatisticsData';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 // Función para formatear moneda
 const formatCurrency = (value: number) => {
@@ -15,6 +15,7 @@ const formatCurrency = (value: number) => {
 };
 
 const Statistics = () => {
+  const { t } = useLanguage();
   const [year, setYear] = useState('2025');
   const { monthlyData, hasData, isLoading } = useStatisticsData(year);
   
@@ -23,12 +24,11 @@ const Statistics = () => {
   
   return (
     <>
-      {/* Eliminado: <MobileNav /> */}
       <div className="space-y-8">
         <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
           <div>
-            <h2 className="text-3xl font-bold tracking-tight">Estadísticas</h2>
-            <p className="text-muted-foreground">Análisis visual de tus finanzas</p>
+            <h2 className="text-3xl font-bold tracking-tight">{t('statistics')}</h2>
+            <p className="text-muted-foreground">{t('visualAnalysis')}</p>
           </div>
           
           <YearSelector year={year} onYearChange={setYear} />
@@ -36,10 +36,10 @@ const Statistics = () => {
 
         <Tabs defaultValue="general" className="space-y-6">
           <TabsList className="w-full md:w-auto">
-            <TabsTrigger value="general">General</TabsTrigger>
-            <TabsTrigger value="ingresos">Ingresos</TabsTrigger>
-            <TabsTrigger value="gastos">Gastos</TabsTrigger>
-            <TabsTrigger value="tendencias">Tendencias</TabsTrigger>
+            <TabsTrigger value="general">{t('general')}</TabsTrigger>
+            <TabsTrigger value="ingresos">{t('income')}</TabsTrigger>
+            <TabsTrigger value="gastos">{t('expenses')}</TabsTrigger>
+            <TabsTrigger value="tendencias">{t('trends')}</TabsTrigger>
           </TabsList>
           
           <TabsContent value="general" className="space-y-6">
@@ -101,4 +101,3 @@ const Statistics = () => {
 };
 
 export default Statistics;
-
