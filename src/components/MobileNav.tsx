@@ -118,7 +118,7 @@ const MobileNav: React.FC = () => {
                       }`} 
                       onClick={() => setOpen(false)}
                     >
-                      <User Circle size={20} className="mr-3" />
+                      <UserCircle size={20} className="mr-3" />
                       <span>Personal</span>
                     </Link>
                   </li>
