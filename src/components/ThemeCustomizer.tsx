@@ -12,6 +12,8 @@ interface ColorTheme {
     secondary: string;
     accent: string;
     background: string;
+    darkPrimary: string;
+    lightAccent: string;
   };
 }
 
@@ -22,7 +24,9 @@ const colorThemes: ColorTheme[] = [
       primary: '#4D5726',
       secondary: '#B8860B', 
       accent: '#6B7B3A',
-      background: '#F5F5DC'
+      background: '#F5F5DC',
+      darkPrimary: '#3A4219',
+      lightAccent: '#8A9B4A'
     }
   },
   {
@@ -31,7 +35,9 @@ const colorThemes: ColorTheme[] = [
       primary: '#1e40af',
       secondary: '#0369a1',
       accent: '#3b82f6',
-      background: '#f0f9ff'
+      background: '#f0f9ff',
+      darkPrimary: '#1e3a8a',
+      lightAccent: '#60a5fa'
     }
   },
   {
@@ -40,7 +46,9 @@ const colorThemes: ColorTheme[] = [
       primary: '#ea580c',
       secondary: '#dc2626',
       accent: '#f97316',
-      background: '#fff7ed'
+      background: '#fff7ed',
+      darkPrimary: '#c2410c',
+      lightAccent: '#fb923c'
     }
   },
   {
@@ -49,7 +57,9 @@ const colorThemes: ColorTheme[] = [
       primary: '#7c3aed',
       secondary: '#a855f7',
       accent: '#8b5cf6',
-      background: '#faf5ff'
+      background: '#faf5ff',
+      darkPrimary: '#6d28d9',
+      lightAccent: '#a78bfa'
     }
   },
   {
@@ -58,7 +68,9 @@ const colorThemes: ColorTheme[] = [
       primary: '#be185d',
       secondary: '#e11d48',
       accent: '#ec4899',
-      background: '#fdf2f8'
+      background: '#fdf2f8',
+      darkPrimary: '#9d174d',
+      lightAccent: '#f472b6'
     }
   }
 ];
@@ -80,7 +92,18 @@ const ThemeCustomizer: React.FC = () => {
   const applyTheme = (theme: ColorTheme) => {
     const root = document.documentElement;
     
-    // Convertir hex a HSL para mantener compatibilidad con CSS variables
+    // Aplicar variables CSS personalizadas
+    root.style.setProperty('--theme-primary', theme.colors.primary);
+    root.style.setProperty('--theme-secondary', theme.colors.secondary);
+    root.style.setProperty('--theme-accent', theme.colors.accent);
+    root.style.setProperty('--theme-background', theme.colors.background);
+    root.style.setProperty('--theme-dark-primary', theme.colors.darkPrimary);
+    root.style.setProperty('--theme-light-accent', theme.colors.lightAccent);
+    
+    // Actualizar el fondo del body
+    document.body.style.backgroundColor = theme.colors.background;
+    
+    // Actualizar variables CSS principales para compatibilidad con shadcn
     const hexToHsl = (hex: string) => {
       const r = parseInt(hex.slice(1, 3), 16) / 255;
       const g = parseInt(hex.slice(3, 5), 16) / 255;
@@ -104,16 +127,12 @@ const ThemeCustomizer: React.FC = () => {
       return `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
     };
 
-    // Aplicar colores personalizados
-    root.style.setProperty('--farm-green', theme.colors.primary);
-    root.style.setProperty('--farm-brown', theme.colors.secondary);
-    root.style.setProperty('--farm-lightgreen', theme.colors.accent);
-    root.style.setProperty('--farm-beige', theme.colors.background);
-    
-    // Actualizar CSS custom properties
     root.style.setProperty('--primary', hexToHsl(theme.colors.primary));
     root.style.setProperty('--secondary', hexToHsl(theme.colors.secondary));
     root.style.setProperty('--background', hexToHsl(theme.colors.background));
+    root.style.setProperty('--sidebar-background', hexToHsl(theme.colors.primary));
+    root.style.setProperty('--sidebar-primary', hexToHsl(theme.colors.secondary));
+    root.style.setProperty('--sidebar-accent', hexToHsl(theme.colors.accent));
   };
 
   const handleThemeChange = (theme: ColorTheme) => {
@@ -130,9 +149,9 @@ const ThemeCustomizer: React.FC = () => {
   };
 
   return (
-    <Card className="w-full shadow-xl bg-white/95 dark:bg-farm-green/95 border-0 backdrop-blur-sm transition-all duration-500 hover:shadow-2xl animate-scale-in">
+    <Card className="w-full shadow-xl bg-white/95 dark:bg-theme-primary/95 border-0 backdrop-blur-sm transition-all duration-500 hover:shadow-2xl animate-scale-in">
       <CardHeader className="text-center pb-4">
-        <CardTitle className="text-lg font-bold text-farm-green dark:text-farm-beige flex items-center justify-center gap-2 transition-all duration-300 hover:scale-105">
+        <CardTitle className="text-lg font-bold text-theme-primary dark:text-white flex items-center justify-center gap-2 transition-all duration-300 hover:scale-105">
           <Palette className="animate-pulse" size={20} />
           Personalizar Colores
         </CardTitle>
@@ -145,15 +164,15 @@ const ThemeCustomizer: React.FC = () => {
               key={index}
               className={`p-3 rounded-lg border-2 cursor-pointer transition-all duration-300 hover:scale-105 ${
                 selectedTheme.name === theme.name
-                  ? 'border-farm-green shadow-lg'
+                  ? 'border-theme-primary shadow-lg'
                   : 'border-gray-200 hover:border-gray-300'
               }`}
               onClick={() => handleThemeChange(theme)}
             >
               <div className="flex items-center justify-between">
-                <span className="font-medium text-sm">{theme.name}</span>
+                <span className="font-medium text-sm text-theme-primary dark:text-white">{theme.name}</span>
                 <div className="flex gap-1">
-                  {Object.values(theme.colors).map((color, colorIndex) => (
+                  {Object.values(theme.colors).slice(0, 4).map((color, colorIndex) => (
                     <div
                       key={colorIndex}
                       className="w-6 h-6 rounded-full border-2 border-white shadow-sm transition-transform duration-200 hover:scale-110"
@@ -169,7 +188,7 @@ const ThemeCustomizer: React.FC = () => {
         <Button
           onClick={resetToDefault}
           variant="outline"
-          className="w-full mt-4 transition-all duration-300 hover:scale-105 active:scale-95"
+          className="w-full mt-4 transition-all duration-300 hover:scale-105 active:scale-95 border-theme-primary text-theme-primary hover:bg-theme-primary hover:text-white"
         >
           <RotateCcw className="mr-2 h-4 w-4 transition-transform duration-200 hover:rotate-180" />
           Restaurar Colores Originales

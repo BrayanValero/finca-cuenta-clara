@@ -13,13 +13,13 @@ const Personal: React.FC = () => {
   const { t } = useLanguage();
   
   return (
-    <div className="flex flex-col items-center justify-center min-h-[80vh] md:min-h-[600px] p-4 md:p-10 bg-gradient-to-tr from-farm-lightgreen/10 via-farm-lightgreen/20 to-farm-beige/70 dark:bg-gradient-to-br dark:from-farm-darkgreen/70 dark:to-farm-green/40 rounded-3xl shadow-lg transition-all duration-500 animate-fade-in">
+    <div className="flex flex-col items-center justify-center min-h-[80vh] md:min-h-[600px] p-4 md:p-10 bg-gradient-to-tr from-theme-accent/10 via-theme-accent/20 to-theme-background/70 dark:bg-gradient-to-br dark:from-theme-primary/70 dark:to-theme-accent/40 rounded-3xl shadow-lg transition-all duration-500 animate-fade-in" style={{ backgroundColor: 'var(--theme-background)' }}>
       <div className="flex flex-col gap-2 items-center mb-6 animate-scale-in">
-        <span className="rounded-full bg-farm-green/90 text-farm-beige px-4 py-2 shadow-md text-xs font-bold uppercase tracking-widest flex items-center gap-2 transition-all duration-300 hover:scale-105 hover:shadow-lg">
+        <span className="rounded-full bg-theme-primary text-white px-4 py-2 shadow-md text-xs font-bold uppercase tracking-widest flex items-center gap-2 transition-all duration-300 hover:scale-105 hover:shadow-lg">
           <Star className="inline-block animate-pulse" size={16} />
           {t('userZone')}
         </span>
-        <h1 className="text-3xl md:text-4xl font-extrabold text-farm-green dark:text-farm-beige mb-1 text-center drop-shadow transition-all duration-300 hover:scale-105">
+        <h1 className="text-3xl md:text-4xl font-extrabold text-theme-primary dark:text-white mb-1 text-center drop-shadow transition-all duration-300 hover:scale-105">
           {t('personalSection')}
         </h1>
       </div>
@@ -45,12 +45,12 @@ const Personal: React.FC = () => {
           {t('signOut')}
         </Button>
         
-        <span className="text-sm md:text-base text-farm-darkgreen/80 dark:text-farm-lightgreen/80 mb-2 select-all transition-all duration-300 hover:text-farm-green dark:hover:text-farm-lightgreen cursor-pointer">
+        <span className="text-sm md:text-base text-theme-primary/80 dark:text-white/80 mb-2 select-all transition-all duration-300 hover:text-theme-primary dark:hover:text-white cursor-pointer">
           {user?.email}
         </span>
         
         <div className="flex flex-col gap-1 items-center mb-1 animate-fade-in" style={{ animationDelay: '0.5s' }}>
-          <p className="text-base md:text-lg text-center text-farm-darkgreen/90 dark:text-farm-lightgreen/80 max-w-lg mb-0 transition-all duration-300 hover:text-farm-green dark:hover:text-farm-lightgreen">
+          <p className="text-base md:text-lg text-center text-theme-primary/90 dark:text-white/80 max-w-lg mb-0 transition-all duration-300 hover:text-theme-primary dark:hover:text-white">
             Aquí podrás gestionar tu información personal, configurar tus preferencias y descubrir futuras funciones relacionadas con tu perfil.
           </p>
         </div>

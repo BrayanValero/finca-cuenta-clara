@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { BarChart3, FileText, Home, LogOut, PlusCircle, DollarSign, UserCircle } from 'lucide-react';
@@ -13,8 +14,8 @@ const Sidebar: React.FC = () => {
   };
 
   return (
-    <div className="w-64 hidden md:flex flex-col h-screen bg-farm-green text-farm-beige dark:bg-farm-darkgreen dark:text-farm-beige border-r border-farm-darkgreen/20 dark:border-farm-lightgreen/20">
-      <div className="p-4 border-b border-farm-darkgreen/20 dark:border-farm-lightgreen/20">
+    <div className="w-64 hidden md:flex flex-col h-screen bg-theme-primary text-white dark:bg-theme-primary dark:text-white border-r border-theme-accent/20 dark:border-theme-accent/20">
+      <div className="p-4 border-b border-theme-accent/20 dark:border-theme-accent/20">
         <AppLogo />
       </div>
       
@@ -25,8 +26,8 @@ const Sidebar: React.FC = () => {
               to="/"
               className={`flex items-center p-2 rounded-md transition-colors ${
                 isActive("/") 
-                  ? "bg-farm-lightgreen text-white" 
-                  : "hover:bg-farm-lightgreen/30"
+                  ? "bg-theme-accent text-white" 
+                  : "hover:bg-theme-accent/30"
               }`}
             >
               <Home size={20} className="mr-3" />
@@ -38,8 +39,8 @@ const Sidebar: React.FC = () => {
               to="/transacciones"
               className={`flex items-center p-2 rounded-md transition-colors ${
                 isActive("/transacciones") 
-                  ? "bg-farm-lightgreen text-white" 
-                  : "hover:bg-farm-lightgreen/30"
+                  ? "bg-theme-accent text-white" 
+                  : "hover:bg-theme-accent/30"
               }`}
             >
               <PlusCircle size={20} className="mr-3" />
@@ -51,8 +52,8 @@ const Sidebar: React.FC = () => {
               to="/prestamos"
               className={`flex items-center p-2 rounded-md transition-colors ${
                 isActive("/prestamos") 
-                  ? "bg-farm-lightgreen text-white" 
-                  : "hover:bg-farm-lightgreen/30"
+                  ? "bg-theme-accent text-white" 
+                  : "hover:bg-theme-accent/30"
               }`}
             >
               <DollarSign size={20} className="mr-3" />
@@ -64,8 +65,8 @@ const Sidebar: React.FC = () => {
               to="/estadisticas"
               className={`flex items-center p-2 rounded-md transition-colors ${
                 isActive("/estadisticas") 
-                  ? "bg-farm-lightgreen text-white" 
-                  : "hover:bg-farm-lightgreen/30"
+                  ? "bg-theme-accent text-white" 
+                  : "hover:bg-theme-accent/30"
               }`}
             >
               <BarChart3 size={20} className="mr-3" />
@@ -77,8 +78,8 @@ const Sidebar: React.FC = () => {
               to="/informes"
               className={`flex items-center p-2 rounded-md transition-colors ${
                 isActive("/informes") 
-                  ? "bg-farm-lightgreen text-white" 
-                  : "hover:bg-farm-lightgreen/30"
+                  ? "bg-theme-accent text-white" 
+                  : "hover:bg-theme-accent/30"
               }`}
             >
               <FileText size={20} className="mr-3" />
@@ -90,8 +91,8 @@ const Sidebar: React.FC = () => {
               to="/personal"
               className={`flex items-center p-2 rounded-md transition-colors ${
                 isActive("/personal") 
-                  ? "bg-farm-lightgreen text-white" 
-                  : "hover:bg-farm-lightgreen/30"
+                  ? "bg-theme-accent text-white" 
+                  : "hover:bg-theme-accent/30"
               }`}
             >
               <UserCircle size={20} className="mr-3" />
@@ -101,10 +102,10 @@ const Sidebar: React.FC = () => {
         </ul>
       </nav>
       
-      <div className="p-4 border-t border-farm-darkgreen/20 dark:border-farm-lightgreen/20">
+      <div className="p-4 border-t border-theme-accent/20 dark:border-theme-accent/20">
         <button 
           onClick={signOut}
-          className="flex items-center p-2 w-full rounded-md transition-colors hover:bg-farm-lightgreen/30"
+          className="flex items-center p-2 w-full rounded-md transition-colors hover:bg-theme-accent/30"
         >
           <LogOut size={20} className="mr-3" />
           <span>Cerrar Sesión</span>

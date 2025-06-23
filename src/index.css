@@ -43,6 +43,14 @@
     --sidebar-accent-foreground: 60 33% 94%;
     --sidebar-border: 82 37% 20%;     /* darker farm green */
     --sidebar-ring: 43 89% 38%;       /* farm brown */
+
+    /* Custom theme variables */
+    --theme-primary: #4D5726;
+    --theme-secondary: #B8860B;
+    --theme-accent: #6B7B3A;
+    --theme-background: #F5F5DC;
+    --theme-dark-primary: #3A4219;
+    --theme-light-accent: #8A9B4A;
   }
 
   .dark {
@@ -94,6 +102,7 @@
     @apply bg-background text-foreground;
     height: 100%;
     overflow: hidden;
+    background-color: var(--theme-background);
   }
 
   #root {
@@ -186,4 +195,45 @@
 
 .hover-glow:hover {
   box-shadow: 0 0 20px rgba(77, 87, 38, 0.4);
+}
+
+/* Theme-based utility classes */
+.bg-theme-primary {
+  background-color: var(--theme-primary);
+}
+
+.bg-theme-secondary {
+  background-color: var(--theme-secondary);
+}
+
+.bg-theme-accent {
+  background-color: var(--theme-accent);
+}
+
+.bg-theme-background {
+  background-color: var(--theme-background);
+}
+
+.text-theme-primary {
+  color: var(--theme-primary);
+}
+
+.text-theme-secondary {
+  color: var(--theme-secondary);
+}
+
+.text-theme-accent {
+  color: var(--theme-accent);
+}
+
+.border-theme-primary {
+  border-color: var(--theme-primary);
+}
+
+.border-theme-secondary {
+  border-color: var(--theme-secondary);
+}
+
+.border-theme-accent {
+  border-color: var(--theme-accent);
 }
