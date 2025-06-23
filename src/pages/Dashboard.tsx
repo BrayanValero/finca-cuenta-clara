@@ -42,87 +42,79 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="space-y-4 sm:space-y-6 px-1 sm:px-2 pb-4 sm:pb-8 min-h-0 min-w-0">
-      {/* Header */}
-      <div className="pt-1 sm:pt-2">
-        <h2 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight break-words">{t('dashboard')}</h2>
-        <p className="text-muted-foreground text-sm sm:text-base md:text-lg">{t('financialSummary')}</p>
+    <div className="space-y-6 px-1 sm:px-2 md:px-4 pb-8 min-h-0 min-w-0">
+      <div className="pt-2">
+        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight break-words">{t('dashboard')}</h2>
+        <p className="text-muted-foreground text-base sm:text-lg">{t('financialSummary')}</p>
       </div>
 
-      {/* Stats Cards - Mobile: 2x2 grid, Desktop: 4 columns */}
-      <div className="grid grid-cols-2 gap-2 sm:gap-4 lg:grid-cols-4 min-w-0">
+      {/* Cards */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 min-w-0">
         <CardStat
           title={t('totalBalance')}
           value={formatCurrency(summary.totalBalance)}
-          icon={<DollarSign className="h-3 w-3 sm:h-4 sm:w-4" />}
-          className="bg-white dark:bg-farm-green p-3 sm:p-4"
+          icon={<DollarSign className="h-4 w-4" />}
+          className="bg-white dark:bg-farm-green"
         />
         <CardStat
           title={t('monthlyIncome')}
           value={formatCurrency(summary.monthlyIncome)}
-          icon={<TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 text-green-500" />}
+          icon={<TrendingUp className="h-4 w-4 text-green-500" />}
           trend={summary.incomeTrend}
-          className="bg-white dark:bg-farm-green p-3 sm:p-4"
+          className="bg-white dark:bg-farm-green"
         />
         <CardStat
           title={t('monthlyExpenses')}
           value={formatCurrency(summary.monthlyExpenses)}
-          icon={<TrendingDown className="h-3 w-3 sm:h-4 sm:w-4 text-red-500" />}
+          icon={<TrendingDown className="h-4 w-4 text-red-500" />}
           trend={summary.expensesTrend}
-          className="bg-white dark:bg-farm-green p-3 sm:p-4"
+          className="bg-white dark:bg-farm-green"
         />
         <CardStat
           title={t('liquidity')}
           value={formatCurrency(summary.liquidity)}
-          icon={<BanknoteIcon className="h-3 w-3 sm:h-4 sm:w-4" />}
-          className="bg-white dark:bg-farm-green p-3 sm:p-4"
+          icon={<BanknoteIcon className="h-4 w-4" />}
+          className="bg-white dark:bg-farm-green"
         />
       </div>
 
-      {/* Charts Section */}
-      <div className="space-y-4 md:space-y-6 min-w-0">
-        {/* Monthly Balance Chart - Full Width */}
-        <div className="bg-white dark:bg-farm-green rounded-lg shadow-sm p-3 sm:p-4 min-w-0 w-full">
-          <div className="h-48 sm:h-64 md:h-72">
+      {/* Charts */}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 min-w-0">
+        <div className="md:col-span-2">
+          <div className="bg-white dark:bg-farm-green rounded-lg shadow-sm p-2 sm:p-4 h-full min-w-0 w-full">
             <ChartMonthlyBalance transactions={transactions} />
           </div>
         </div>
-        
-        {/* Distribution Charts - Mobile: Stack, Desktop: Side by side */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 min-w-0">
-          <div className="bg-white dark:bg-farm-green rounded-lg shadow-sm p-3 sm:p-4 min-w-0 w-full">
-            <div className="h-48 sm:h-56 md:h-64">
-              <ChartCategoryDistribution 
-                title="Distribución de gastos" 
-                type="gastos" 
-                transactions={transactions}
-                showLegend={false} 
-                onClick={handleExpenseChartClick}
-              />
-            </div>
+        <div>
+          <div className="bg-white dark:bg-farm-green rounded-lg shadow-sm p-2 sm:p-4 h-full min-w-0 w-full">
+            <ChartCategoryDistribution 
+              title="Distribución de gastos" 
+              type="gastos" 
+              transactions={transactions}
+              showLegend={false} 
+              onClick={handleExpenseChartClick}
+            />
           </div>
-          <div className="bg-white dark:bg-farm-green rounded-lg shadow-sm p-3 sm:p-4 min-w-0 w-full">
-            <div className="h-48 sm:h-56 md:h-64">
-              <ChartCategoryDistribution 
-                title="Distribución de ingresos" 
-                type="ingresos" 
-                transactions={transactions}
-                showLegend={false} 
-                onClick={handleIncomeChartClick}
-              />
-            </div>
+        </div>
+        <div>
+          <div className="bg-white dark:bg-farm-green rounded-lg shadow-sm p-2 sm:p-4 h-full min-w-0 w-full">
+            <ChartCategoryDistribution 
+              title="Distribución de ingresos" 
+              type="ingresos" 
+              transactions={transactions}
+              showLegend={false} 
+              onClick={handleIncomeChartClick}
+            />
           </div>
         </div>
       </div>
 
-      {/* Latest Transactions - Horizontal Scroll */}
+      {/* Últimas Transacciones - scroll horizontal SIEMPRE visible */}
       <div className="space-y-3 min-w-0">
-        <h3 className="text-base sm:text-lg md:text-xl font-bold px-1">{t('latestTransactions')}</h3>
-        <div className="w-full min-w-0 overflow-x-auto rounded-lg bg-white dark:bg-farm-green shadow-sm">
-          <div className="p-2 sm:p-4">
-            <div className="min-w-[640px] sm:min-w-[800px]">
-              <TransactionTable />
-            </div>
+        <h3 className="text-lg sm:text-xl font-bold">{t('latestTransactions')}</h3>
+        <div className="w-full min-w-0 overflow-x-auto rounded-lg bg-white dark:bg-farm-green shadow-sm p-2 sm:p-4">
+          <div className="min-w-[640px]">
+            <TransactionTable />
           </div>
         </div>
       </div>

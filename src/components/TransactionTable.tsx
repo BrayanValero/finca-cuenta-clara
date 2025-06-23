@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getTransactions, deleteTransaction, Transaction } from '@/services/transactionService';
@@ -31,7 +30,6 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import TransactionForm from './TransactionForm';
 import TransactionRow from './transactions/TransactionRow';
-import { useIsMobile } from '@/hooks/use-mobile';
 
 const TRANSACTIONS_PER_PAGE = 50;
 
@@ -43,7 +41,6 @@ const TransactionTable = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { user } = useAuth();
-  const isMobile = useIsMobile();
 
   // Log to help with debugging
   console.log("Current user ID:", user?.id);
@@ -198,18 +195,17 @@ const TransactionTable = () => {
   }
 
   return (
-    <div className="h-full flex flex-col space-y-3 sm:space-y-4">
-      {/* Header con búsqueda y balance */}
-      <div className={`flex-shrink-0 ${isMobile ? 'flex-col space-y-3' : 'flex justify-between items-center'}`}>
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
         <Input
           placeholder="Buscar transacciones..."
           value={searchTerm}
           onChange={handleSearch}
-          className={`${isMobile ? 'w-full' : 'max-w-sm'} min-h-[44px]`}
+          className="max-w-sm"
         />
-        <div className={`${isMobile ? 'text-center' : 'text-right'}`}>
-          <p className="text-xs sm:text-sm text-muted-foreground">Balance Total:</p>
-          <p className={`text-lg sm:text-xl font-bold ${totalBalance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+        <div className="text-right">
+          <p className="text-sm text-muted-foreground">Balance Total:</p>
+          <p className={`text-lg font-semibold ${totalBalance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
             {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'COP' })
               .format(totalBalance)
               .replace('COP', '$')}
@@ -217,66 +213,51 @@ const TransactionTable = () => {
         </div>
       </div>
       
-      {/* Tabla con scroll */}
-      <div className="flex-1 overflow-hidden">
-        <div className="h-full overflow-auto border rounded-md">
-          <Table>
-            <TableHeader className="sticky top-0 bg-background z-10">
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[100px]">Fecha</TableHead>
+              <TableHead>Tipo</TableHead>
+              <TableHead className="max-w-[300px]">Descripción</TableHead>
+              <TableHead className="text-right">Monto</TableHead>
+              <TableHead className="text-right">Saldo</TableHead>
+              <TableHead className="w-[70px]"></TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {paginatedTransactions.length > 0 ? (
+              paginatedTransactions.map((transaction: Transaction) => (
+                <TransactionRow 
+                  key={transaction.id}
+                  transaction={transaction}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                  balance={balances.get(transaction.id) || 0}
+                />
+              ))
+            ) : (
               <TableRow>
-                <TableHead className={`${isMobile ? 'w-[80px] text-xs' : 'w-[100px]'}`}>
-                  Fecha
-                </TableHead>
-                <TableHead className={isMobile ? 'w-[60px] text-xs' : ''}>
-                  Tipo
-                </TableHead>
-                <TableHead className={`${isMobile ? 'max-w-[120px] text-xs' : 'max-w-[300px]'}`}>
-                  Descripción
-                </TableHead>
-                <TableHead className={`text-right ${isMobile ? 'w-[80px] text-xs' : ''}`}>
-                  Monto
-                </TableHead>
-                <TableHead className={`text-right ${isMobile ? 'w-[80px] text-xs' : ''}`}>
-                  Saldo
-                </TableHead>
-                <TableHead className={`${isMobile ? 'w-[40px]' : 'w-[70px]'}`}></TableHead>
+                <TableCell colSpan={6} className="h-24 text-center">
+                  {searchTerm 
+                    ? "No se encontraron transacciones coincidentes." 
+                    : "No hay transacciones registradas aún."}
+                </TableCell>
               </TableRow>
-            </TableHeader>
-            <TableBody>
-              {paginatedTransactions.length > 0 ? (
-                paginatedTransactions.map((transaction: Transaction) => (
-                  <TransactionRow 
-                    key={transaction.id}
-                    transaction={transaction}
-                    onEdit={handleEdit}
-                    onDelete={handleDelete}
-                    balance={balances.get(transaction.id) || 0}
-                  />
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={6} className="h-24 text-center text-sm">
-                    {searchTerm 
-                      ? "No se encontraron transacciones coincidentes." 
-                      : "No hay transacciones registradas aún."}
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div>
+            )}
+          </TableBody>
+        </Table>
       </div>
 
-      {/* Paginación compacta para móvil */}
+      {/* Información de paginación y controles */}
       {totalPages > 1 && (
-        <div className="flex-shrink-0 flex items-center justify-between gap-2">
-          {!isMobile && (
-            <div className="text-sm text-muted-foreground">
-              Mostrando {startIndex + 1} a {Math.min(endIndex, sortedFilteredTransactions.length)} de {sortedFilteredTransactions.length} transacciones
-            </div>
-          )}
+        <div className="flex items-center justify-between">
+          <div className="text-sm text-muted-foreground">
+            Mostrando {startIndex + 1} a {Math.min(endIndex, sortedFilteredTransactions.length)} de {sortedFilteredTransactions.length} transacciones
+          </div>
           
-          <Pagination className={isMobile ? 'w-full justify-center' : ''}>
-            <PaginationContent className={isMobile ? 'gap-1' : ''}>
+          <Pagination>
+            <PaginationContent>
               <PaginationItem>
                 <PaginationPrevious 
                   href="#"
@@ -284,38 +265,28 @@ const TransactionTable = () => {
                     e.preventDefault();
                     if (currentPage > 1) handlePageChange(currentPage - 1);
                   }}
-                  className={`${currentPage === 1 ? 'pointer-events-none opacity-50' : ''} ${
-                    isMobile ? 'px-2 text-xs' : ''
-                  }`}
+                  className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''}
                 />
               </PaginationItem>
               
-              {!isMobile ? (
-                generatePageNumbers().map((page, index) => (
-                  <PaginationItem key={index}>
-                    {page === 'ellipsis' ? (
-                      <PaginationEllipsis />
-                    ) : (
-                      <PaginationLink
-                        href="#"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handlePageChange(page as number);
-                        }}
-                        isActive={currentPage === page}
-                      >
-                        {page}
-                      </PaginationLink>
-                    )}
-                  </PaginationItem>
-                ))
-              ) : (
-                <PaginationItem>
-                  <span className="px-3 py-1 text-sm">
-                    {currentPage} / {totalPages}
-                  </span>
+              {generatePageNumbers().map((page, index) => (
+                <PaginationItem key={index}>
+                  {page === 'ellipsis' ? (
+                    <PaginationEllipsis />
+                  ) : (
+                    <PaginationLink
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handlePageChange(page as number);
+                      }}
+                      isActive={currentPage === page}
+                    >
+                      {page}
+                    </PaginationLink>
+                  )}
                 </PaginationItem>
-              )}
+              ))}
               
               <PaginationItem>
                 <PaginationNext 
@@ -324,9 +295,7 @@ const TransactionTable = () => {
                     e.preventDefault();
                     if (currentPage < totalPages) handlePageChange(currentPage + 1);
                   }}
-                  className={`${currentPage === totalPages ? 'pointer-events-none opacity-50' : ''} ${
-                    isMobile ? 'px-2 text-xs' : ''
-                  }`}
+                  className={currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}
                 />
               </PaginationItem>
             </PaginationContent>
@@ -334,21 +303,19 @@ const TransactionTable = () => {
         </div>
       )}
 
-      {/* Diálogo de edición responsive */}
+      {/* Diálogo de edición */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className={`${isMobile ? 'w-[95vw] max-w-[95vw] h-[90vh] max-h-[90vh] overflow-y-auto' : 'sm:max-w-[550px]'}`}>
+        <DialogContent className="sm:max-w-[550px]">
           <DialogHeader>
-            <DialogTitle className={isMobile ? 'text-base' : ''}>Editar Transacción</DialogTitle>
-            <DialogDescription className={isMobile ? 'text-sm' : ''}>
+            <DialogTitle>Editar Transacción</DialogTitle>
+            <DialogDescription>
               Actualice los datos de la transacción según sea necesario.
             </DialogDescription>
           </DialogHeader>
-          <div className={isMobile ? 'mt-4' : ''}>
-            <TransactionForm 
-              editTransaction={editingTransaction} 
-              onSuccess={closeEditDialog} 
-            />
-          </div>
+          <TransactionForm 
+            editTransaction={editingTransaction} 
+            onSuccess={closeEditDialog} 
+          />
         </DialogContent>
       </Dialog>
     </div>
