@@ -111,6 +111,71 @@
   }
 }
 
+/* Mobile-specific optimizations */
+@media (max-width: 768px) {
+  /* Improve touch targets */
+  button, a[role="button"], input[type="button"], input[type="submit"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Optimize text sizes for mobile */
+  .mobile-text-xs { font-size: 0.75rem; }
+  .mobile-text-sm { font-size: 0.875rem; }
+  .mobile-text-base { font-size: 1rem; }
+  .mobile-text-lg { font-size: 1.125rem; }
+
+  /* Mobile card optimizations */
+  .mobile-card {
+    @apply p-3 text-sm;
+  }
+
+  /* Improve form inputs on mobile */
+  input, select, textarea {
+    font-size: 16px; /* Prevents zoom on iOS */
+    @apply min-h-[44px];
+  }
+
+  /* Mobile navigation improvements */
+  .mobile-nav-item {
+    @apply py-3 px-4 text-base;
+  }
+
+  /* Better spacing for mobile */
+  .mobile-spacing {
+    @apply space-y-3;
+  }
+}
+
+/* Touch-friendly interactive elements */
+.touch-target {
+  @apply min-h-[44px] min-w-[44px] flex items-center justify-center;
+}
+
+/* Mobile table scroll */
+.mobile-table-container {
+  @apply overflow-x-auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.mobile-table-container::-webkit-scrollbar {
+  height: 4px;
+}
+
+.mobile-table-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 2px;
+}
+
+.mobile-table-container::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 2px;
+}
+
+.mobile-table-container::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
 /* Animaciones personalizadas */
 @keyframes fade-in {
   from {
