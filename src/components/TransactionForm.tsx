@@ -15,6 +15,7 @@ import { createTransaction, TransactionInput, updateTransaction } from '@/servic
 import { useAuth } from '@/contexts/AuthContext';
 import { categorizeTransaction, CATEGORIES } from '@/utils/transactionUtils';
 import CategorySuggestion from './CategorySuggestion';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 type FormData = {
   fecha: Date;
@@ -38,6 +39,7 @@ const TransactionForm = ({ editTransaction, onSuccess }: TransactionFormProps) =
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const isMobile = useIsMobile();
   
   const [formData, setFormData] = useState<FormData>({
     fecha: new Date(),
@@ -214,53 +216,55 @@ const TransactionForm = ({ editTransaction, onSuccess }: TransactionFormProps) =
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+      <div className={`grid ${isMobile ? 'grid-cols-1 gap-4' : 'grid-cols-1 md:grid-cols-2 gap-6'}`}>
         <div className="space-y-2">
-          <Label htmlFor="fecha">Fecha</Label>
+          <Label htmlFor="fecha" className="text-sm font-medium">Fecha</Label>
           <Popover>
             <PopoverTrigger asChild>
               <Button
                 variant={"outline"}
                 className={cn(
-                  "w-full justify-start text-left font-normal",
+                  "w-full justify-start text-left font-normal min-h-[44px]",
                   !formData.fecha && "text-muted-foreground"
                 )}
               >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {formData.fecha ? format(formData.fecha, 'PPP') : <span>Seleccione una fecha</span>}
+                <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0" />
+                <span className="truncate">
+                  {formData.fecha ? format(formData.fecha, 'PPP') : 'Seleccione una fecha'}
+                </span>
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
+            <PopoverContent className="w-auto p-0" align={isMobile ? "center" : "start"}>
               <Calendar
                 mode="single"
                 selected={formData.fecha}
                 onSelect={handleDateChange}
                 initialFocus
-                className="p-3 pointer-events-auto"
+                className="p-3"
               />
             </PopoverContent>
           </Popover>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="type">Tipo de Transacción</Label>
+          <Label htmlFor="type" className="text-sm font-medium">Tipo</Label>
           <Select 
             value={formData.type} 
             onValueChange={(value) => handleSelectChange('type', value)}
           >
-            <SelectTrigger>
+            <SelectTrigger className="min-h-[44px]">
               <SelectValue placeholder="Seleccione un tipo" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="ingreso">Ingreso</SelectItem>
-              <SelectItem value="gasto">Gasto</SelectItem>
+              <SelectItem value="ingreso">💰 Ingreso</SelectItem>
+              <SelectItem value="gasto">💸 Gasto</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="amount">Monto</Label>
+          <Label htmlFor="amount" className="text-sm font-medium">Monto</Label>
           <Input
             id="amount"
             name="amount"
@@ -268,19 +272,21 @@ const TransactionForm = ({ editTransaction, onSuccess }: TransactionFormProps) =
             placeholder="0.00"
             value={formData.amount}
             onChange={handleInputChange}
-            className="text-right"
+            className={`text-right min-h-[44px] ${isMobile ? 'text-base' : ''}`}
+            inputMode="decimal"
           />
         </div>
 
-        <div className="space-y-2 md:col-span-2">
-          <Label htmlFor="description">Descripción</Label>
+        <div className={`space-y-2 ${isMobile ? '' : 'md:col-span-2'}`}>
+          <Label htmlFor="description" className="text-sm font-medium">Descripción</Label>
           <Textarea
             id="description"
             name="description"
             placeholder="Descripción de la transacción"
             value={formData.description}
             onChange={handleInputChange}
-            rows={3}
+            rows={isMobile ? 2 : 3}
+            className={`resize-none ${isMobile ? 'text-base' : ''}`}
           />
           
           {/* Mostrar sugerencia de categoría */}
@@ -304,7 +310,9 @@ const TransactionForm = ({ editTransaction, onSuccess }: TransactionFormProps) =
 
       <Button 
         type="submit" 
-        className="w-full md:w-auto bg-farm-green hover:bg-farm-lightgreen text-white"
+        className={`bg-theme-primary hover:bg-theme-accent text-white font-medium transition-colors ${
+          isMobile ? 'w-full min-h-[48px] text-base' : 'w-full md:w-auto'
+        }`}
         disabled={createTransactionMutation.isPending || updateTransactionMutation.isPending}
       >
         {editTransaction 

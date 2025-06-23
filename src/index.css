@@ -145,6 +145,50 @@
   .mobile-spacing {
     @apply space-y-3;
   }
+
+  /* Mobile table optimizations */
+  .mobile-table th,
+  .mobile-table td {
+    @apply px-2 py-2 text-xs;
+  }
+
+  /* Mobile transaction form */
+  .mobile-form-field {
+    @apply mb-4;
+  }
+
+  .mobile-form-field label {
+    @apply text-sm font-medium mb-2 block;
+  }
+
+  .mobile-form-field input,
+  .mobile-form-field textarea,
+  .mobile-form-field select {
+    @apply text-base min-h-[44px] w-full;
+  }
+
+  /* Better mobile tabs */
+  .mobile-tabs {
+    @apply w-full;
+  }
+
+  .mobile-tab-trigger {
+    @apply flex-1 min-h-[44px] text-xs px-2 py-2;
+  }
+
+  /* Mobile dialog improvements */
+  .mobile-dialog {
+    @apply w-[95vw] max-w-[95vw] h-[90vh] max-h-[90vh] p-4;
+  }
+
+  /* Compact mobile pagination */
+  .mobile-pagination {
+    @apply space-x-1;
+  }
+
+  .mobile-pagination button {
+    @apply px-2 py-1 text-xs min-h-[36px] min-w-[36px];
+  }
 }
 
 /* Touch-friendly interactive elements */
@@ -152,115 +196,59 @@
   @apply min-h-[44px] min-w-[44px] flex items-center justify-center;
 }
 
-/* Mobile table scroll */
+/* Mobile table scroll with better UX */
 .mobile-table-container {
   @apply overflow-x-auto;
   -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: #888 #f1f1f1;
 }
 
 .mobile-table-container::-webkit-scrollbar {
-  height: 4px;
+  height: 6px;
 }
 
 .mobile-table-container::-webkit-scrollbar-track {
   background: #f1f1f1;
-  border-radius: 2px;
+  border-radius: 3px;
 }
 
 .mobile-table-container::-webkit-scrollbar-thumb {
   background: #888;
-  border-radius: 2px;
+  border-radius: 3px;
 }
 
 .mobile-table-container::-webkit-scrollbar-thumb:hover {
   background: #555;
 }
 
-/* Animaciones personalizadas */
-@keyframes fade-in {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
+/* Responsive form improvements */
+@media (max-width: 640px) {
+  .form-grid-mobile {
+    @apply grid-cols-1 gap-4;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
 
-@keyframes scale-in {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
+  .form-button-mobile {
+    @apply w-full min-h-[48px] text-base;
   }
 }
 
-@keyframes slide-up {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* Sticky header improvements for mobile */
+.sticky-mobile-header {
+  @apply sticky top-0 bg-background/95 backdrop-blur-sm z-10 border-b;
 }
 
-@keyframes bounce-subtle {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-5px);
+/* Better focus states for mobile */
+@media (max-width: 768px) {
+  button:focus,
+  input:focus,
+  textarea:focus,
+  select:focus {
+    @apply ring-2 ring-theme-primary ring-offset-2 outline-none;
   }
 }
 
-@keyframes glow {
-  0%, 100% {
-    box-shadow: 0 0 5px rgba(77, 87, 38, 0.3);
-  }
-  50% {
-    box-shadow: 0 0 20px rgba(77, 87, 38, 0.6);
-  }
-}
-
-.animate-fade-in {
-  animation: fade-in 0.6s ease-out;
-}
-
-.animate-scale-in {
-  animation: scale-in 0.5s ease-out;
-}
-
-.animate-slide-up {
-  animation: slide-up 0.7s ease-out;
-}
-
-.animate-bounce-subtle {
-  animation: bounce-subtle 2s ease-in-out infinite;
-}
-
-.animate-glow {
-  animation: glow 3s ease-in-out infinite;
-}
-
-/* Transiciones suaves para elementos interactivos */
-.transition-smooth {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.hover-lift:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-}
-
-.hover-glow:hover {
-  box-shadow: 0 0 20px rgba(77, 87, 38, 0.4);
-}
+/* ... keep existing code (animations and other styles) */
 
 /* Theme-based utility classes */
 .bg-theme-primary {
