@@ -13,13 +13,11 @@ import { formatCurrency } from '@/utils/transactionUtils';
 import { useQuery } from '@tanstack/react-query';
 import { getLoans } from '@/services/loanService';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useIsMobile } from '@/hooks/use-mobile';
 
 const Dashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { t } = useLanguage();
-  const isMobile = useIsMobile();
   
   const { data: transactions = [], isLoading } = useTransactions();
   const { data: loans = [] } = useQuery({
@@ -44,18 +42,14 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="space-y-4 md:space-y-6 px-1 sm:px-2 pb-6 md:pb-8 min-h-0 min-w-0">
-      <div className="pt-1 md:pt-2">
-        <h2 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight break-words">
-          {t('dashboard')}
-        </h2>
-        <p className="text-muted-foreground text-sm sm:text-base md:text-lg mt-1">
-          {t('financialSummary')}
-        </p>
+    <div className="space-y-6 px-1 sm:px-2 md:px-4 pb-8 min-h-0 min-w-0">
+      <div className="pt-2">
+        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight break-words">{t('dashboard')}</h2>
+        <p className="text-muted-foreground text-base sm:text-lg">{t('financialSummary')}</p>
       </div>
 
-      {/* Cards - Optimizado para móvil */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4 min-w-0">
+      {/* Cards */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 min-w-0">
         <CardStat
           title={t('totalBalance')}
           value={formatCurrency(summary.totalBalance)}
@@ -84,54 +78,42 @@ const Dashboard = () => {
         />
       </div>
 
-      {/* Charts - Layout optimizado para móvil */}
-      <div className="space-y-4 md:space-y-6 min-w-0">
-        {/* Gráfico de balance mensual */}
-        <div className="bg-white dark:bg-farm-green rounded-lg shadow-sm p-3 md:p-4 min-w-0 w-full">
-          <ChartMonthlyBalance transactions={transactions} />
+      {/* Charts */}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 min-w-0">
+        <div className="md:col-span-2">
+          <div className="bg-white dark:bg-farm-green rounded-lg shadow-sm p-2 sm:p-4 h-full min-w-0 w-full">
+            <ChartMonthlyBalance transactions={transactions} />
+          </div>
         </div>
-        
-        {/* Gráficos de distribución - En columna en móvil, en fila en desktop */}
-        <div className={`grid gap-4 min-w-0 ${isMobile ? 'grid-cols-1' : 'md:grid-cols-2'}`}>
-          <div className="bg-white dark:bg-farm-green rounded-lg shadow-sm p-3 md:p-4 min-w-0 w-full">
+        <div>
+          <div className="bg-white dark:bg-farm-green rounded-lg shadow-sm p-2 sm:p-4 h-full min-w-0 w-full">
             <ChartCategoryDistribution 
               title="Distribución de gastos" 
               type="gastos" 
               transactions={transactions}
-              showLegend={!isMobile} 
+              showLegend={false} 
               onClick={handleExpenseChartClick}
             />
           </div>
-          <div className="bg-white dark:bg-farm-green rounded-lg shadow-sm p-3 md:p-4 min-w-0 w-full">
+        </div>
+        <div>
+          <div className="bg-white dark:bg-farm-green rounded-lg shadow-sm p-2 sm:p-4 h-full min-w-0 w-full">
             <ChartCategoryDistribution 
               title="Distribución de ingresos" 
               type="ingresos" 
               transactions={transactions}
-              showLegend={!isMobile} 
+              showLegend={false} 
               onClick={handleIncomeChartClick}
             />
           </div>
         </div>
       </div>
 
-      {/* Últimas Transacciones - Optimizado para móvil */}
+      {/* Últimas Transacciones - scroll horizontal SIEMPRE visible */}
       <div className="space-y-3 min-w-0">
-        <div className="flex items-center justify-between">
-          <h3 className="text-base sm:text-lg md:text-xl font-bold">
-            {t('latestTransactions')}
-          </h3>
-          {isMobile && (
-            <button 
-              onClick={() => navigate('/transacciones')}
-              className="text-theme-primary text-sm font-medium hover:underline"
-            >
-              Ver todas
-            </button>
-          )}
-        </div>
-        
-        <div className="w-full min-w-0 overflow-x-auto rounded-lg bg-white dark:bg-farm-green shadow-sm">
-          <div className={`p-2 md:p-4 ${isMobile ? 'min-w-[600px]' : ''}`}>
+        <h3 className="text-lg sm:text-xl font-bold">{t('latestTransactions')}</h3>
+        <div className="w-full min-w-0 overflow-x-auto rounded-lg bg-white dark:bg-farm-green shadow-sm p-2 sm:p-4">
+          <div className="min-w-[640px]">
             <TransactionTable />
           </div>
         </div>
