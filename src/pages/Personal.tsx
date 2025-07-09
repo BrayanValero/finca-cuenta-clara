@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import PersonalProfileForm from "./PersonalProfileForm";
 import ThemeCustomizer from "@/components/ThemeCustomizer";
+import NotificationSettings from "@/components/NotificationSettings";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -24,13 +25,17 @@ const Personal: React.FC = () => {
         </h1>
       </div>
       
-      <div className="w-full max-w-4xl grid grid-cols-1 lg:grid-cols-2 gap-6 relative z-10">
+      <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 relative z-10">
         <div className="transform transition-all duration-500 hover:scale-[1.02]">
           <PersonalProfileForm />
         </div>
         
         <div className="transform transition-all duration-500 hover:scale-[1.02] animate-fade-in" style={{ animationDelay: '0.2s' }}>
           <ThemeCustomizer />
+        </div>
+        
+        <div className="transform transition-all duration-500 hover:scale-[1.02] animate-fade-in xl:col-span-1 lg:col-span-2" style={{ animationDelay: '0.4s' }}>
+          <NotificationSettings />
         </div>
       </div>
       

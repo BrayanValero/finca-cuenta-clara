@@ -53,6 +53,48 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_preferences: {
+        Row: {
+          budget_alerts: boolean
+          created_at: string
+          email_notifications: boolean
+          id: string
+          large_expense_alert: boolean
+          large_expense_threshold: number | null
+          monthly_report: boolean
+          transaction_reminders: boolean
+          updated_at: string
+          user_id: string
+          weekly_summary: boolean
+        }
+        Insert: {
+          budget_alerts?: boolean
+          created_at?: string
+          email_notifications?: boolean
+          id?: string
+          large_expense_alert?: boolean
+          large_expense_threshold?: number | null
+          monthly_report?: boolean
+          transaction_reminders?: boolean
+          updated_at?: string
+          user_id: string
+          weekly_summary?: boolean
+        }
+        Update: {
+          budget_alerts?: boolean
+          created_at?: string
+          email_notifications?: boolean
+          id?: string
+          large_expense_alert?: boolean
+          large_expense_threshold?: number | null
+          monthly_report?: boolean
+          transaction_reminders?: boolean
+          updated_at?: string
+          user_id?: string
+          weekly_summary?: boolean
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
