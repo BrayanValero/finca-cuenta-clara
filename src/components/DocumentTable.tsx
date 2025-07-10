@@ -26,24 +26,24 @@ const getTypeColor = (type: string) => {
   const colors: { [key: string]: string } = {
     factura: 'bg-blue-100 text-blue-800',
     declaracion: 'bg-green-100 text-green-800',
-    contrato: 'bg-purple-100 text-purple-800',
-    recibo: 'bg-yellow-100 text-yellow-800',
-    certificado: 'bg-pink-100 text-pink-800',
-    otro: 'bg-gray-100 text-gray-800',
+    escritura: 'bg-purple-100 text-purple-800',
+    identificacion: 'bg-yellow-100 text-yellow-800',
+    planos: 'bg-pink-100 text-pink-800',
+    otros: 'bg-gray-100 text-gray-800',
   };
-  return colors[type] || colors.otro;
+  return colors[type] || 'bg-gray-100 text-gray-800';
 };
 
 const getTypeLabel = (type: string) => {
   const labels: { [key: string]: string } = {
     factura: 'Factura',
     declaracion: 'Declaración',
-    contrato: 'Contrato',
-    recibo: 'Recibo',
-    certificado: 'Certificado',
-    otro: 'Otro',
+    escritura: 'Escritura',
+    identificacion: 'Identificación',
+    planos: 'Planos',
+    otros: 'Otros',
   };
-  return labels[type] || 'Otro';
+  return labels[type] || type; // Si no está en la lista, mostrar el tipo tal como está
 };
 
 const DocumentTable: React.FC<DocumentTableProps> = ({ documents }) => {

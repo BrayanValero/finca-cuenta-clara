@@ -14,6 +14,7 @@ const documentSchema = z.object({
   description: z.string().optional(),
   drive_url: z.string().url('Debe ser una URL válida'),
   document_type: z.string().min(1, 'El tipo de documento es requerido'),
+  custom_document_type: z.string().optional(),
 });
 
 type DocumentFormData = z.infer<typeof documentSchema>;
@@ -26,10 +27,10 @@ interface DocumentFormProps {
 const documentTypes = [
   { value: 'factura', label: 'Factura' },
   { value: 'declaracion', label: 'Declaración' },
-  { value: 'contrato', label: 'Contrato' },
-  { value: 'recibo', label: 'Recibo' },
-  { value: 'certificado', label: 'Certificado' },
-  { value: 'otro', label: 'Otro' },
+  { value: 'escritura', label: 'Escritura' },
+  { value: 'identificacion', label: 'Identificación' },
+  { value: 'planos', label: 'Planos' },
+  { value: 'otros', label: 'Otros' },
 ];
 
 const DocumentForm: React.FC<DocumentFormProps> = ({ onSuccess, document }) => {
@@ -42,26 +43,33 @@ const DocumentForm: React.FC<DocumentFormProps> = ({ onSuccess, document }) => {
       description: document?.description || '',
       drive_url: document?.drive_url || '',
       document_type: document?.document_type || '',
+      custom_document_type: document?.custom_document_type || '',
     },
   });
 
+  const watchedDocumentType = form.watch('document_type');
+
   const onSubmit = async (data: DocumentFormData) => {
     try {
+      // Si el tipo es "otros" y hay un tipo personalizado, usar el personalizado
+      const finalDocumentType = data.document_type === 'otros' && data.custom_document_type 
+        ? data.custom_document_type 
+        : data.document_type;
+
+      const documentData = {
+        title: data.title,
+        description: data.description,
+        drive_url: data.drive_url,
+        document_type: finalDocumentType
+      };
+
       if (document) {
         await updateDocument.mutateAsync({ 
           id: document.id, 
-          title: data.title,
-          description: data.description,
-          drive_url: data.drive_url,
-          document_type: data.document_type
+          ...documentData
         });
       } else {
-        await createDocument.mutateAsync({
-          title: data.title,
-          description: data.description,
-          drive_url: data.drive_url,
-          document_type: data.document_type
-        });
+        await createDocument.mutateAsync(documentData);
       }
       onSuccess();
       form.reset();
@@ -111,6 +119,22 @@ const DocumentForm: React.FC<DocumentFormProps> = ({ onSuccess, document }) => {
             </FormItem>
           )}
         />
+
+        {watchedDocumentType === 'otros' && (
+          <FormField
+            control={form.control}
+            name="custom_document_type"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Tipo de Documento Personalizado</FormLabel>
+                <FormControl>
+                  <Input placeholder="Escribe el tipo de documento" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
 
         <FormField
           control={form.control}
