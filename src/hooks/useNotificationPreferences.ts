@@ -120,11 +120,12 @@ export function useNotificationPreferences(userId: string | undefined) {
         description: "Revisa tu bandeja de entrada."
       });
     },
-    onError: () => {
+    onError: (error) => {
+      console.error("Error sending test email:", error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "No se pudo enviar el email de prueba."
+        description: `No se pudo enviar el email de prueba: ${error.message || 'Error desconocido'}`
       });
     }
   });
