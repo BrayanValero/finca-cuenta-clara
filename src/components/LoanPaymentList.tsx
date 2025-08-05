@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -31,6 +31,10 @@ const LoanPaymentList: React.FC<LoanPaymentListProps> = ({ loanId }) => {
   const { data: payments = [], isLoading, error } = useLoanPayments(loanId);
   const { deletePaymentMutation } = useLoanPaymentMutations();
 
+  const totalPaid = useMemo(() => {
+    return payments.reduce((sum, payment) => sum + payment.amount, 0);
+  }, [payments]);
+
   const handleDelete = (id: string) => {
     if (window.confirm('¿Estás seguro de que deseas eliminar este abono?')) {
       deletePaymentMutation.mutate(id);
@@ -52,8 +56,6 @@ const LoanPaymentList: React.FC<LoanPaymentListProps> = ({ loanId }) => {
       </div>
     );
   }
-
-  const totalPaid = payments.reduce((sum, payment) => sum + payment.amount, 0);
 
   return (
     <div className="space-y-4">
@@ -90,6 +92,7 @@ const LoanPaymentList: React.FC<LoanPaymentListProps> = ({ loanId }) => {
                     size="sm"
                     onClick={() => handleDelete(payment.id)}
                     className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
+                    disabled={deletePaymentMutation.isPending}
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>

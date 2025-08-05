@@ -55,7 +55,6 @@ const LoanTable = ({ statusFilter }: LoanTableProps) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLoanId, setSelectedLoanId] = useState<string>('');
   const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
-  const [remainingBalances, setRemainingBalances] = useState<{ [key: string]: number }>({});
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -64,12 +63,17 @@ const LoanTable = ({ statusFilter }: LoanTableProps) => {
     queryFn: getLoans
   });
 
-  // Calculate remaining balances when loans data changes
-  useEffect(() => {
-    const calculateBalances = async () => {
-      if (loans.length > 0) {
-        const balances: { [key: string]: number } = {};
-        for (const loan of loans) {
+  // Query to get remaining balances for all loans at once
+  const { data: remainingBalances = {} } = useQuery({
+    queryKey: ['loan-balances', loans.map(loan => loan.id)],
+    queryFn: async () => {
+      if (loans.length === 0) return {};
+      
+      const balances: { [key: string]: number } = {};
+      
+      // Use Promise.all to make all balance calls in parallel
+      await Promise.all(
+        loans.map(async (loan) => {
           try {
             const balance = await getLoanRemainingBalance(loan.id);
             balances[loan.id] = balance;
@@ -77,13 +81,15 @@ const LoanTable = ({ statusFilter }: LoanTableProps) => {
             console.error(`Error getting balance for loan ${loan.id}:`, error);
             balances[loan.id] = loan.amount; // Fallback to original amount
           }
-        }
-        setRemainingBalances(balances);
-      }
-    };
-
-    calculateBalances();
-  }, [loans]);
+        })
+      );
+      
+      return balances;
+    },
+    enabled: loans.length > 0,
+    staleTime: 30000, // Cache for 30 seconds
+    refetchOnWindowFocus: false
+  });
 
   const updateLoanMutation = useMutation({
     mutationFn: ({ id, status }: { id: string; status: 'pendiente' | 'pagado' }) => 
@@ -144,8 +150,9 @@ const LoanTable = ({ statusFilter }: LoanTableProps) => {
 
   const handlePaymentSuccess = () => {
     setIsPaymentDialogOpen(false);
-    // Refetch loan data to update remaining balances
+    // Invalidate both loans and balances to refresh data
     queryClient.invalidateQueries({ queryKey: ['loans'] });
+    queryClient.invalidateQueries({ queryKey: ['loan-balances'] });
   };
 
   let filteredLoans = loans.filter(

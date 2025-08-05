@@ -19,6 +19,7 @@ export const useLoanPaymentMutations = (onSuccess?: () => void) => {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['loan-payments'] });
       queryClient.invalidateQueries({ queryKey: ['loans'] });
+      queryClient.invalidateQueries({ queryKey: ['loan-balances'] });
       toast({
         title: "Abono registrado",
         description: "El abono ha sido registrado con éxito."
@@ -39,6 +40,7 @@ export const useLoanPaymentMutations = (onSuccess?: () => void) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['loan-payments'] });
       queryClient.invalidateQueries({ queryKey: ['loans'] });
+      queryClient.invalidateQueries({ queryKey: ['loan-balances'] });
       toast({
         title: "Abono eliminado",
         description: "El abono ha sido eliminado con éxito."
