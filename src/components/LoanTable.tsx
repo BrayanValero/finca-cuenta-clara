@@ -1,6 +1,6 @@
 
-import { useState } from 'react';
-import { ArrowUpDown, Calendar, ChevronDown, MoreHorizontal } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { ArrowUpDown, Calendar, ChevronDown, MoreHorizontal, DollarSign } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -20,11 +20,21 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { getLoans, updateLoan, deleteLoan, Loan } from '@/services/loanService';
+import { getLoanRemainingBalance } from '@/services/loanPaymentService';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import LoanPaymentForm from './LoanPaymentForm';
+import LoanPaymentList from './LoanPaymentList';
 
 interface LoanTableProps {
   statusFilter?: 'pendiente' | 'pagado';
@@ -43,6 +53,9 @@ const formatCurrency = (amount: number) => {
 
 const LoanTable = ({ statusFilter }: LoanTableProps) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedLoanId, setSelectedLoanId] = useState<string>('');
+  const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
+  const [remainingBalances, setRemainingBalances] = useState<{ [key: string]: number }>({});
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -50,6 +63,27 @@ const LoanTable = ({ statusFilter }: LoanTableProps) => {
     queryKey: ['loans'],
     queryFn: getLoans
   });
+
+  // Calculate remaining balances when loans data changes
+  useEffect(() => {
+    const calculateBalances = async () => {
+      if (loans.length > 0) {
+        const balances: { [key: string]: number } = {};
+        for (const loan of loans) {
+          try {
+            const balance = await getLoanRemainingBalance(loan.id);
+            balances[loan.id] = balance;
+          } catch (error) {
+            console.error(`Error getting balance for loan ${loan.id}:`, error);
+            balances[loan.id] = loan.amount; // Fallback to original amount
+          }
+        }
+        setRemainingBalances(balances);
+      }
+    };
+
+    calculateBalances();
+  }, [loans]);
 
   const updateLoanMutation = useMutation({
     mutationFn: ({ id, status }: { id: string; status: 'pendiente' | 'pagado' }) => 
@@ -101,6 +135,17 @@ const LoanTable = ({ statusFilter }: LoanTableProps) => {
     if (window.confirm('¿Estás seguro de que deseas eliminar este préstamo?')) {
       deleteLoanMutation.mutate(id);
     }
+  };
+
+  const handleOpenPaymentDialog = (loanId: string) => {
+    setSelectedLoanId(loanId);
+    setIsPaymentDialogOpen(true);
+  };
+
+  const handlePaymentSuccess = () => {
+    setIsPaymentDialogOpen(false);
+    // Refetch loan data to update remaining balances
+    queryClient.invalidateQueries({ queryKey: ['loans'] });
   };
 
   let filteredLoans = loans.filter(
@@ -157,7 +202,8 @@ const LoanTable = ({ statusFilter }: LoanTableProps) => {
               <TableHead className="w-[120px]">Fecha</TableHead>
               <TableHead>Tipo</TableHead>
               <TableHead className="max-w-[400px]">Descripción</TableHead>
-              <TableHead className="text-right">Monto</TableHead>
+              <TableHead className="text-right">Monto Original</TableHead>
+              <TableHead className="text-right">Saldo Pendiente</TableHead>
               <TableHead>Estado</TableHead>
               <TableHead className="w-[70px]"></TableHead>
             </TableRow>
@@ -175,6 +221,11 @@ const LoanTable = ({ statusFilter }: LoanTableProps) => {
                   <TableCell className="max-w-[400px] truncate">{loan.description}</TableCell>
                   <TableCell className="text-right font-medium">
                     {formatCurrency(loan.amount)}
+                  </TableCell>
+                  <TableCell className="text-right font-medium">
+                    <span className={remainingBalances[loan.id] <= 0 ? 'text-green-600' : 'text-orange-600'}>
+                      {formatCurrency(remainingBalances[loan.id] || loan.amount)}
+                    </span>
                   </TableCell>
                   <TableCell>
                     <Badge 
@@ -195,6 +246,15 @@ const LoanTable = ({ statusFilter }: LoanTableProps) => {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+                        {loan.status === 'pendiente' && (
+                          <>
+                            <DropdownMenuItem onClick={() => handleOpenPaymentDialog(loan.id)}>
+                              <DollarSign className="mr-2 h-4 w-4" />
+                              Registrar Abono
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                          </>
+                        )}
                         <DropdownMenuItem onClick={() => handleStatusChange(loan.id, loan.status as 'pendiente' | 'pagado')}>
                           Cambiar estado
                         </DropdownMenuItem>
@@ -212,7 +272,7 @@ const LoanTable = ({ statusFilter }: LoanTableProps) => {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={6} className="h-24 text-center">
+                <TableCell colSpan={7} className="h-24 text-center">
                   {getEmptyMessage()}
                 </TableCell>
               </TableRow>
@@ -220,6 +280,25 @@ const LoanTable = ({ statusFilter }: LoanTableProps) => {
           </TableBody>
         </Table>
       </div>
+
+      {/* Payment Dialog */}
+      <Dialog open={isPaymentDialogOpen} onOpenChange={setIsPaymentDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Registrar Abono</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-6">
+            <LoanPaymentForm 
+              loanId={selectedLoanId} 
+              onSuccess={handlePaymentSuccess}
+              maxAmount={remainingBalances[selectedLoanId]}
+            />
+            {selectedLoanId && (
+              <LoanPaymentList loanId={selectedLoanId} />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
