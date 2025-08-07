@@ -209,7 +209,6 @@ const LoanTable = ({ statusFilter }: LoanTableProps) => {
               <TableHead className="w-[120px]">Fecha</TableHead>
               <TableHead>Tipo</TableHead>
               <TableHead className="max-w-[400px]">Descripción</TableHead>
-              <TableHead className="text-right">Monto Original</TableHead>
               <TableHead className="text-right">Saldo Pendiente</TableHead>
               <TableHead>Estado</TableHead>
               <TableHead className="w-[70px]"></TableHead>
@@ -226,9 +225,6 @@ const LoanTable = ({ statusFilter }: LoanTableProps) => {
                     </Badge>
                   </TableCell>
                   <TableCell className="max-w-[400px] truncate">{loan.description}</TableCell>
-                  <TableCell className="text-right font-medium">
-                    {formatCurrency(loan.amount)}
-                  </TableCell>
                   <TableCell className="text-right font-medium">
                     <span className={remainingBalances[loan.id] <= 0 ? 'text-green-600' : 'text-orange-600'}>
                       {formatCurrency(remainingBalances[loan.id] || loan.amount)}
@@ -251,9 +247,13 @@ const LoanTable = ({ statusFilter }: LoanTableProps) => {
                           <MoreHorizontal className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-                        {loan.status === 'pendiente' && (
+                       <DropdownMenuContent align="end">
+                         <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+                         <DropdownMenuItem disabled className="text-sm">
+                           Monto original: {formatCurrency(loan.amount)}
+                         </DropdownMenuItem>
+                         <DropdownMenuSeparator />
+                         {loan.status === 'pendiente' && (
                           <>
                             <DropdownMenuItem onClick={() => handleOpenPaymentDialog(loan.id)}>
                               <DollarSign className="mr-2 h-4 w-4" />
@@ -279,7 +279,7 @@ const LoanTable = ({ statusFilter }: LoanTableProps) => {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center">
+                <TableCell colSpan={6} className="h-24 text-center">
                   {getEmptyMessage()}
                 </TableCell>
               </TableRow>
