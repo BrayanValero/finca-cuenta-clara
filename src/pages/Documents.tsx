@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import DocumentForm from '@/components/DocumentForm';
 import DocumentTable from '@/components/DocumentTable';
+import DocumentBatchImport from '@/components/DocumentBatchImport';
 import { useDocuments } from '@/hooks/useDocuments';
 
 const Documents: React.FC = () => {
