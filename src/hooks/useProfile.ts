@@ -22,7 +22,7 @@ export function useProfile(userId: string | undefined) {
       
       const { data, error } = await supabase
         .from("profiles")
-        .select("id, first_name, last_name, photo_url")
+        .select("id, first_name, last_name, photo_url, phone, address")
         .eq("id", userId)
         .maybeSingle();
 
@@ -32,8 +32,8 @@ export function useProfile(userId: string | undefined) {
       const profile = data ? {
         ...data,
         full_name: [data.first_name, data.last_name].filter(Boolean).join(' ') || '',
-        phone: '', // Por ahora campos vacíos hasta que se agreguen a la DB
-        address: ''
+        phone: data.phone || '',
+        address: data.address || ''
       } : null;
       
       return profile as Profile;
@@ -57,7 +57,9 @@ export function useProfile(userId: string | undefined) {
         .from("profiles")
         .update({ 
           first_name: first_name || null,
-          last_name: last_name || null
+          last_name: last_name || null,
+          phone: updateData.phone || null,
+          address: updateData.address || null
         })
         .eq("id", updateData.id);
 
