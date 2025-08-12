@@ -8,11 +8,11 @@ import { generateReport } from '@/utils/reportUtils';
 import ReportPreview from '@/components/ReportPreview';
 import QuickReportsTab from '@/components/reports/QuickReportsTab';
 import CustomReportTab from '@/components/reports/CustomReportTab';
-import { useLanguage } from '@/contexts/LanguageContext';
+
 
 const Reports = () => {
   const { toast } = useToast();
-  const { t } = useLanguage();
+  
   const [activeReport, setActiveReport] = useState<{
     title: string;
     type: 'all' | 'incomes' | 'expenses' | 'descriptions';
@@ -96,15 +96,15 @@ const Reports = () => {
     <>
       <div className="space-y-8">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">{t('reports')}</h2>
-          <p className="text-muted-foreground">{t('generateReports')}</p>
+          <h2 className="text-3xl font-bold tracking-tight">Informes</h2>
+          <p className="text-muted-foreground">Genera informes y análisis de tus finanzas en H-V Farm</p>
         </div>
 
         <Tabs defaultValue="rapidos" className="space-y-6">
           <TabsList>
-            <TabsTrigger value="rapidos">{t('quickReports')}</TabsTrigger>
-            <TabsTrigger value="personalizado">{t('customReport')}</TabsTrigger>
-            {activeReport && <TabsTrigger value="preview">{t('preview')}</TabsTrigger>}
+            <TabsTrigger value="rapidos">Informes Rápidos</TabsTrigger>
+            <TabsTrigger value="personalizado">Informe Personalizado</TabsTrigger>
+            {activeReport && <TabsTrigger value="preview">Vista Previa</TabsTrigger>}
           </TabsList>
           
           <TabsContent value="rapidos" className="space-y-6">

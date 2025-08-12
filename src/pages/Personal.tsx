@@ -7,21 +7,21 @@ import PersonalProfileForm from "./PersonalProfileForm";
 import ThemeCustomizer from "@/components/ThemeCustomizer";
 import NotificationSettings from "@/components/NotificationSettings";
 import { Button } from "@/components/ui/button";
-import { useLanguage } from "@/contexts/LanguageContext";
+
 
 const Personal: React.FC = () => {
   const { user, signOut } = useAuth();
-  const { t } = useLanguage();
+  
   
   return (
     <div className="flex flex-col items-center justify-center min-h-[80vh] md:min-h-[600px] p-4 md:p-10 bg-gradient-to-tr from-theme-accent/10 via-theme-accent/20 to-theme-background/70 dark:bg-gradient-to-br dark:from-theme-primary/70 dark:to-theme-accent/40 rounded-3xl shadow-lg transition-all duration-500 animate-fade-in" style={{ backgroundColor: 'var(--theme-background)' }}>
       <div className="flex flex-col gap-2 items-center mb-6 animate-scale-in">
         <span className="rounded-full bg-theme-primary text-white px-4 py-2 shadow-md text-xs font-bold uppercase tracking-widest flex items-center gap-2 transition-all duration-300 hover:scale-105 hover:shadow-lg">
           <Star className="inline-block animate-pulse" size={16} />
-          {t('userZone')}
+          Zona de usuario
         </span>
         <h1 className="text-3xl md:text-4xl font-extrabold text-theme-primary dark:text-white mb-1 text-center drop-shadow transition-all duration-300 hover:scale-105">
-          {t('personalSection')}
+          Sección Personal
         </h1>
       </div>
       
@@ -47,7 +47,7 @@ const Personal: React.FC = () => {
           onClick={signOut}
         >
           <LogOut className="inline-block transition-transform duration-200 hover:rotate-6" size={22} />
-          {t('signOut')}
+          Cerrar sesión
         </Button>
         
         <span className="text-sm md:text-base text-theme-primary/80 dark:text-white/80 mb-2 select-all transition-all duration-300 hover:text-theme-primary dark:hover:text-white cursor-pointer">

@@ -9,11 +9,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { useProfile } from '@/hooks/useProfile';
 import { UserCircle, Camera, Save, Edit3 } from 'lucide-react';
-import { useLanguage } from '@/contexts/LanguageContext';
+
 
 const PersonalProfileForm: React.FC = () => {
   const { user } = useAuth();
-  const { t } = useLanguage();
+  
   const { toast } = useToast();
   const { profile, isLoading, updateProfile } = useProfile(user?.id);
   
@@ -64,13 +64,13 @@ const PersonalProfileForm: React.FC = () => {
       
       setIsEditing(false);
       toast({
-        title: t('success'),
-        description: t('profileUpdated'),
+        title: 'Éxito',
+        description: 'Perfil actualizado correctamente',
       });
     } catch (error) {
       toast({
-        title: t('error'),
-        description: t('profileUpdateError'),
+        title: 'Error',
+        description: 'Error al actualizar el perfil',
         variant: 'destructive',
       });
     }
@@ -112,7 +112,7 @@ const PersonalProfileForm: React.FC = () => {
             <Avatar className="w-24 h-24 border-4 border-farm-green/20 shadow-lg transition-all duration-300 hover:scale-110 hover:border-farm-green/40">
               <AvatarImage 
                 src={getDefaultProfileImage() || undefined} 
-                alt={t('profilePicture')}
+                alt="Foto de perfil"
                 className="transition-all duration-300 group-hover:brightness-110"
               />
               <AvatarFallback className="bg-farm-lightgreen text-farm-beige text-2xl transition-all duration-300 group-hover:bg-farm-green">
@@ -126,7 +126,7 @@ const PersonalProfileForm: React.FC = () => {
         </div>
         
         <CardTitle className="text-xl font-bold text-farm-green dark:text-farm-beige transition-all duration-300 hover:scale-105 animate-fade-in" style={{ animationDelay: '0.3s' }}>
-          {t('profileInformation')}
+          Información del Perfil
         </CardTitle>
       </CardHeader>
       
@@ -134,7 +134,7 @@ const PersonalProfileForm: React.FC = () => {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2 animate-fade-in" style={{ animationDelay: '0.4s' }}>
             <Label htmlFor="full_name" className="text-farm-darkgreen dark:text-farm-beige font-medium transition-colors duration-200">
-              {t('fullName')}
+              Nombre completo
             </Label>
             <Input
               id="full_name"
@@ -144,13 +144,13 @@ const PersonalProfileForm: React.FC = () => {
               onChange={handleInputChange}
               disabled={!isEditing}
               className="transition-all duration-300 focus:scale-[1.02] disabled:opacity-60 hover:shadow-md"
-              placeholder={t('enterFullName')}
+              placeholder="Ingresa tu nombre completo"
             />
           </div>
 
           <div className="space-y-2 animate-fade-in" style={{ animationDelay: '0.5s' }}>
             <Label htmlFor="phone" className="text-farm-darkgreen dark:text-farm-beige font-medium transition-colors duration-200">
-              {t('phone')}
+              Teléfono
             </Label>
             <Input
               id="phone"
@@ -160,13 +160,13 @@ const PersonalProfileForm: React.FC = () => {
               onChange={handleInputChange}
               disabled={!isEditing}
               className="transition-all duration-300 focus:scale-[1.02] disabled:opacity-60 hover:shadow-md"
-              placeholder={t('enterPhone')}
+              placeholder="Ingresa tu teléfono"
             />
           </div>
 
           <div className="space-y-2 animate-fade-in" style={{ animationDelay: '0.6s' }}>
             <Label htmlFor="address" className="text-farm-darkgreen dark:text-farm-beige font-medium transition-colors duration-200">
-              {t('address')}
+              Dirección
             </Label>
             <Input
               id="address"
@@ -176,7 +176,7 @@ const PersonalProfileForm: React.FC = () => {
               onChange={handleInputChange}
               disabled={!isEditing}
               className="transition-all duration-300 focus:scale-[1.02] disabled:opacity-60 hover:shadow-md"
-              placeholder={t('enterAddress')}
+              placeholder="Ingresa tu dirección"
             />
           </div>
 
@@ -189,7 +189,7 @@ const PersonalProfileForm: React.FC = () => {
                   disabled={updateProfile.isPending}
                 >
                   <Save className="mr-2 h-4 w-4 transition-transform duration-200 hover:rotate-12" />
-                  {updateProfile.isPending ? t('saving') : t('save')}
+                  {updateProfile.isPending ? 'Guardando...' : 'Guardar'}
                 </Button>
                 <Button
                   type="button"
@@ -197,7 +197,7 @@ const PersonalProfileForm: React.FC = () => {
                   onClick={handleEditToggle}
                   className="flex-1 transition-all duration-300 hover:scale-105 active:scale-95 hover:shadow-md"
                 >
-                  {t('cancel')}
+                  Cancelar
                 </Button>
               </>
             ) : (
@@ -207,7 +207,7 @@ const PersonalProfileForm: React.FC = () => {
                 className="w-full bg-farm-brown hover:bg-farm-lightbrown transition-all duration-300 hover:scale-105 active:scale-95 hover:shadow-lg"
               >
                 <Edit3 className="mr-2 h-4 w-4 transition-transform duration-200 hover:rotate-12" />
-                {t('edit')}
+                Editar
               </Button>
             )}
           </div>

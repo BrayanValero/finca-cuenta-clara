@@ -16,10 +16,6 @@ import NotFound from "./pages/NotFound";
 import Personal from "./pages/Personal";
 import Documents from "./pages/Documents";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
-import { LanguageProvider } from "./contexts/LanguageContext";
-
-// Import i18n config to initialize it
-import './i18n/config';
 
 // Protected route component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -74,13 +70,11 @@ const App = () => {
     <BrowserRouter>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <LanguageProvider>
-            <TooltipProvider>
-              <AppRoutes />
-              <Toaster />
-              <Sonner />
-            </TooltipProvider>
-          </LanguageProvider>
+          <TooltipProvider>
+            <AppRoutes />
+            <Toaster />
+            <Sonner />
+          </TooltipProvider>
         </AuthProvider>
       </QueryClientProvider>
     </BrowserRouter>

@@ -12,12 +12,12 @@ import { useFinancialSummary } from '@/hooks/useFinancialSummary';
 import { formatCurrency } from '@/utils/transactionUtils';
 import { useQuery } from '@tanstack/react-query';
 import { getLoans } from '@/services/loanService';
-import { useLanguage } from '@/contexts/LanguageContext';
+
 
 const Dashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { t } = useLanguage();
+  
   
   const { data: transactions = [], isLoading } = useTransactions();
   const { data: loans = [] } = useQuery({
@@ -44,34 +44,34 @@ const Dashboard = () => {
   return (
     <div className="space-y-6 px-1 sm:px-2 md:px-4 pb-8 min-h-0 min-w-0">
       <div className="pt-2">
-        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight break-words">{t('dashboard')}</h2>
-        <p className="text-muted-foreground text-base sm:text-lg">{t('financialSummary')}</p>
+        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight break-words">Panel</h2>
+        <p className="text-muted-foreground text-base sm:text-lg">Resumen financiero de tu finca</p>
       </div>
 
       {/* Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 min-w-0">
         <CardStat
-          title={t('totalBalance')}
+          title="Balance Total"
           value={formatCurrency(summary.totalBalance)}
           icon={<DollarSign className="h-4 w-4" />}
           className="bg-white dark:bg-farm-green"
         />
         <CardStat
-          title={t('monthlyIncome')}
+          title="Ingresos Mensuales"
           value={formatCurrency(summary.monthlyIncome)}
           icon={<TrendingUp className="h-4 w-4 text-green-500" />}
           trend={summary.incomeTrend}
           className="bg-white dark:bg-farm-green"
         />
         <CardStat
-          title={t('monthlyExpenses')}
+          title="Gastos Mensuales"
           value={formatCurrency(summary.monthlyExpenses)}
           icon={<TrendingDown className="h-4 w-4 text-red-500" />}
           trend={summary.expensesTrend}
           className="bg-white dark:bg-farm-green"
         />
         <CardStat
-          title={t('liquidity')}
+          title="Liquidez"
           value={formatCurrency(summary.liquidity)}
           icon={<BanknoteIcon className="h-4 w-4" />}
           className="bg-white dark:bg-farm-green"
@@ -111,7 +111,7 @@ const Dashboard = () => {
 
       {/* Últimas Transacciones - scroll horizontal SIEMPRE visible */}
       <div className="space-y-3 min-w-0">
-        <h3 className="text-lg sm:text-xl font-bold">{t('latestTransactions')}</h3>
+        <h3 className="text-lg sm:text-xl font-bold">Últimas Transacciones</h3>
         <div className="w-full min-w-0 overflow-x-auto rounded-lg bg-white dark:bg-farm-green shadow-sm p-2 sm:p-4">
           <div className="min-w-[640px]">
             <TransactionTable />

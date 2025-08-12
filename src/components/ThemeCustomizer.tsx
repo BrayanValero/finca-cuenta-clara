@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Palette, RotateCcw } from 'lucide-react';
-import { useLanguage } from '@/contexts/LanguageContext';
+
 
 interface ColorTheme {
   name: string;
@@ -76,7 +76,7 @@ const colorThemes: ColorTheme[] = [
 ];
 
 const ThemeCustomizer: React.FC = () => {
-  const { t } = useLanguage();
+  
   const [selectedTheme, setSelectedTheme] = useState<ColorTheme>(colorThemes[0]);
 
   useEffect(() => {

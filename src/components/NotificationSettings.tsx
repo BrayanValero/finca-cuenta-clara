@@ -8,11 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useNotificationPreferences } from "@/hooks/useNotificationPreferences";
 import { useAuth } from "@/contexts/AuthContext";
-import { useLanguage } from "@/contexts/LanguageContext";
+
 
 const NotificationSettings: React.FC = () => {
   const { user } = useAuth();
-  const { t } = useLanguage();
+  
   const { preferences, isLoading, updatePreferences, sendTestEmail } = useNotificationPreferences(user?.id);
 
   const handleToggle = (key: keyof typeof preferences, value: boolean) => {
