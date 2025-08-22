@@ -1,6 +1,7 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { createLoanPayment, deleteLoanPayment, getLoanPayments, LoanPaymentInput } from '@/services/loanPaymentService';
-import { useToast } from '@/hooks/use-toast';
+import { useMutationWithToast } from './useMutationWithToast';
+import { TOAST_MESSAGES } from '@/constants/messages';
 
 export const useLoanPayments = (loanId: string) => {
   return useQuery({
@@ -11,48 +12,20 @@ export const useLoanPayments = (loanId: string) => {
 };
 
 export const useLoanPaymentMutations = (onSuccess?: () => void) => {
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-
-  const createPaymentMutation = useMutation({
+  const createPaymentMutation = useMutationWithToast({
     mutationFn: createLoanPayment,
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['loan-payments'] });
-      queryClient.invalidateQueries({ queryKey: ['loans'] });
-      queryClient.invalidateQueries({ queryKey: ['loan-balances'] });
-      toast({
-        title: "Abono registrado",
-        description: "El abono ha sido registrado con éxito."
-      });
-      if (onSuccess) onSuccess();
-    },
-    onError: (error) => {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "No se pudo registrar el abono. Por favor, inténtelo de nuevo."
-      });
-    }
+    successMessage: TOAST_MESSAGES.LOAN_PAYMENT.CREATE_SUCCESS,
+    errorMessage: TOAST_MESSAGES.LOAN_PAYMENT.CREATE_ERROR,
+    queryKeysToInvalidate: [['loan-payments'], ['loans'], ['loan-balances']],
+    onSuccess
   });
 
-  const deletePaymentMutation = useMutation({
+  const deletePaymentMutation = useMutationWithToast({
     mutationFn: deleteLoanPayment,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['loan-payments'] });
-      queryClient.invalidateQueries({ queryKey: ['loans'] });
-      queryClient.invalidateQueries({ queryKey: ['loan-balances'] });
-      toast({
-        title: "Abono eliminado",
-        description: "El abono ha sido eliminado con éxito."
-      });
-    },
-    onError: (error) => {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "No se pudo eliminar el abono. Por favor, inténtelo de nuevo."
-      });
-    }
+    successMessage: TOAST_MESSAGES.LOAN_PAYMENT.DELETE_SUCCESS,
+    errorMessage: TOAST_MESSAGES.LOAN_PAYMENT.DELETE_ERROR,
+    queryKeysToInvalidate: [['loan-payments'], ['loans'], ['loan-balances']],
+    onSuccess
   });
 
   return {

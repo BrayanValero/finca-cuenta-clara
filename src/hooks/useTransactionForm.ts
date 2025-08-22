@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { TransactionInput } from '@/services/transactionService';
 import { categorizeTransaction } from '@/utils/transactionUtils';
 import { FormData, CategorySuggestion } from '@/types/TransactionFormTypes';

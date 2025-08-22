@@ -1,6 +1,6 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { useMutationWithToast } from './useMutationWithToast';
+import { TOAST_MESSAGES } from '@/constants/messages';
 
 interface DocumentData {
   title: string;
@@ -9,101 +9,71 @@ interface DocumentData {
   document_type: string;
 }
 
+const createDocumentFn = async (data: DocumentData) => {
+  const { data: user } = await supabase.auth.getUser();
+  if (!user.user) {
+    throw new Error('Usuario no autenticado');
+  }
+
+  const { data: document, error } = await supabase
+    .from('documents')
+    .insert([{ ...data, user_id: user.user.id }])
+    .select()
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  return document;
+};
+
+const updateDocumentFn = async ({ id, ...data }: DocumentData & { id: string }) => {
+  const { data: document, error } = await supabase
+    .from('documents')
+    .update(data)
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  return document;
+};
+
+const deleteDocumentFn = async (id: string) => {
+  const { error } = await supabase
+    .from('documents')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    throw error;
+  }
+};
+
 export const useDocumentMutations = () => {
-  const queryClient = useQueryClient();
-  const { toast } = useToast();
-
-  const createDocument = useMutation({
-    mutationFn: async (data: DocumentData) => {
-      const { data: user } = await supabase.auth.getUser();
-      if (!user.user) {
-        throw new Error('Usuario no autenticado');
-      }
-
-      const { data: document, error } = await supabase
-        .from('documents')
-        .insert([{ ...data, user_id: user.user.id }])
-        .select()
-        .single();
-
-      if (error) {
-        throw error;
-      }
-
-      return document;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['documents'] });
-      toast({
-        title: "Documento agregado",
-        description: "El documento se ha guardado correctamente."
-      });
-    },
-    onError: () => {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "No se pudo guardar el documento."
-      });
-    }
+  const createDocument = useMutationWithToast({
+    mutationFn: createDocumentFn,
+    successMessage: TOAST_MESSAGES.DOCUMENT.CREATE_SUCCESS,
+    errorMessage: TOAST_MESSAGES.DOCUMENT.CREATE_ERROR,
+    queryKeysToInvalidate: [['documents']]
   });
 
-  const updateDocument = useMutation({
-    mutationFn: async ({ id, ...data }: DocumentData & { id: string }) => {
-      const { data: document, error } = await supabase
-        .from('documents')
-        .update(data)
-        .eq('id', id)
-        .select()
-        .single();
-
-      if (error) {
-        throw error;
-      }
-
-      return document;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['documents'] });
-      toast({
-        title: "Documento actualizado",
-        description: "Los cambios se han guardado correctamente."
-      });
-    },
-    onError: () => {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "No se pudo actualizar el documento."
-      });
-    }
+  const updateDocument = useMutationWithToast({
+    mutationFn: updateDocumentFn,
+    successMessage: TOAST_MESSAGES.DOCUMENT.UPDATE_SUCCESS,
+    errorMessage: TOAST_MESSAGES.DOCUMENT.UPDATE_ERROR,
+    queryKeysToInvalidate: [['documents']]
   });
 
-  const deleteDocument = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('documents')
-        .delete()
-        .eq('id', id);
-
-      if (error) {
-        throw error;
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['documents'] });
-      toast({
-        title: "Documento eliminado",
-        description: "El documento se ha eliminado correctamente."
-      });
-    },
-    onError: () => {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "No se pudo eliminar el documento."
-      });
-    }
+  const deleteDocument = useMutationWithToast({
+    mutationFn: deleteDocumentFn,
+    successMessage: TOAST_MESSAGES.DOCUMENT.DELETE_SUCCESS,
+    errorMessage: TOAST_MESSAGES.DOCUMENT.DELETE_ERROR,
+    queryKeysToInvalidate: [['documents']]
   });
 
   return {

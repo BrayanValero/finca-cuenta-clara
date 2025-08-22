@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useQuery } from '@tanstack/react-query';
 import { getTransactions } from '@/services/transactionService';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { generateReport } from '@/utils/reportUtils';
 import ReportPreview from '@/components/ReportPreview';
 import QuickReportsTab from '@/components/reports/QuickReportsTab';

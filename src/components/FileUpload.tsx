@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { Upload } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { useQueryClient } from '@tanstack/react-query';
