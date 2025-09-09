@@ -60,5 +60,57 @@ export const TOAST_MESSAGES = {
       title: "Error",
       description: "No se pudo eliminar el documento."
     }
+  },
+  ANIMAL: {
+    CREATE_SUCCESS: {
+      title: "Animal agregado",
+      description: "El animal se ha agregado correctamente."
+    },
+    UPDATE_SUCCESS: {
+      title: "Animal actualizado",
+      description: "Los datos del animal se han actualizado correctamente."
+    },
+    DELETE_SUCCESS: {
+      title: "Animal eliminado",
+      description: "El animal se ha eliminado correctamente."
+    },
+    CREATE_ERROR: {
+      title: "Error",
+      description: "No se pudo agregar el animal."
+    },
+    UPDATE_ERROR: {
+      title: "Error",
+      description: "No se pudo actualizar el animal."
+    },
+    DELETE_ERROR: {
+      title: "Error",
+      description: "No se pudo eliminar el animal."
+    }
+  },
+  ANIMAL_TRANSACTION: {
+    CREATE_SUCCESS: {
+      title: "Transacción registrada",
+      description: "La transacción del animal se ha guardado con éxito."
+    },
+    UPDATE_SUCCESS: {
+      title: "Transacción actualizada",
+      description: "La transacción del animal se ha actualizado con éxito."
+    },
+    DELETE_SUCCESS: {
+      title: "Transacción eliminada",
+      description: "La transacción del animal se ha eliminado con éxito."
+    },
+    CREATE_ERROR: {
+      title: "Error",
+      description: "No se pudo registrar la transacción del animal."
+    },
+    UPDATE_ERROR: {
+      title: "Error",
+      description: "No se pudo actualizar la transacción del animal."
+    },
+    DELETE_ERROR: {
+      title: "Error",
+      description: "No se pudo eliminar la transacción del animal."
+    }
   }
 } as const;

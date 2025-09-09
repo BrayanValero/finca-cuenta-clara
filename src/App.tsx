@@ -15,6 +15,7 @@ import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import Personal from "./pages/Personal";
 import Documents from "./pages/Documents";
+import Animals from "./pages/Animals";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 
 // Protected route component
@@ -51,6 +52,7 @@ const AppRoutes = () => {
         <Route path="/estadisticas" element={<Statistics />} />
         <Route path="/informes" element={<Reports />} />
         <Route path="/prestamos" element={<Loans />} />
+        <Route path="/animales" element={<Animals />} />
         <Route path="/detalle-distribuciones" element={<ChartDetail />} />
         <Route path="/documentacion" element={<Documents />} />
         <Route path="/personal" element={<Personal />} />

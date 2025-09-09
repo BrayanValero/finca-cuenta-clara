@@ -14,6 +14,86 @@ export type Database = {
   }
   public: {
     Tables: {
+      animal_transactions: {
+        Row: {
+          amount: number
+          animal_id: string
+          category: string
+          created_at: string
+          date: string
+          description: string | null
+          id: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          animal_id: string
+          category: string
+          created_at?: string
+          date?: string
+          description?: string | null
+          id?: string
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          animal_id?: string
+          category?: string
+          created_at?: string
+          date?: string
+          description?: string | null
+          id?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "animal_transactions_animal_id_fkey"
+            columns: ["animal_id"]
+            isOneToOne: false
+            referencedRelation: "animals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      animals: {
+        Row: {
+          animal_type: string
+          created_at: string
+          description: string | null
+          id: string
+          name: string | null
+          quantity: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          animal_type: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string | null
+          quantity?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          animal_type?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string | null
+          quantity?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       documents: {
         Row: {
           created_at: string

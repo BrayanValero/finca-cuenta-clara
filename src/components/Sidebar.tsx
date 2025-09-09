@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { BarChart3, FileText, Home, LogOut, PlusCircle, DollarSign, UserCircle, FolderOpen } from 'lucide-react';
+import { BarChart3, FileText, Home, LogOut, PlusCircle, DollarSign, UserCircle, FolderOpen, Beef } from 'lucide-react';
 import AppLogo from './AppLogo';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -58,6 +58,19 @@ const Sidebar: React.FC = () => {
             >
               <DollarSign size={20} className="mr-3" />
               <span>Préstamos</span>
+            </Link>
+          </li>
+          <li>
+            <Link 
+              to="/animales"
+              className={`flex items-center p-2 rounded-md transition-colors ${
+                isActive("/animales") 
+                  ? "bg-theme-accent text-white" 
+                  : "hover:bg-theme-accent/30"
+              }`}
+            >
+              <Beef size={20} className="mr-3" />
+              <span>Mis Animales</span>
             </Link>
           </li>
           <li>
