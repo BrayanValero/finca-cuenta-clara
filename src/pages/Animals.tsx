@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Plus, BarChart3, Users } from 'lucide-react';
+import { ArrowLeft, Plus, BarChart3, Users, ShoppingCart, Receipt } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { AnimalTable } from '@/components/AnimalTable';
-import { AnimalTransactionForm } from '@/components/AnimalTransactionForm';
+import { AnimalSaleForm } from '@/components/AnimalSaleForm';
+import { AnimalExpenseForm } from '@/components/AnimalExpenseForm';
 import { EggDebtorForm } from '@/components/EggDebtorForm';
 import { EggDebtorTable } from '@/components/EggDebtorTable';
 import { useAnimals } from '@/hooks/useAnimals';
@@ -20,7 +21,8 @@ import { es } from 'date-fns/locale';
 
 const Animals: React.FC = () => {
   const [selectedAnimal, setSelectedAnimal] = useState<Animal | null>(null);
-  const [isTransactionFormOpen, setIsTransactionFormOpen] = useState(false);
+  const [isSaleFormOpen, setIsSaleFormOpen] = useState(false);
+  const [isExpenseFormOpen, setIsExpenseFormOpen] = useState(false);
   const [isDebtorFormOpen, setIsDebtorFormOpen] = useState(false);
 
   const { data: animals = [], isLoading: animalsLoading } = useAnimals();
@@ -38,7 +40,8 @@ const Animals: React.FC = () => {
   const handleCreateTransaction = (data: any) => {
     createTransaction.mutate(data, {
       onSuccess: () => {
-        setIsTransactionFormOpen(false);
+        setIsSaleFormOpen(false);
+        setIsExpenseFormOpen(false);
       }
     });
   };
@@ -186,46 +189,105 @@ const Animals: React.FC = () => {
 
         {/* Action Buttons */}
         <div className="flex gap-2 mb-6">
-          <Dialog open={isTransactionFormOpen} onOpenChange={setIsTransactionFormOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                Nueva Transacción
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-md">
-              <DialogHeader>
-                <DialogTitle>
-                  Nueva Transacción - {selectedAnimal.animal_type}
-                </DialogTitle>
-              </DialogHeader>
-              <AnimalTransactionForm
-                animalId={selectedAnimal.id}
-                onSubmit={handleCreateTransaction}
-                isLoading={createTransaction.isPending}
-              />
-            </DialogContent>
-          </Dialog>
+          {selectedAnimal.animal_type === 'gallinas' ? (
+            <>
+              <Dialog open={isSaleFormOpen} onOpenChange={setIsSaleFormOpen}>
+                <DialogTrigger asChild>
+                  <Button>
+                    <ShoppingCart className="mr-2 h-4 w-4" />
+                    Venta
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Registrar Venta de Huevos</DialogTitle>
+                  </DialogHeader>
+                  <AnimalSaleForm
+                    animalId={selectedAnimal.id}
+                    onSubmit={handleCreateTransaction}
+                    isLoading={createTransaction.isPending}
+                  />
+                </DialogContent>
+              </Dialog>
 
-          {selectedAnimal.animal_type === 'gallinas' && (
-            <Dialog open={isDebtorFormOpen} onOpenChange={setIsDebtorFormOpen}>
-              <DialogTrigger asChild>
-                <Button variant="outline">
-                  <Users className="mr-2 h-4 w-4" />
-                  Nuevo Deudor
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-md">
-                <DialogHeader>
-                  <DialogTitle>Nuevo Deudor de Cartones</DialogTitle>
-                </DialogHeader>
-                <EggDebtorForm
-                  animalId={selectedAnimal.id}
-                  onSubmit={handleCreateDebtor}
-                  isLoading={createDebtor.isPending}
-                />
-              </DialogContent>
-            </Dialog>
+              <Dialog open={isExpenseFormOpen} onOpenChange={setIsExpenseFormOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline">
+                    <Receipt className="mr-2 h-4 w-4" />
+                    Gasto
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Registrar Gasto</DialogTitle>
+                  </DialogHeader>
+                  <AnimalExpenseForm
+                    animalId={selectedAnimal.id}
+                    onSubmit={handleCreateTransaction}
+                    isLoading={createTransaction.isPending}
+                  />
+                </DialogContent>
+              </Dialog>
+
+              <Dialog open={isDebtorFormOpen} onOpenChange={setIsDebtorFormOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline">
+                    <Users className="mr-2 h-4 w-4" />
+                    Nuevo Deudor
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Nuevo Deudor de Cartones</DialogTitle>
+                  </DialogHeader>
+                  <EggDebtorForm
+                    animalId={selectedAnimal.id}
+                    onSubmit={handleCreateDebtor}
+                    isLoading={createDebtor.isPending}
+                  />
+                </DialogContent>
+              </Dialog>
+            </>
+          ) : (
+            <>
+              <Dialog open={isSaleFormOpen} onOpenChange={setIsSaleFormOpen}>
+                <DialogTrigger asChild>
+                  <Button>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Ingreso
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Registrar Ingreso</DialogTitle>
+                  </DialogHeader>
+                  <AnimalExpenseForm
+                    animalId={selectedAnimal.id}
+                    onSubmit={(data) => handleCreateTransaction({...data, type: 'ingreso'})}
+                    isLoading={createTransaction.isPending}
+                  />
+                </DialogContent>
+              </Dialog>
+
+              <Dialog open={isExpenseFormOpen} onOpenChange={setIsExpenseFormOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline">
+                    <Receipt className="mr-2 h-4 w-4" />
+                    Gasto
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Registrar Gasto</DialogTitle>
+                  </DialogHeader>
+                  <AnimalExpenseForm
+                    animalId={selectedAnimal.id}
+                    onSubmit={handleCreateTransaction}
+                    isLoading={createTransaction.isPending}
+                  />
+                </DialogContent>
+              </Dialog>
+            </>
           )}
         </div>
       </div>
