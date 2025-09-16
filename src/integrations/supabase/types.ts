@@ -127,6 +127,93 @@ export type Database = {
         }
         Relationships: []
       }
+      egg_debt_payments: {
+        Row: {
+          amount_paid: number
+          cartons_paid: number
+          created_at: string
+          debtor_id: string
+          eggs_paid: number
+          id: string
+          notes: string | null
+          payment_date: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount_paid?: number
+          cartons_paid?: number
+          created_at?: string
+          debtor_id: string
+          eggs_paid?: number
+          id?: string
+          notes?: string | null
+          payment_date?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount_paid?: number
+          cartons_paid?: number
+          created_at?: string
+          debtor_id?: string
+          eggs_paid?: number
+          id?: string
+          notes?: string | null
+          payment_date?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      egg_debtors: {
+        Row: {
+          animal_id: string
+          cartons_owed: number
+          created_at: string
+          debtor_name: string
+          eggs_owed: number
+          id: string
+          notes: string | null
+          phone: string | null
+          price_per_carton: number
+          price_per_egg: number
+          total_debt: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          animal_id: string
+          cartons_owed?: number
+          created_at?: string
+          debtor_name: string
+          eggs_owed?: number
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          price_per_carton?: number
+          price_per_egg?: number
+          total_debt?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          animal_id?: string
+          cartons_owed?: number
+          created_at?: string
+          debtor_name?: string
+          eggs_owed?: number
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          price_per_carton?: number
+          price_per_egg?: number
+          total_debt?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       loan_payments: {
         Row: {
           amount: number

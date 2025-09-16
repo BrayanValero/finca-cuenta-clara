@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Plus, BarChart3 } from 'lucide-react';
+import { ArrowLeft, Plus, BarChart3, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -7,9 +7,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { AnimalTable } from '@/components/AnimalTable';
 import { AnimalTransactionForm } from '@/components/AnimalTransactionForm';
+import { EggDebtorForm } from '@/components/EggDebtorForm';
+import { EggDebtorTable } from '@/components/EggDebtorTable';
 import { useAnimals } from '@/hooks/useAnimals';
 import { useAnimalTransactions } from '@/hooks/useAnimalTransactions';
 import { useCreateAnimalTransaction } from '@/hooks/useAnimalMutations';
+import { useEggDebtors } from '@/hooks/useEggDebtors';
+import { useCreateEggDebtor, useDeleteEggDebtor } from '@/hooks/useEggDebtorMutations';
 import { Animal } from '@/services/animalService';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -17,13 +21,19 @@ import { es } from 'date-fns/locale';
 const Animals: React.FC = () => {
   const [selectedAnimal, setSelectedAnimal] = useState<Animal | null>(null);
   const [isTransactionFormOpen, setIsTransactionFormOpen] = useState(false);
+  const [isDebtorFormOpen, setIsDebtorFormOpen] = useState(false);
 
   const { data: animals = [], isLoading: animalsLoading } = useAnimals();
   const { data: transactions = [], isLoading: transactionsLoading } = useAnimalTransactions(
     selectedAnimal?.id
   );
+  const { data: debtors = [], isLoading: debtorsLoading } = useEggDebtors(
+    selectedAnimal?.animal_type === 'gallinas' ? selectedAnimal?.id : undefined
+  );
 
   const createTransaction = useCreateAnimalTransaction();
+  const createDebtor = useCreateEggDebtor();
+  const deleteDebtor = useDeleteEggDebtor();
 
   const handleCreateTransaction = (data: any) => {
     createTransaction.mutate(data, {
@@ -31,6 +41,20 @@ const Animals: React.FC = () => {
         setIsTransactionFormOpen(false);
       }
     });
+  };
+
+  const handleCreateDebtor = (data: any) => {
+    createDebtor.mutate(data, {
+      onSuccess: () => {
+        setIsDebtorFormOpen(false);
+      }
+    });
+  };
+
+  const handleDeleteDebtor = (debtorId: string) => {
+    if (confirm('¿Está seguro de eliminar este deudor?')) {
+      deleteDebtor.mutate(debtorId);
+    }
   };
 
   const getAnimalSummary = (animalId: string) => {
@@ -160,7 +184,7 @@ const Animals: React.FC = () => {
           </Card>
         </div>
 
-        {/* Action Button */}
+        {/* Action Buttons */}
         <div className="flex gap-2 mb-6">
           <Dialog open={isTransactionFormOpen} onOpenChange={setIsTransactionFormOpen}>
             <DialogTrigger asChild>
@@ -182,65 +206,159 @@ const Animals: React.FC = () => {
               />
             </DialogContent>
           </Dialog>
+
+          {selectedAnimal.animal_type === 'gallinas' && (
+            <Dialog open={isDebtorFormOpen} onOpenChange={setIsDebtorFormOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline">
+                  <Users className="mr-2 h-4 w-4" />
+                  Nuevo Deudor
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Nuevo Deudor de Cartones</DialogTitle>
+                </DialogHeader>
+                <EggDebtorForm
+                  animalId={selectedAnimal.id}
+                  onSubmit={handleCreateDebtor}
+                  isLoading={createDebtor.isPending}
+                />
+              </DialogContent>
+            </Dialog>
+          )}
         </div>
       </div>
 
-      {/* Transactions List */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <BarChart3 className="h-5 w-5" />
-            Historial de Transacciones
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {transactionsLoading ? (
-            <p>Cargando transacciones...</p>
-          ) : transactions.length === 0 ? (
-            <p className="text-muted-foreground text-center py-4">
-              No hay transacciones registradas para este animal
-            </p>
-          ) : (
-            <div className="space-y-3">
-              {transactions.map((transaction) => (
-                <div
-                  key={transaction.id}
-                  className="flex items-center justify-between p-4 border rounded-lg"
-                >
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Badge
-                        variant={transaction.type === 'ingreso' ? 'default' : 'destructive'}
+      {selectedAnimal.animal_type === 'gallinas' ? (
+        <Tabs defaultValue="transactions" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="transactions">Transacciones</TabsTrigger>
+            <TabsTrigger value="debtors">Deudores</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="transactions">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <BarChart3 className="h-5 w-5" />
+                  Historial de Transacciones
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {transactionsLoading ? (
+                  <p>Cargando transacciones...</p>
+                ) : transactions.length === 0 ? (
+                  <p className="text-muted-foreground text-center py-4">
+                    No hay transacciones registradas para este animal
+                  </p>
+                ) : (
+                  <div className="space-y-3">
+                    {transactions.map((transaction) => (
+                      <div
+                        key={transaction.id}
+                        className="flex items-center justify-between p-4 border rounded-lg"
                       >
-                        {transaction.type === 'ingreso' ? 'Ingreso' : 'Gasto'}
-                      </Badge>
-                      <span className="text-sm text-muted-foreground">
-                        {transaction.category}
-                      </span>
-                    </div>
-                    {transaction.description && (
-                      <p className="text-sm text-muted-foreground">
-                        {transaction.description}
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <Badge
+                              variant={transaction.type === 'ingreso' ? 'default' : 'destructive'}
+                            >
+                              {transaction.type === 'ingreso' ? 'Ingreso' : 'Gasto'}
+                            </Badge>
+                            <span className="text-sm text-muted-foreground">
+                              {transaction.category}
+                            </span>
+                          </div>
+                          {transaction.description && (
+                            <p className="text-sm text-muted-foreground">
+                              {transaction.description}
+                            </p>
+                          )}
+                          <p className="text-xs text-muted-foreground">
+                            {format(new Date(transaction.date), 'dd/MM/yyyy', { locale: es })}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <div className={`font-bold ${
+                            transaction.type === 'ingreso' ? 'text-green-600' : 'text-red-600'
+                          }`}>
+                            {transaction.type === 'ingreso' ? '+' : '-'}
+                            {formatCurrency(Number(transaction.amount))}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="debtors">
+            <EggDebtorTable
+              debtors={debtors}
+              onDelete={handleDeleteDebtor}
+            />
+          </TabsContent>
+        </Tabs>
+      ) : (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart3 className="h-5 w-5" />
+              Historial de Transacciones
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {transactionsLoading ? (
+              <p>Cargando transacciones...</p>
+            ) : transactions.length === 0 ? (
+              <p className="text-muted-foreground text-center py-4">
+                No hay transacciones registradas para este animal
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {transactions.map((transaction) => (
+                  <div
+                    key={transaction.id}
+                    className="flex items-center justify-between p-4 border rounded-lg"
+                  >
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Badge
+                          variant={transaction.type === 'ingreso' ? 'default' : 'destructive'}
+                        >
+                          {transaction.type === 'ingreso' ? 'Ingreso' : 'Gasto'}
+                        </Badge>
+                        <span className="text-sm text-muted-foreground">
+                          {transaction.category}
+                        </span>
+                      </div>
+                      {transaction.description && (
+                        <p className="text-sm text-muted-foreground">
+                          {transaction.description}
+                        </p>
+                      )}
+                      <p className="text-xs text-muted-foreground">
+                        {format(new Date(transaction.date), 'dd/MM/yyyy', { locale: es })}
                       </p>
-                    )}
-                    <p className="text-xs text-muted-foreground">
-                      {format(new Date(transaction.date), 'dd/MM/yyyy', { locale: es })}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <div className={`font-bold ${
-                      transaction.type === 'ingreso' ? 'text-green-600' : 'text-red-600'
-                    }`}>
-                      {transaction.type === 'ingreso' ? '+' : '-'}
-                      {formatCurrency(Number(transaction.amount))}
+                    </div>
+                    <div className="text-right">
+                      <div className={`font-bold ${
+                        transaction.type === 'ingreso' ? 'text-green-600' : 'text-red-600'
+                      }`}>
+                        {transaction.type === 'ingreso' ? '+' : '-'}
+                        {formatCurrency(Number(transaction.amount))}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };
