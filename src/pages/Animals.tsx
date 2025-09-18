@@ -42,8 +42,42 @@ const Animals: React.FC = () => {
   const createClient = useCreateClient();
 
   const handleCreateTransaction = (data: any) => {
-    // If it's a credit sale, create the debtor first
-    if (data.createDebtor) {
+    // Handle client creation if needed
+    if (data.createClient) {
+      const clientData = data.createClient;
+      delete data.createClient; // Remove client data from transaction
+      
+      createClient.mutate(clientData, {
+        onSuccess: () => {
+          // After creating client, handle the rest of the transaction
+          if (data.createDebtor) {
+            const debtorData = data.createDebtor;
+            delete data.createDebtor; // Remove debtor data from transaction
+            
+            createDebtor.mutate(debtorData, {
+              onSuccess: () => {
+                // After creating debtor, create the transaction
+                createTransaction.mutate(data, {
+                  onSuccess: () => {
+                    setIsSaleFormOpen(false);
+                    setIsExpenseFormOpen(false);
+                  }
+                });
+              }
+            });
+          } else {
+            // Just create the transaction for cash sale
+            createTransaction.mutate(data, {
+              onSuccess: () => {
+                setIsSaleFormOpen(false);
+                setIsExpenseFormOpen(false);
+              }
+            });
+          }
+        }
+      });
+    } else if (data.createDebtor) {
+      // If no new client but creating debtor (existing client selected)
       const debtorData = data.createDebtor;
       delete data.createDebtor; // Remove debtor data from transaction
       
@@ -59,6 +93,7 @@ const Animals: React.FC = () => {
         }
       });
     } else {
+      // Regular transaction (no client or debtor creation needed)
       createTransaction.mutate(data, {
         onSuccess: () => {
           setIsSaleFormOpen(false);

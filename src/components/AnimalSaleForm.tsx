@@ -25,12 +25,12 @@ const animalSaleSchema = z.object({
   message: "Debe vender al menos 1 cartón o 1 huevo",
 }).refine((data) => {
   if (data.payment_type === 'credito') {
-    return data.client_id || data.customer_name;
+    return (data.client_id && data.client_id !== 'new-client') || data.customer_name;
   }
   return true;
 }, {
-  message: "Seleccione un cliente existente o ingrese el nombre para ventas a crédito",
-  path: ['client_id']
+  message: "Para ventas a crédito debe seleccionar un cliente existente o ingresar el nombre",
+  path: ['customer_name']
 });
 
 type AnimalSaleFormData = z.infer<typeof animalSaleSchema>;
@@ -90,6 +90,14 @@ export const AnimalSaleForm: React.FC<AnimalSaleFormProps> = ({
       description,
       date: data.date
     };
+
+    // Handle client creation for both cash and credit sales
+    if ((data.client_id === 'new-client' || !data.client_id) && data.customer_name) {
+      submitData.createClient = {
+        name: data.customer_name,
+        phone: data.customer_phone || '',
+      };
+    }
 
     // If it's a credit sale, add debtor information
     if (data.payment_type === 'credito') {
@@ -228,73 +236,75 @@ export const AnimalSaleForm: React.FC<AnimalSaleFormProps> = ({
           )}
         />
 
-        {form.watch('payment_type') === 'credito' && (
-          <div className="space-y-4 p-4 bg-muted/50 rounded-lg">
-            <h4 className="text-sm font-medium">Información del Cliente</h4>
-            <div className="grid grid-cols-1 gap-4">
-              <FormField
-                control={form.control}
-                name="client_id"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Cliente Existente</FormLabel>
-                    <Select onValueChange={(value) => {
-                      field.onChange(value);
-                      if (value === "new-client" || !value) {
-                        form.setValue('customer_name', '');
-                        form.setValue('customer_phone', '');
-                      }
-                    }} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Seleccionar cliente existente" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent className="bg-background border z-50">
-                        <SelectItem value="new-client">Crear nuevo cliente</SelectItem>
-                        {clients.map((client) => (
-                          <SelectItem key={client.id} value={client.id}>
-                            {client.name} {client.phone ? `(${client.phone})` : ''}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </FormItem>
-                )}
-              />
-
-              {(!form.watch('client_id') || form.watch('client_id') === 'new-client') && (
-                <>
-                  <FormField
-                    control={form.control}
-                    name="customer_name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Nombre del Cliente *</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Nombre completo del cliente" {...field} />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="customer_phone"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Teléfono (Opcional)</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Número de teléfono" {...field} />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                </>
+        <div className="space-y-4 p-4 bg-muted/50 rounded-lg">
+          <h4 className="text-sm font-medium">
+            {form.watch('payment_type') === 'credito' ? 'Información del Cliente' : 'Cliente (Opcional)'}
+          </h4>
+          <div className="grid grid-cols-1 gap-4">
+            <FormField
+              control={form.control}
+              name="client_id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Cliente Existente</FormLabel>
+                  <Select onValueChange={(value) => {
+                    field.onChange(value);
+                    if (value === "new-client" || !value) {
+                      form.setValue('customer_name', '');
+                      form.setValue('customer_phone', '');
+                    }
+                  }} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar cliente existente" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent className="bg-background border z-50">
+                      <SelectItem value="new-client">Crear nuevo cliente</SelectItem>
+                      {clients.map((client) => (
+                        <SelectItem key={client.id} value={client.id}>
+                          {client.name} {client.phone ? `(${client.phone})` : ''}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FormItem>
               )}
-            </div>
+            />
+
+            {(!form.watch('client_id') || form.watch('client_id') === 'new-client') && (
+              <>
+                <FormField
+                  control={form.control}
+                  name="customer_name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Nombre del Cliente {form.watch('payment_type') === 'credito' ? '*' : ''}
+                      </FormLabel>
+                      <FormControl>
+                        <Input placeholder="Nombre completo del cliente" {...field} />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="customer_phone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Teléfono (Opcional)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Número de teléfono" {...field} />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              </>
+            )}
           </div>
-        )}
+        </div>
 
         <FormField
           control={form.control}
