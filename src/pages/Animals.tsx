@@ -10,11 +10,13 @@ import { AnimalSaleForm } from '@/components/AnimalSaleForm';
 import { AnimalExpenseForm } from '@/components/AnimalExpenseForm';
 import { EggDebtorForm } from '@/components/EggDebtorForm';
 import { EggDebtorTable } from '@/components/EggDebtorTable';
+import { ClientForm } from '@/components/ClientForm';
 import { useAnimals } from '@/hooks/useAnimals';
 import { useAnimalTransactions } from '@/hooks/useAnimalTransactions';
 import { useCreateAnimalTransaction } from '@/hooks/useAnimalMutations';
 import { useEggDebtors } from '@/hooks/useEggDebtors';
 import { useCreateEggDebtor, useDeleteEggDebtor } from '@/hooks/useEggDebtorMutations';
+import { useCreateClient } from '@/hooks/useClientMutations';
 import { Animal } from '@/services/animalService';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -24,6 +26,7 @@ const Animals: React.FC = () => {
   const [isSaleFormOpen, setIsSaleFormOpen] = useState(false);
   const [isExpenseFormOpen, setIsExpenseFormOpen] = useState(false);
   const [isDebtorFormOpen, setIsDebtorFormOpen] = useState(false);
+  const [isClientFormOpen, setIsClientFormOpen] = useState(false);
 
   const { data: animals = [], isLoading: animalsLoading } = useAnimals();
   const { data: transactions = [], isLoading: transactionsLoading } = useAnimalTransactions(
@@ -36,6 +39,7 @@ const Animals: React.FC = () => {
   const createTransaction = useCreateAnimalTransaction();
   const createDebtor = useCreateEggDebtor();
   const deleteDebtor = useDeleteEggDebtor();
+  const createClient = useCreateClient();
 
   const handleCreateTransaction = (data: any) => {
     // If it's a credit sale, create the debtor first
@@ -68,6 +72,14 @@ const Animals: React.FC = () => {
     createDebtor.mutate(data, {
       onSuccess: () => {
         setIsDebtorFormOpen(false);
+      }
+    });
+  };
+
+  const handleCreateClient = (data: any) => {
+    createClient.mutate(data, {
+      onSuccess: () => {
+        setIsClientFormOpen(false);
       }
     });
   };
@@ -247,7 +259,7 @@ const Animals: React.FC = () => {
                 </DialogContent>
               </Dialog>
 
-              <Dialog open={isDebtorFormOpen} onOpenChange={setIsDebtorFormOpen}>
+              <Dialog open={isClientFormOpen} onOpenChange={setIsClientFormOpen}>
                 <DialogTrigger asChild>
                   <Button variant="outline">
                     <Users className="mr-2 h-4 w-4" />
@@ -258,10 +270,9 @@ const Animals: React.FC = () => {
                   <DialogHeader>
                     <DialogTitle>Nuevo Cliente</DialogTitle>
                   </DialogHeader>
-                  <EggDebtorForm
-                    animalId={selectedAnimal.id}
-                    onSubmit={handleCreateDebtor}
-                    isLoading={createDebtor.isPending}
+                  <ClientForm
+                    onSubmit={handleCreateClient}
+                    isLoading={createClient.isPending}
                   />
                 </DialogContent>
               </Dialog>

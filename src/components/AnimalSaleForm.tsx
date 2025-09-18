@@ -6,7 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form';
+import { useClients } from '@/hooks/useClients';
 
 const animalSaleSchema = z.object({
   cartons: z.number().min(0, 'Los cartones deben ser 0 o más').default(0),
@@ -14,15 +16,21 @@ const animalSaleSchema = z.object({
   price_per_carton: z.number().min(0, 'El precio debe ser mayor a 0').default(12000),
   price_per_egg: z.number().min(0, 'El precio debe ser mayor a 0').default(500),
   payment_type: z.enum(['contado', 'credito'], { required_error: 'Seleccione tipo de pago' }),
+  client_id: z.string().optional(),
   customer_name: z.string().optional(),
   customer_phone: z.string().optional(),
   description: z.string().optional(),
   date: z.string().min(1, 'La fecha es requerida'),
 }).refine((data) => data.cartons > 0 || data.eggs > 0, {
   message: "Debe vender al menos 1 cartón o 1 huevo",
-}).refine((data) => data.payment_type !== 'credito' || data.customer_name, {
-  message: "El nombre del cliente es requerido para ventas a crédito",
-  path: ['customer_name']
+}).refine((data) => {
+  if (data.payment_type === 'credito') {
+    return data.client_id || data.customer_name;
+  }
+  return true;
+}, {
+  message: "Seleccione un cliente existente o ingrese el nombre para ventas a crédito",
+  path: ['client_id']
 });
 
 type AnimalSaleFormData = z.infer<typeof animalSaleSchema>;
@@ -38,6 +46,7 @@ export const AnimalSaleForm: React.FC<AnimalSaleFormProps> = ({
   onSubmit,
   isLoading = false
 }) => {
+  const { data: clients = [] } = useClients();
   const form = useForm<AnimalSaleFormData>({
     resolver: zodResolver(animalSaleSchema),
     defaultValues: {
@@ -46,6 +55,7 @@ export const AnimalSaleForm: React.FC<AnimalSaleFormProps> = ({
       price_per_carton: 12000,
       price_per_egg: 500,
       payment_type: 'contado' as const,
+      client_id: '',
       customer_name: '',
       customer_phone: '',
       description: '',
@@ -83,9 +93,21 @@ export const AnimalSaleForm: React.FC<AnimalSaleFormProps> = ({
 
     // If it's a credit sale, add debtor information
     if (data.payment_type === 'credito') {
+      let debtorName = data.customer_name;
+      let debtorPhone = data.customer_phone || '';
+      
+      // If a client was selected, use their information
+      if (data.client_id) {
+        const selectedClient = clients.find(c => c.id === data.client_id);
+        if (selectedClient) {
+          debtorName = selectedClient.name;
+          debtorPhone = selectedClient.phone || '';
+        }
+      }
+      
       submitData.createDebtor = {
-        debtor_name: data.customer_name!,
-        phone: data.customer_phone || '',
+        debtor_name: debtorName!,
+        phone: debtorPhone,
         cartons_owed: data.cartons,
         eggs_owed: data.eggs,
         price_per_carton: data.price_per_carton,
@@ -212,29 +234,64 @@ export const AnimalSaleForm: React.FC<AnimalSaleFormProps> = ({
             <div className="grid grid-cols-1 gap-4">
               <FormField
                 control={form.control}
-                name="customer_name"
+                name="client_id"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Nombre del Cliente *</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Nombre completo del cliente" {...field} />
-                    </FormControl>
+                    <FormLabel>Cliente Existente</FormLabel>
+                    <Select onValueChange={(value) => {
+                      field.onChange(value);
+                      if (value) {
+                        form.setValue('customer_name', '');
+                        form.setValue('customer_phone', '');
+                      }
+                    }} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Seleccionar cliente existente" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent className="bg-background border z-50">
+                        <SelectItem value="">Crear nuevo cliente</SelectItem>
+                        {clients.map((client) => (
+                          <SelectItem key={client.id} value={client.id}>
+                            {client.name} {client.phone ? `(${client.phone})` : ''}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </FormItem>
                 )}
               />
 
-              <FormField
-                control={form.control}
-                name="customer_phone"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Teléfono (Opcional)</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Número de teléfono" {...field} />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
+              {!form.watch('client_id') && (
+                <>
+                  <FormField
+                    control={form.control}
+                    name="customer_name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Nombre del Cliente *</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Nombre completo del cliente" {...field} />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="customer_phone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Teléfono (Opcional)</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Número de teléfono" {...field} />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                </>
+              )}
             </div>
           </div>
         )}
