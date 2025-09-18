@@ -97,7 +97,7 @@ export const AnimalSaleForm: React.FC<AnimalSaleFormProps> = ({
       let debtorPhone = data.customer_phone || '';
       
       // If a client was selected, use their information
-      if (data.client_id) {
+      if (data.client_id && data.client_id !== 'new-client') {
         const selectedClient = clients.find(c => c.id === data.client_id);
         if (selectedClient) {
           debtorName = selectedClient.name;
@@ -240,7 +240,7 @@ export const AnimalSaleForm: React.FC<AnimalSaleFormProps> = ({
                     <FormLabel>Cliente Existente</FormLabel>
                     <Select onValueChange={(value) => {
                       field.onChange(value);
-                      if (value) {
+                      if (value === "new-client" || !value) {
                         form.setValue('customer_name', '');
                         form.setValue('customer_phone', '');
                       }
@@ -251,7 +251,7 @@ export const AnimalSaleForm: React.FC<AnimalSaleFormProps> = ({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent className="bg-background border z-50">
-                        <SelectItem value="">Crear nuevo cliente</SelectItem>
+                        <SelectItem value="new-client">Crear nuevo cliente</SelectItem>
                         {clients.map((client) => (
                           <SelectItem key={client.id} value={client.id}>
                             {client.name} {client.phone ? `(${client.phone})` : ''}
@@ -263,7 +263,7 @@ export const AnimalSaleForm: React.FC<AnimalSaleFormProps> = ({
                 )}
               />
 
-              {!form.watch('client_id') && (
+              {(!form.watch('client_id') || form.watch('client_id') === 'new-client') && (
                 <>
                   <FormField
                     control={form.control}
