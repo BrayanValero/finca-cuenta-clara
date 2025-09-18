@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form';
 
 const animalSaleSchema = z.object({
@@ -12,10 +13,16 @@ const animalSaleSchema = z.object({
   eggs: z.number().min(0, 'Los huevos deben ser 0 o más').default(0),
   price_per_carton: z.number().min(0, 'El precio debe ser mayor a 0').default(12000),
   price_per_egg: z.number().min(0, 'El precio debe ser mayor a 0').default(500),
+  payment_type: z.enum(['contado', 'credito'], { required_error: 'Seleccione tipo de pago' }),
+  customer_name: z.string().optional(),
+  customer_phone: z.string().optional(),
   description: z.string().optional(),
   date: z.string().min(1, 'La fecha es requerida'),
 }).refine((data) => data.cartons > 0 || data.eggs > 0, {
   message: "Debe vender al menos 1 cartón o 1 huevo",
+}).refine((data) => data.payment_type !== 'credito' || data.customer_name, {
+  message: "El nombre del cliente es requerido para ventas a crédito",
+  path: ['customer_name']
 });
 
 type AnimalSaleFormData = z.infer<typeof animalSaleSchema>;
@@ -38,6 +45,9 @@ export const AnimalSaleForm: React.FC<AnimalSaleFormProps> = ({
       eggs: 0,
       price_per_carton: 12000,
       price_per_egg: 500,
+      payment_type: 'contado' as const,
+      customer_name: '',
+      customer_phone: '',
       description: '',
       date: new Date().toISOString().split('T')[0],
     }
@@ -59,14 +69,32 @@ export const AnimalSaleForm: React.FC<AnimalSaleFormProps> = ({
       description += ` - ${data.description}`;
     }
 
-    onSubmit({
+    // Add payment type to description
+    description += ` (${data.payment_type})`;
+
+    const submitData: any = {
       animal_id: animalId,
       type: 'ingreso',
       category: 'venta de huevos',
       amount: totalAmount,
       description,
       date: data.date
-    });
+    };
+
+    // If it's a credit sale, add debtor information
+    if (data.payment_type === 'credito') {
+      submitData.createDebtor = {
+        debtor_name: data.customer_name!,
+        phone: data.customer_phone || '',
+        cartons_owed: data.cartons,
+        eggs_owed: data.eggs,
+        price_per_carton: data.price_per_carton,
+        price_per_egg: data.price_per_egg,
+        animal_id: animalId
+      };
+    }
+
+    onSubmit(submitData);
   };
 
   return (
@@ -147,6 +175,69 @@ export const AnimalSaleForm: React.FC<AnimalSaleFormProps> = ({
             )}
           />
         </div>
+
+        <FormField
+          control={form.control}
+          name="payment_type"
+          render={({ field }) => (
+            <FormItem className="space-y-3">
+              <FormLabel>Tipo de Pago</FormLabel>
+              <FormControl>
+                <RadioGroup
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                  className="flex flex-col space-y-1"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="contado" id="contado" />
+                    <label htmlFor="contado" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                      Al Contado
+                    </label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="credito" id="credito" />
+                    <label htmlFor="credito" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                      A Crédito
+                    </label>
+                  </div>
+                </RadioGroup>
+              </FormControl>
+            </FormItem>
+          )}
+        />
+
+        {form.watch('payment_type') === 'credito' && (
+          <div className="space-y-4 p-4 bg-muted/50 rounded-lg">
+            <h4 className="text-sm font-medium">Información del Cliente</h4>
+            <div className="grid grid-cols-1 gap-4">
+              <FormField
+                control={form.control}
+                name="customer_name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nombre del Cliente *</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Nombre completo del cliente" {...field} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="customer_phone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Teléfono (Opcional)</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Número de teléfono" {...field} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            </div>
+          </div>
+        )}
 
         <FormField
           control={form.control}

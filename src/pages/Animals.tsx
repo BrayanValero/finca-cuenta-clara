@@ -38,12 +38,30 @@ const Animals: React.FC = () => {
   const deleteDebtor = useDeleteEggDebtor();
 
   const handleCreateTransaction = (data: any) => {
-    createTransaction.mutate(data, {
-      onSuccess: () => {
-        setIsSaleFormOpen(false);
-        setIsExpenseFormOpen(false);
-      }
-    });
+    // If it's a credit sale, create the debtor first
+    if (data.createDebtor) {
+      const debtorData = data.createDebtor;
+      delete data.createDebtor; // Remove debtor data from transaction
+      
+      createDebtor.mutate(debtorData, {
+        onSuccess: () => {
+          // After creating debtor, create the transaction
+          createTransaction.mutate(data, {
+            onSuccess: () => {
+              setIsSaleFormOpen(false);
+              setIsExpenseFormOpen(false);
+            }
+          });
+        }
+      });
+    } else {
+      createTransaction.mutate(data, {
+        onSuccess: () => {
+          setIsSaleFormOpen(false);
+          setIsExpenseFormOpen(false);
+        }
+      });
+    }
   };
 
   const handleCreateDebtor = (data: any) => {
@@ -198,7 +216,7 @@ const Animals: React.FC = () => {
                     Venta
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="max-w-md">
+                <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
                   <DialogHeader>
                     <DialogTitle>Registrar Venta de Huevos</DialogTitle>
                   </DialogHeader>
@@ -233,12 +251,12 @@ const Animals: React.FC = () => {
                 <DialogTrigger asChild>
                   <Button variant="outline">
                     <Users className="mr-2 h-4 w-4" />
-                    Nuevo Deudor
+                    Nuevo Cliente
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="max-w-md">
                   <DialogHeader>
-                    <DialogTitle>Nuevo Deudor de Cartones</DialogTitle>
+                    <DialogTitle>Nuevo Cliente</DialogTitle>
                   </DialogHeader>
                   <EggDebtorForm
                     animalId={selectedAnimal.id}
