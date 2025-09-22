@@ -254,7 +254,7 @@ const Animals: React.FC = () => {
 
         {/* Action Buttons */}
         <div className="flex gap-2 mb-6">
-          {selectedAnimal.animal_type === 'gallinas' ? (
+          {(selectedAnimal.animal_type === 'gallinas' || selectedAnimal.animal_type === 'pollitos') ? (
             <>
               <Dialog open={isSaleFormOpen} onOpenChange={setIsSaleFormOpen}>
                 <DialogTrigger asChild>
