@@ -15,14 +15,23 @@ const animalSaleSchema = z.object({
   eggs: z.number().min(0, 'Los huevos deben ser 0 o más').default(0),
   price_per_carton: z.number().min(0, 'El precio debe ser mayor a 0').default(12000),
   price_per_egg: z.number().min(0, 'El precio debe ser mayor a 0').default(500),
+  kilos: z.number().min(0, 'Los kilos deben ser 0 o más').default(3),
+  price_per_kilo: z.number().min(0, 'El precio debe ser mayor a 0').default(13000),
   payment_type: z.enum(['contado', 'credito'], { required_error: 'Seleccione tipo de pago' }),
   client_id: z.string().optional(),
   customer_name: z.string().optional(),
   customer_phone: z.string().optional(),
   description: z.string().optional(),
   date: z.string().min(1, 'La fecha es requerida'),
-}).refine((data) => data.cartons > 0 || data.eggs > 0, {
-  message: "Debe vender al menos 1 cartón o 1 huevo",
+  animal_type: z.string(),
+}).refine((data) => {
+  if (data.animal_type === 'pollitos') {
+    return data.kilos > 0;
+  } else {
+    return data.cartons > 0 || data.eggs > 0;
+  }
+}, {
+  message: "Debe especificar cantidad a vender",
 }).refine((data) => {
   if (data.payment_type === 'credito') {
     return (data.client_id && data.client_id !== 'new-client') || data.customer_name;
@@ -37,12 +46,14 @@ type AnimalSaleFormData = z.infer<typeof animalSaleSchema>;
 
 interface AnimalSaleFormProps {
   animalId: string;
+  animalType: string;
   onSubmit: (data: any) => void;
   isLoading?: boolean;
 }
 
 export const AnimalSaleForm: React.FC<AnimalSaleFormProps> = ({
   animalId,
+  animalType,
   onSubmit,
   isLoading = false
 }) => {
@@ -54,25 +65,37 @@ export const AnimalSaleForm: React.FC<AnimalSaleFormProps> = ({
       eggs: 0,
       price_per_carton: 12000,
       price_per_egg: 500,
+      kilos: 3,
+      price_per_kilo: 13000,
       payment_type: 'contado' as const,
       client_id: '',
       customer_name: '',
       customer_phone: '',
       description: '',
       date: new Date().toISOString().split('T')[0],
+      animal_type: animalType,
     }
   });
 
   const handleSubmit = (data: AnimalSaleFormData) => {
-    const totalAmount = (data.cartons * data.price_per_carton) + (data.eggs * data.price_per_egg);
-    
+    let totalAmount = 0;
     let description = '';
-    if (data.cartons > 0 && data.eggs > 0) {
-      description = `${data.cartons} cartones y ${data.eggs} huevos`;
-    } else if (data.cartons > 0) {
-      description = `${data.cartons} cartones`;
+    let category = '';
+
+    if (data.animal_type === 'pollitos') {
+      totalAmount = data.kilos * data.price_per_kilo;
+      description = `${data.kilos} kilos de pollo`;
+      category = 'venta de pollo';
     } else {
-      description = `${data.eggs} huevos`;
+      totalAmount = (data.cartons * data.price_per_carton) + (data.eggs * data.price_per_egg);
+      if (data.cartons > 0 && data.eggs > 0) {
+        description = `${data.cartons} cartones y ${data.eggs} huevos`;
+      } else if (data.cartons > 0) {
+        description = `${data.cartons} cartones`;
+      } else {
+        description = `${data.eggs} huevos`;
+      }
+      category = 'venta de huevos';
     }
     
     if (data.description) {
@@ -85,7 +108,7 @@ export const AnimalSaleForm: React.FC<AnimalSaleFormProps> = ({
     const submitData: any = {
       animal_id: animalId,
       type: 'ingreso',
-      category: 'venta de huevos',
+      category,
       amount: totalAmount,
       description,
       date: data.date
@@ -113,15 +136,27 @@ export const AnimalSaleForm: React.FC<AnimalSaleFormProps> = ({
         }
       }
       
-      submitData.createDebtor = {
-        debtor_name: debtorName!,
-        phone: debtorPhone,
-        cartons_owed: data.cartons,
-        eggs_owed: data.eggs,
-        price_per_carton: data.price_per_carton,
-        price_per_egg: data.price_per_egg,
-        animal_id: animalId
-      };
+      if (data.animal_type === 'pollitos') {
+        submitData.createDebtor = {
+          debtor_name: debtorName!,
+          phone: debtorPhone,
+          cartons_owed: 0,
+          eggs_owed: 0,
+          price_per_carton: 0,
+          price_per_egg: 0,
+          animal_id: animalId
+        };
+      } else {
+        submitData.createDebtor = {
+          debtor_name: debtorName!,
+          phone: debtorPhone,
+          cartons_owed: data.cartons,
+          eggs_owed: data.eggs,
+          price_per_carton: data.price_per_carton,
+          price_per_egg: data.price_per_egg,
+          animal_id: animalId
+        };
+      }
     }
 
     onSubmit(submitData);
@@ -131,80 +166,124 @@ export const AnimalSaleForm: React.FC<AnimalSaleFormProps> = ({
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="cartons"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Cartones Vendidos</FormLabel>
-                <FormControl>
-                  <Input 
-                    type="number" 
-                    placeholder="0" 
-                    {...field}
-                    onChange={(e) => field.onChange(Number(e.target.value))}
-                  />
-                </FormControl>
-              </FormItem>
-            )}
-          />
+          {animalType === 'pollitos' ? (
+            <>
+              <FormField
+                control={form.control}
+                name="kilos"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Kilos de Pollo</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="number" 
+                        placeholder="3" 
+                        {...field}
+                        onChange={(e) => field.onChange(Number(e.target.value))}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
 
-          <FormField
-            control={form.control}
-            name="eggs"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Huevos Vendidos</FormLabel>
-                <FormControl>
-                  <Input 
-                    type="number" 
-                    placeholder="0" 
-                    {...field}
-                    onChange={(e) => field.onChange(Number(e.target.value))}
-                  />
-                </FormControl>
-              </FormItem>
-            )}
-          />
+              <FormField
+                control={form.control}
+                name="price_per_kilo"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Precio por Kilo</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="number" 
+                        placeholder="13000" 
+                        {...field}
+                        onChange={(e) => field.onChange(Number(e.target.value))}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            </>
+          ) : (
+            <>
+              <FormField
+                control={form.control}
+                name="cartons"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Cartones Vendidos</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="number" 
+                        placeholder="0" 
+                        {...field}
+                        onChange={(e) => field.onChange(Number(e.target.value))}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="eggs"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Huevos Vendidos</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="number" 
+                        placeholder="0" 
+                        {...field}
+                        onChange={(e) => field.onChange(Number(e.target.value))}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            </>
+          )}
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="price_per_carton"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Precio por Cartón</FormLabel>
-                <FormControl>
-                  <Input 
-                    type="number" 
-                    placeholder="12000" 
-                    {...field}
-                    onChange={(e) => field.onChange(Number(e.target.value))}
-                  />
-                </FormControl>
-              </FormItem>
-            )}
-          />
+        {animalType !== 'pollitos' && (
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="price_per_carton"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Precio por Cartón</FormLabel>
+                  <FormControl>
+                    <Input 
+                      type="number" 
+                      placeholder="12000" 
+                      {...field}
+                      onChange={(e) => field.onChange(Number(e.target.value))}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
 
-          <FormField
-            control={form.control}
-            name="price_per_egg"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Precio por Huevo</FormLabel>
-                <FormControl>
-                  <Input 
-                    type="number" 
-                    placeholder="500" 
-                    {...field}
-                    onChange={(e) => field.onChange(Number(e.target.value))}
-                  />
-                </FormControl>
-              </FormItem>
-            )}
-          />
-        </div>
+            <FormField
+              control={form.control}
+              name="price_per_egg"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Precio por Huevo</FormLabel>
+                  <FormControl>
+                    <Input 
+                      type="number" 
+                      placeholder="500" 
+                      {...field}
+                      onChange={(e) => field.onChange(Number(e.target.value))}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+          </div>
+        )}
 
         <FormField
           control={form.control}
@@ -340,8 +419,10 @@ export const AnimalSaleForm: React.FC<AnimalSaleFormProps> = ({
               currency: 'COP',
               minimumFractionDigits: 0,
             }).format(
-              (form.watch('cartons') * form.watch('price_per_carton')) + 
-              (form.watch('eggs') * form.watch('price_per_egg'))
+              animalType === 'pollitos' 
+                ? (form.watch('kilos') * form.watch('price_per_kilo'))
+                : (form.watch('cartons') * form.watch('price_per_carton')) + 
+                  (form.watch('eggs') * form.watch('price_per_egg'))
             )}
           </div>
         </div>

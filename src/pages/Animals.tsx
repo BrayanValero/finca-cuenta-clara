@@ -264,14 +264,17 @@ const Animals: React.FC = () => {
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-                  <DialogHeader>
-                    <DialogTitle>Registrar Venta de Huevos</DialogTitle>
-                  </DialogHeader>
-                  <AnimalSaleForm
-                    animalId={selectedAnimal.id}
-                    onSubmit={handleCreateTransaction}
-                    isLoading={createTransaction.isPending}
-                  />
+                   <DialogHeader>
+                     <DialogTitle>
+                       {(selectedAnimal.animal_type as string) === 'pollitos' ? 'Registrar Venta de Pollo' : 'Registrar Venta de Huevos'}
+                     </DialogTitle>
+                   </DialogHeader>
+                   <AnimalSaleForm
+                     animalId={selectedAnimal.id}
+                     animalType={selectedAnimal.animal_type}
+                     onSubmit={handleCreateTransaction}
+                     isLoading={createTransaction.isPending}
+                   />
                 </DialogContent>
               </Dialog>
 
