@@ -14,7 +14,7 @@ const animalSaleSchema = z.object({
   cartons: z.number().min(0, 'Los cartones deben ser 0 o más').default(0),
   eggs: z.number().min(0, 'Los huevos deben ser 0 o más').default(0),
   price_per_carton: z.number().min(0, 'El precio debe ser mayor a 0').default(12000),
-  price_per_egg: z.number().min(0, 'El precio debe ser mayor a 0').default(500),
+  price_per_egg: z.number().min(0, 'El precio debe ser mayor a 0').default(400),
   kilos: z.number().min(0, 'Los kilos deben ser 0 o más').default(3),
   price_per_kilo: z.number().min(0, 'El precio debe ser mayor a 0').default(13000),
   payment_type: z.enum(['contado', 'credito'], { required_error: 'Seleccione tipo de pago' }),
@@ -64,7 +64,7 @@ export const AnimalSaleForm: React.FC<AnimalSaleFormProps> = ({
       cartons: 0,
       eggs: 0,
       price_per_carton: 12000,
-      price_per_egg: 500,
+      price_per_egg: 400,
       kilos: 3,
       price_per_kilo: 13000,
       payment_type: 'contado' as const,
@@ -274,7 +274,7 @@ export const AnimalSaleForm: React.FC<AnimalSaleFormProps> = ({
                   <FormControl>
                     <Input 
                       type="number" 
-                      placeholder="500" 
+                      placeholder="400" 
                       {...field}
                       onChange={(e) => field.onChange(Number(e.target.value))}
                     />

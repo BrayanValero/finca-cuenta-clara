@@ -8,16 +8,18 @@ import { Badge } from '@/components/ui/badge';
 import { AnimalTable } from '@/components/AnimalTable';
 import { AnimalSaleForm } from '@/components/AnimalSaleForm';
 import { AnimalExpenseForm } from '@/components/AnimalExpenseForm';
+import { AnimalTransactionForm } from '@/components/AnimalTransactionForm';
 import { EggDebtorForm } from '@/components/EggDebtorForm';
 import { EggDebtorTable } from '@/components/EggDebtorTable';
 import { ClientForm } from '@/components/ClientForm';
+import AnimalTransactionActions from '@/components/transactions/AnimalTransactionActions';
 import { useAnimals } from '@/hooks/useAnimals';
 import { useAnimalTransactions } from '@/hooks/useAnimalTransactions';
-import { useCreateAnimalTransaction } from '@/hooks/useAnimalMutations';
+import { useCreateAnimalTransaction, useUpdateAnimalTransaction, useDeleteAnimalTransaction } from '@/hooks/useAnimalMutations';
 import { useEggDebtors } from '@/hooks/useEggDebtors';
 import { useCreateEggDebtor, useDeleteEggDebtor } from '@/hooks/useEggDebtorMutations';
 import { useCreateClient } from '@/hooks/useClientMutations';
-import { Animal } from '@/services/animalService';
+import { Animal, AnimalTransaction } from '@/services/animalService';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -27,6 +29,8 @@ const Animals: React.FC = () => {
   const [isExpenseFormOpen, setIsExpenseFormOpen] = useState(false);
   const [isDebtorFormOpen, setIsDebtorFormOpen] = useState(false);
   const [isClientFormOpen, setIsClientFormOpen] = useState(false);
+  const [editingTransaction, setEditingTransaction] = useState<AnimalTransaction | null>(null);
+  const [isEditTransactionFormOpen, setIsEditTransactionFormOpen] = useState(false);
 
   const { data: animals = [], isLoading: animalsLoading } = useAnimals();
   const { data: transactions = [], isLoading: transactionsLoading } = useAnimalTransactions(
@@ -37,6 +41,8 @@ const Animals: React.FC = () => {
   );
 
   const createTransaction = useCreateAnimalTransaction();
+  const updateTransaction = useUpdateAnimalTransaction();
+  const deleteTransaction = useDeleteAnimalTransaction();
   const createDebtor = useCreateEggDebtor();
   const deleteDebtor = useDeleteEggDebtor();
   const createClient = useCreateClient();
@@ -117,6 +123,29 @@ const Animals: React.FC = () => {
         setIsClientFormOpen(false);
       }
     });
+  };
+
+  const handleEditTransaction = (transaction: AnimalTransaction) => {
+    setEditingTransaction(transaction);
+    setIsEditTransactionFormOpen(true);
+  };
+
+  const handleUpdateTransaction = (data: any) => {
+    if (editingTransaction) {
+      updateTransaction.mutate(
+        { id: editingTransaction.id, data },
+        {
+          onSuccess: () => {
+            setIsEditTransactionFormOpen(false);
+            setEditingTransaction(null);
+          }
+        }
+      );
+    }
+  };
+
+  const handleDeleteTransaction = (id: string) => {
+    deleteTransaction.mutate(id);
   };
 
   const handleDeleteDebtor = (debtorId: string) => {
@@ -408,13 +437,20 @@ const Animals: React.FC = () => {
                             {format(new Date(transaction.date), 'dd/MM/yyyy', { locale: es })}
                           </p>
                         </div>
-                        <div className="text-right">
-                          <div className={`font-bold ${
-                            transaction.type === 'ingreso' ? 'text-green-600' : 'text-red-600'
-                          }`}>
-                            {transaction.type === 'ingreso' ? '+' : '-'}
-                            {formatCurrency(Number(transaction.amount))}
+                        <div className="flex items-center gap-2">
+                          <div className="text-right">
+                            <div className={`font-bold ${
+                              transaction.type === 'ingreso' ? 'text-green-600' : 'text-red-600'
+                            }`}>
+                              {transaction.type === 'ingreso' ? '+' : '-'}
+                              {formatCurrency(Number(transaction.amount))}
+                            </div>
                           </div>
+                          <AnimalTransactionActions
+                            transaction={transaction}
+                            onEdit={handleEditTransaction}
+                            onDelete={handleDeleteTransaction}
+                          />
                         </div>
                       </div>
                     ))}
@@ -473,13 +509,20 @@ const Animals: React.FC = () => {
                         {format(new Date(transaction.date), 'dd/MM/yyyy', { locale: es })}
                       </p>
                     </div>
-                    <div className="text-right">
-                      <div className={`font-bold ${
-                        transaction.type === 'ingreso' ? 'text-green-600' : 'text-red-600'
-                      }`}>
-                        {transaction.type === 'ingreso' ? '+' : '-'}
-                        {formatCurrency(Number(transaction.amount))}
+                    <div className="flex items-center gap-2">
+                      <div className="text-right">
+                        <div className={`font-bold ${
+                          transaction.type === 'ingreso' ? 'text-green-600' : 'text-red-600'
+                        }`}>
+                          {transaction.type === 'ingreso' ? '+' : '-'}
+                          {formatCurrency(Number(transaction.amount))}
+                        </div>
                       </div>
+                      <AnimalTransactionActions
+                        transaction={transaction}
+                        onEdit={handleEditTransaction}
+                        onDelete={handleDeleteTransaction}
+                      />
                     </div>
                   </div>
                 ))}
@@ -488,6 +531,23 @@ const Animals: React.FC = () => {
           </CardContent>
         </Card>
       )}
+
+      {/* Edit Transaction Dialog */}
+      <Dialog open={isEditTransactionFormOpen} onOpenChange={setIsEditTransactionFormOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Editar Transacción</DialogTitle>
+          </DialogHeader>
+          {editingTransaction && (
+            <AnimalTransactionForm
+              animalId={editingTransaction.animal_id}
+              onSubmit={handleUpdateTransaction}
+              initialData={editingTransaction}
+              isLoading={updateTransaction.isPending}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
