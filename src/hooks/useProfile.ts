@@ -53,17 +53,29 @@ export function useProfile(userId: string | undefined) {
       const first_name = nameParts[0] || '';
       const last_name = nameParts.slice(1).join(' ') || '';
 
-      const { error } = await supabase
-        .from("profiles")
-        .update({ 
-          first_name: first_name || null,
-          last_name: last_name || null,
-          phone: updateData.phone || null,
-          address: updateData.address || null
-        })
-        .eq("id", updateData.id);
+      const dataToUpdate = { 
+        first_name: first_name || null,
+        last_name: last_name || null,
+        phone: updateData.phone || null,
+        address: updateData.address || null
+      };
 
-      if (error) throw error;
+      console.log('Updating profile with data:', dataToUpdate, 'for user ID:', updateData.id);
+
+      const { data, error } = await supabase
+        .from("profiles")
+        .update(dataToUpdate)
+        .eq("id", updateData.id)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error updating profile:', error);
+        throw error;
+      }
+
+      console.log('Profile updated successfully:', data);
+      return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["profile", userId] });
