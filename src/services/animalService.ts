@@ -7,6 +7,12 @@ export interface Animal {
   name?: string;
   quantity: number;
   description?: string;
+  birth_date?: string;
+  breed?: string;
+  observations?: string;
+  image_url?: string;
+  weight?: number;
+  gender?: string;
   created_at: string;
   updated_at: string;
 }

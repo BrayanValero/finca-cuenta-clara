@@ -13,6 +13,8 @@ import { EggDebtorForm } from '@/components/EggDebtorForm';
 import { EggDebtorTable } from '@/components/EggDebtorTable';
 import { ClientForm } from '@/components/ClientForm';
 import AnimalTransactionActions from '@/components/transactions/AnimalTransactionActions';
+import AnimalProfileCard from '@/components/AnimalProfileCard';
+import AnimalDetailView from '@/components/AnimalDetailView';
 import { useAnimals } from '@/hooks/useAnimals';
 import { useAnimalTransactions } from '@/hooks/useAnimalTransactions';
 import { useCreateAnimalTransaction, useUpdateAnimalTransaction, useDeleteAnimalTransaction } from '@/hooks/useAnimalMutations';
@@ -25,6 +27,7 @@ import { es } from 'date-fns/locale';
 
 const Animals: React.FC = () => {
   const [selectedAnimal, setSelectedAnimal] = useState<Animal | null>(null);
+  const [selectedIndividualAnimal, setSelectedIndividualAnimal] = useState<Animal | null>(null);
   const [isSaleFormOpen, setIsSaleFormOpen] = useState(false);
   const [isExpenseFormOpen, setIsExpenseFormOpen] = useState(false);
   const [isDebtorFormOpen, setIsDebtorFormOpen] = useState(false);
@@ -32,9 +35,9 @@ const Animals: React.FC = () => {
   const [editingTransaction, setEditingTransaction] = useState<AnimalTransaction | null>(null);
   const [isEditTransactionFormOpen, setIsEditTransactionFormOpen] = useState(false);
 
-  const { data: animals = [], isLoading: animalsLoading } = useAnimals();
+  const { data: animals = [], isLoading: animalsLoading, refetch: refetchAnimals } = useAnimals();
   const { data: transactions = [], isLoading: transactionsLoading } = useAnimalTransactions(
-    selectedAnimal?.id
+    selectedIndividualAnimal?.id || selectedAnimal?.id
   );
   const { data: debtors = [], isLoading: debtorsLoading } = useEggDebtors(
     selectedAnimal?.animal_type === 'gallinas' ? selectedAnimal?.id : undefined
@@ -189,10 +192,302 @@ const Animals: React.FC = () => {
     return <div className="p-6">Cargando animales...</div>;
   }
 
+  // Nivel 0: Vista general de todos los animales
   if (!selectedAnimal) {
     return (
       <div className="p-6">
         <AnimalTable animals={animals} onSelectAnimal={setSelectedAnimal} />
+      </div>
+    );
+  }
+
+  // Nivel 2: Vista detallada de un animal individual (solo para vacas)
+  if (selectedIndividualAnimal) {
+    return (
+      <div className="p-6">
+        <AnimalDetailView
+          animal={selectedIndividualAnimal}
+          onBack={() => setSelectedIndividualAnimal(null)}
+          onUpdate={() => refetchAnimals()}
+        />
+
+        {/* Summary Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 my-6">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Total Ingresos
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-green-600">
+                {formatCurrency(getAnimalSummary(selectedIndividualAnimal.id).totalIncome)}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Total Gastos
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-red-600">
+                {formatCurrency(getAnimalSummary(selectedIndividualAnimal.id).totalExpense)}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Balance
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className={`text-2xl font-bold ${
+                getAnimalSummary(selectedIndividualAnimal.id).balance >= 0 ? 'text-green-600' : 'text-red-600'
+              }`}>
+                {formatCurrency(getAnimalSummary(selectedIndividualAnimal.id).balance)}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Transacciones
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {getAnimalSummary(selectedIndividualAnimal.id).transactionCount}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Action Buttons for Individual Animal */}
+        <div className="flex gap-2 mb-6">
+          <Dialog open={isSaleFormOpen} onOpenChange={setIsSaleFormOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="mr-2 h-4 w-4" />
+                Ingreso
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>Registrar Ingreso</DialogTitle>
+              </DialogHeader>
+              <AnimalExpenseForm
+                animalId={selectedIndividualAnimal.id}
+                onSubmit={(data) => handleCreateTransaction({...data, type: 'ingreso'})}
+                isLoading={createTransaction.isPending}
+              />
+            </DialogContent>
+          </Dialog>
+
+          <Dialog open={isExpenseFormOpen} onOpenChange={setIsExpenseFormOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline">
+                <Receipt className="mr-2 h-4 w-4" />
+                Gasto
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>Registrar Gasto</DialogTitle>
+              </DialogHeader>
+              <AnimalExpenseForm
+                animalId={selectedIndividualAnimal.id}
+                onSubmit={handleCreateTransaction}
+                isLoading={createTransaction.isPending}
+              />
+            </DialogContent>
+          </Dialog>
+        </div>
+
+        {/* Transactions for Individual Animal */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart3 className="h-5 w-5" />
+              Historial de Transacciones
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {transactionsLoading ? (
+              <p>Cargando transacciones...</p>
+            ) : transactions.length === 0 ? (
+              <p className="text-muted-foreground text-center py-4">
+                No hay transacciones registradas para este animal
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {transactions.map((transaction) => (
+                  <div
+                    key={transaction.id}
+                    className="flex items-center justify-between p-4 border rounded-lg"
+                  >
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Badge
+                          variant={transaction.type === 'ingreso' ? 'default' : 'destructive'}
+                        >
+                          {transaction.type === 'ingreso' ? 'Ingreso' : 'Gasto'}
+                        </Badge>
+                        <span className="text-sm text-muted-foreground">
+                          {transaction.category}
+                        </span>
+                      </div>
+                      {transaction.description && (
+                        <p className="text-sm text-muted-foreground">
+                          {transaction.description}
+                        </p>
+                      )}
+                      <p className="text-xs text-muted-foreground">
+                        {format(new Date(transaction.date), 'dd/MM/yyyy', { locale: es })}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="text-right">
+                        <div className={`font-bold ${
+                          transaction.type === 'ingreso' ? 'text-green-600' : 'text-red-600'
+                        }`}>
+                          {transaction.type === 'ingreso' ? '+' : '-'}
+                          {formatCurrency(Number(transaction.amount))}
+                        </div>
+                      </div>
+                      <AnimalTransactionActions
+                        transaction={transaction}
+                        onEdit={handleEditTransaction}
+                        onDelete={handleDeleteTransaction}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Nivel 1: Vista de un tipo específico de animal
+  // Para vacas, mostramos tarjetas individuales
+  if (selectedAnimal.animal_type === 'vacas') {
+    const individualCows = animals.filter(a => a.animal_type === 'vacas' && a.name);
+    
+    // Calcular la contabilidad combinada de todas las vacas
+    const allCowsTransactions = animals
+      .filter(a => a.animal_type === 'vacas')
+      .flatMap(cow => transactions.filter(t => t.animal_id === cow.id));
+    
+    const combinedSummary = {
+      totalIncome: allCowsTransactions
+        .filter(t => t.type === 'ingreso')
+        .reduce((sum, t) => sum + Number(t.amount), 0),
+      totalExpense: allCowsTransactions
+        .filter(t => t.type === 'gasto')
+        .reduce((sum, t) => sum + Number(t.amount), 0),
+      balance: 0,
+      transactionCount: allCowsTransactions.length
+    };
+    combinedSummary.balance = combinedSummary.totalIncome - combinedSummary.totalExpense;
+
+    return (
+      <div className="p-6">
+        <Button
+          variant="ghost"
+          onClick={() => setSelectedAnimal(null)}
+          className="mb-4"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Volver a Mis Animales
+        </Button>
+
+        <div className="flex items-center gap-3 mb-4">
+          <span className="text-3xl">🐄</span>
+          <div>
+            <h1 className="text-2xl font-bold capitalize">Vacas</h1>
+            <p className="text-sm text-muted-foreground">
+              {individualCows.length} {individualCows.length === 1 ? 'vaca' : 'vacas'} registradas
+            </p>
+          </div>
+        </div>
+
+        {/* Contabilidad Combinada */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Total Ingresos
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-green-600">
+                {formatCurrency(combinedSummary.totalIncome)}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Total Gastos
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-red-600">
+                {formatCurrency(combinedSummary.totalExpense)}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Balance Total
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className={`text-2xl font-bold ${
+                combinedSummary.balance >= 0 ? 'text-green-600' : 'text-red-600'
+              }`}>
+                {formatCurrency(combinedSummary.balance)}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Transacciones
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {combinedSummary.transactionCount}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Tarjetas de Perfiles Individuales */}
+        <h2 className="text-xl font-bold mb-4">Perfiles Individuales</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {individualCows.map((cow) => (
+            <AnimalProfileCard
+              key={cow.id}
+              animal={cow}
+              summary={getAnimalSummary(cow.id)}
+              onClick={() => setSelectedIndividualAnimal(cow)}
+            />
+          ))}
+        </div>
       </div>
     );
   }

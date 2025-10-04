@@ -64,33 +64,51 @@ export type Database = {
       animals: {
         Row: {
           animal_type: string
+          birth_date: string | null
+          breed: string | null
           created_at: string
           description: string | null
+          gender: string | null
           id: string
+          image_url: string | null
           name: string | null
+          observations: string | null
           quantity: number
           updated_at: string
           user_id: string
+          weight: number | null
         }
         Insert: {
           animal_type: string
+          birth_date?: string | null
+          breed?: string | null
           created_at?: string
           description?: string | null
+          gender?: string | null
           id?: string
+          image_url?: string | null
           name?: string | null
+          observations?: string | null
           quantity?: number
           updated_at?: string
           user_id: string
+          weight?: number | null
         }
         Update: {
           animal_type?: string
+          birth_date?: string | null
+          breed?: string | null
           created_at?: string
           description?: string | null
+          gender?: string | null
           id?: string
+          image_url?: string | null
           name?: string | null
+          observations?: string | null
           quantity?: number
           updated_at?: string
           user_id?: string
+          weight?: number | null
         }
         Relationships: []
       }
