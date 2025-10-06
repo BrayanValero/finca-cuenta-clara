@@ -32,7 +32,7 @@ const ANIMAL_TYPES = [
   { value: 'piscos', label: 'Piscos 🦃' },
 ];
 
-const INDIVIDUAL_ANIMAL_TYPES = ['vacas', 'perros', 'piscos'];
+const INDIVIDUAL_ANIMAL_TYPES = ['vacas', 'perros'];
 
 export const AnimalForm: React.FC<AnimalFormProps> = ({
   onSubmit,

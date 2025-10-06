@@ -14,10 +14,11 @@ import { ClientForm } from '@/components/ClientForm';
 import AnimalTransactionActions from '@/components/transactions/AnimalTransactionActions';
 import AnimalProfileCard from '@/components/AnimalProfileCard';
 import AnimalDetailView from '@/components/AnimalDetailView';
+import { AnimalForm } from '@/components/AnimalForm';
 import CardStat from '@/components/CardStat';
 import { useAnimals } from '@/hooks/useAnimals';
 import { useAnimalTransactions } from '@/hooks/useAnimalTransactions';
-import { useCreateAnimalTransaction, useUpdateAnimalTransaction, useDeleteAnimalTransaction } from '@/hooks/useAnimalMutations';
+import { useCreateAnimalTransaction, useUpdateAnimalTransaction, useDeleteAnimalTransaction, useCreateAnimal } from '@/hooks/useAnimalMutations';
 import { useEggDebtors } from '@/hooks/useEggDebtors';
 import { useCreateEggDebtor, useDeleteEggDebtor } from '@/hooks/useEggDebtorMutations';
 import { useCreateClient } from '@/hooks/useClientMutations';
@@ -34,6 +35,7 @@ const Animals: React.FC = () => {
   const [isClientFormOpen, setIsClientFormOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<AnimalTransaction | null>(null);
   const [isEditTransactionFormOpen, setIsEditTransactionFormOpen] = useState(false);
+  const [isAddAnimalFormOpen, setIsAddAnimalFormOpen] = useState(false);
 
   const { data: animals = [], isLoading: animalsLoading, refetch: refetchAnimals } = useAnimals();
   const { data: transactions = [], isLoading: transactionsLoading } = useAnimalTransactions(
@@ -46,6 +48,7 @@ const Animals: React.FC = () => {
   const createTransaction = useCreateAnimalTransaction();
   const updateTransaction = useUpdateAnimalTransaction();
   const deleteTransaction = useDeleteAnimalTransaction();
+  const createAnimal = useCreateAnimal();
   const createDebtor = useCreateEggDebtor();
   const deleteDebtor = useDeleteEggDebtor();
   const createClient = useCreateClient();
@@ -368,7 +371,7 @@ const Animals: React.FC = () => {
   // Level 2: Show individual animals of selected type
   if (selectedAnimalType && !selectedIndividualAnimal) {
     const animalsOfType = groupedAnimals[selectedAnimalType] || [];
-    const isIndividualType = ['vacas', 'perros', 'piscos'].includes(selectedAnimalType);
+    const isIndividualType = ['vacas', 'perros'].includes(selectedAnimalType);
     
     return (
       <div className="container mx-auto p-4">
@@ -446,7 +449,33 @@ const Animals: React.FC = () => {
   if (!selectedAnimalType) {
     return (
       <div className="container mx-auto p-4">
-        <h1 className="text-3xl font-bold mb-6">Animales</h1>
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold">Animales</h1>
+          <Dialog open={isAddAnimalFormOpen} onOpenChange={setIsAddAnimalFormOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="mr-2 h-4 w-4" />
+                Agregar Animal
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Agregar Nuevo Animal</DialogTitle>
+              </DialogHeader>
+              <AnimalForm
+                onSubmit={(data) => {
+                  createAnimal.mutate(data as Omit<Animal, 'id' | 'user_id' | 'created_at' | 'updated_at'>, {
+                    onSuccess: () => {
+                      setIsAddAnimalFormOpen(false);
+                      refetchAnimals();
+                    }
+                  });
+                }}
+                isLoading={createAnimal.isPending}
+              />
+            </DialogContent>
+          </Dialog>
+        </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {Object.entries(groupedAnimals).map(([type, typeAnimals]) => {

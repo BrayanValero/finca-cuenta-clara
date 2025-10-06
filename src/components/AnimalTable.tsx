@@ -65,27 +65,6 @@ export const AnimalTable: React.FC<AnimalTableProps> = ({ animals, onSelectAnima
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Mis Animales</h2>
-        <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              Agregar Animal
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Agregar Nuevo Animal</DialogTitle>
-            </DialogHeader>
-            <AnimalForm
-              onSubmit={handleCreate}
-              isLoading={createAnimal.isPending}
-            />
-          </DialogContent>
-        </Dialog>
-      </div>
-
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {animals.map((animal) => (
           <Card key={animal.id} className="cursor-pointer hover:shadow-md transition-shadow">
