@@ -25,11 +25,14 @@ interface AnimalFormProps {
 }
 
 const ANIMAL_TYPES = [
-  { value: 'vacas', label: 'Vacas' },
-  { value: 'gallinas', label: 'Gallinas' },
-  { value: 'perros', label: 'Perros' },
-  { value: 'pollitos', label: 'Pollitos' },
+  { value: 'vacas', label: 'Vacas 🐄' },
+  { value: 'gallinas', label: 'Gallinas 🐔' },
+  { value: 'pollitos', label: 'Pollitos 🐤' },
+  { value: 'perros', label: 'Perros 🐕' },
+  { value: 'piscos', label: 'Piscos 🦃' },
 ];
+
+const INDIVIDUAL_ANIMAL_TYPES = ['vacas', 'perros', 'piscos'];
 
 export const AnimalForm: React.FC<AnimalFormProps> = ({
   onSubmit,
@@ -46,8 +49,14 @@ export const AnimalForm: React.FC<AnimalFormProps> = ({
     },
   });
 
+  const selectedAnimalType = form.watch('animal_type');
+  const isIndividualType = INDIVIDUAL_ANIMAL_TYPES.includes(selectedAnimalType);
+
   const handleSubmit = (data: AnimalFormData) => {
-    onSubmit(data);
+    const submissionData = isIndividualType 
+      ? { ...data, quantity: 1 }
+      : data;
+    onSubmit(submissionData);
     if (!initialData) {
       form.reset();
     }
@@ -95,25 +104,27 @@ export const AnimalForm: React.FC<AnimalFormProps> = ({
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="quantity"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Cantidad</FormLabel>
-              <FormControl>
-                <Input
-                  type="number"
-                  min="1"
-                  placeholder="1"
-                  {...field}
-                  onChange={(e) => field.onChange(parseInt(e.target.value, 10))}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        {!isIndividualType && (
+          <FormField
+            control={form.control}
+            name="quantity"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Cantidad</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    min="1"
+                    placeholder="1"
+                    {...field}
+                    onChange={(e) => field.onChange(parseInt(e.target.value, 10))}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
 
         <FormField
           control={form.control}
