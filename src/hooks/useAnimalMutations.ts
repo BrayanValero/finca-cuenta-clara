@@ -25,7 +25,7 @@ export const useDeleteAnimal = () => {
     mutationFn: deleteAnimal,
     successMessage: TOAST_MESSAGES.ANIMAL.DELETE_SUCCESS,
     errorMessage: TOAST_MESSAGES.ANIMAL.DELETE_ERROR,
-    queryKeysToInvalidate: [['animals']]
+    queryKeysToInvalidate: [['animals'], ['animalTransactions']]
   });
 };
 

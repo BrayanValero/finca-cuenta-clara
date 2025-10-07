@@ -45,7 +45,16 @@ export const AnimalTable: React.FC<AnimalTableProps> = ({ animals, onSelectAnima
   };
 
   const handleDelete = (id: string) => {
-    deleteAnimal.mutate(id);
+    const remainingAnimals = animals.filter(a => a.id !== id);
+    deleteAnimal.mutate(id, {
+      onSuccess: () => {
+        // If this was the last animal, notify parent
+        if (remainingAnimals.length === 0 && onSelectAnimal) {
+          // This will help parent component handle navigation
+          window.dispatchEvent(new CustomEvent('animalDeleted'));
+        }
+      }
+    });
   };
 
   const handleEdit = (animal: Animal) => {

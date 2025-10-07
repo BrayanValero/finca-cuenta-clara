@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Plus, BarChart3, Users, ShoppingCart, Receipt, DollarSign, TrendingUp, TrendingDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -195,6 +195,21 @@ const Animals: React.FC = () => {
     acc[animal.animal_type].push(animal);
     return acc;
   }, {} as Record<string, Animal[]>) || {};
+
+  // Listen for animal deletion events and navigate back if needed
+  useEffect(() => {
+    const handleAnimalDeleted = () => {
+      if (selectedAnimalType) {
+        const animalsOfType = groupedAnimals[selectedAnimalType] || [];
+        if (animalsOfType.length === 0) {
+          setSelectedAnimalType(null);
+        }
+      }
+    };
+
+    window.addEventListener('animalDeleted', handleAnimalDeleted);
+    return () => window.removeEventListener('animalDeleted', handleAnimalDeleted);
+  }, [selectedAnimalType, groupedAnimals]);
 
   if (animalsLoading) {
     return <div className="flex items-center justify-center min-h-screen">Cargando animales...</div>;
