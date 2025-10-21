@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { AnimalTable } from '@/components/AnimalTable';
 import { AnimalSaleForm } from '@/components/AnimalSaleForm';
 import { AnimalExpenseForm } from '@/components/AnimalExpenseForm';
+import { AnimalIncomeForm } from '@/components/AnimalIncomeForm';
 import { AnimalTransactionForm } from '@/components/AnimalTransactionForm';
 import { EggDebtorTable } from '@/components/EggDebtorTable';
 import { ClientForm } from '@/components/ClientForm';
@@ -267,13 +268,14 @@ const Animals: React.FC = () => {
                 Ingreso
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-md">
+            <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>Registrar Ingreso</DialogTitle>
               </DialogHeader>
-              <AnimalExpenseForm
+              <AnimalIncomeForm
                 animalId={selectedIndividualAnimal.id}
-                onSubmit={(data) => handleCreateTransaction({...data, type: 'ingreso'})}
+                animalType={selectedIndividualAnimal.animal_type}
+                onSubmit={handleCreateTransaction}
                 isLoading={createTransaction.isPending}
               />
             </DialogContent>
