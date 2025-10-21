@@ -54,39 +54,39 @@ const Dashboard = () => {
           title="Balance Total"
           value={formatCurrency(summary.totalBalance)}
           icon={<DollarSign className="h-4 w-4" />}
-          className="bg-white dark:bg-farm-green"
+          className="card-elevated"
         />
         <CardStat
           title="Ingresos Mensuales"
           value={formatCurrency(summary.monthlyIncome)}
-          icon={<TrendingUp className="h-4 w-4 text-green-500" />}
+          icon={<TrendingUp className="h-4 w-4 text-success" />}
           trend={summary.incomeTrend}
-          className="bg-white dark:bg-farm-green"
+          className="card-elevated"
         />
         <CardStat
           title="Gastos Mensuales"
           value={formatCurrency(summary.monthlyExpenses)}
-          icon={<TrendingDown className="h-4 w-4 text-red-500" />}
+          icon={<TrendingDown className="h-4 w-4 text-destructive" />}
           trend={summary.expensesTrend}
-          className="bg-white dark:bg-farm-green"
+          className="card-elevated"
         />
         <CardStat
           title="Liquidez"
           value={formatCurrency(summary.liquidity)}
           icon={<BanknoteIcon className="h-4 w-4" />}
-          className="bg-white dark:bg-farm-green"
+          className="card-elevated"
         />
       </div>
 
       {/* Charts */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 min-w-0">
         <div className="md:col-span-2">
-          <div className="bg-white dark:bg-farm-green rounded-lg shadow-sm p-2 sm:p-4 h-full min-w-0 w-full">
+          <div className="bg-card rounded-lg shadow-elegant p-2 sm:p-4 h-full min-w-0 w-full card-elevated">
             <ChartMonthlyBalance transactions={transactions} />
           </div>
         </div>
         <div>
-          <div className="bg-white dark:bg-farm-green rounded-lg shadow-sm p-2 sm:p-4 h-full min-w-0 w-full">
+          <div className="bg-card rounded-lg shadow-elegant p-2 sm:p-4 h-full min-w-0 w-full card-elevated cursor-pointer">
             <ChartCategoryDistribution 
               title="Distribución de gastos" 
               type="gastos" 
@@ -97,7 +97,7 @@ const Dashboard = () => {
           </div>
         </div>
         <div>
-          <div className="bg-white dark:bg-farm-green rounded-lg shadow-sm p-2 sm:p-4 h-full min-w-0 w-full">
+          <div className="bg-card rounded-lg shadow-elegant p-2 sm:p-4 h-full min-w-0 w-full card-elevated cursor-pointer">
             <ChartCategoryDistribution 
               title="Distribución de ingresos" 
               type="ingresos" 
@@ -109,10 +109,10 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Últimas Transacciones - scroll horizontal SIEMPRE visible */}
+      {/* Últimas Transacciones */}
       <div className="space-y-3 min-w-0">
         <h3 className="text-lg sm:text-xl font-bold">Últimas Transacciones</h3>
-        <div className="w-full min-w-0 overflow-x-auto rounded-lg bg-white dark:bg-farm-green shadow-sm p-2 sm:p-4">
+        <div className="w-full min-w-0 overflow-x-auto rounded-lg bg-card shadow-elegant p-2 sm:p-4 card-elevated">
           <div className="min-w-[640px]">
             <TransactionTable />
           </div>
