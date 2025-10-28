@@ -37,62 +37,49 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-cover bg-center relative" style={{ backgroundImage: 'url("/lovable-uploads/01018185-9285-44e6-a198-621a4621db1a.png")' }}>
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-secondary/20 backdrop-blur-[2px]" />
-      
-      <div className="w-full max-w-md relative z-10 space-y-6 animate-fade-in">
-        <div className="flex items-center justify-between bg-card/80 backdrop-blur-md rounded-lg p-4 shadow-elegant">
-          <AppLogo />
-          <div className="font-semibold text-lg text-card-foreground">
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-cover bg-center" style={{ backgroundImage: 'url("/lovable-uploads/01018185-9285-44e6-a198-621a4621db1a.png")' }}>
+      <div className="w-full max-w-md">
+        <div className="mb-6 flex items-center justify-between">
+          <AppLogo className="text-white" />
+          <div className="text-white font-semibold text-xl">
             {email ? getWelcomeMessage(email) : 'Bienvenido'}
           </div>
         </div>
-        
-        <Card className="w-full backdrop-blur-md bg-card/95 shadow-xl border-border/50 card-elevated">
-          <CardHeader className="space-y-1 pb-4">
-            <CardTitle className="text-3xl font-bold text-center bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              H-V Farm
-            </CardTitle>
-            <CardDescription className="text-center text-base">
+        <Card className="w-full bg-white/90 dark:bg-farm-green/95 shadow-xl">
+          <CardHeader>
+            <CardTitle className="text-2xl text-center">Acceso a H-V Farm</CardTitle>
+            <CardDescription className="text-center">
               Ingresa tus credenciales para acceder al sistema
             </CardDescription>
           </CardHeader>
           <form onSubmit={handleLogin}>
-            <CardContent className="space-y-5">
+            <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-sm font-medium">
-                  Correo electrónico
-                </Label>
+                <Label htmlFor="email">Correo electrónico</Label>
                 <Input 
                   id="email" 
                   type="email" 
                   placeholder="correo@ejemplo.com" 
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="h-11 transition-smooth"
                   required
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="password" className="text-sm font-medium">
-                  Contraseña
-                </Label>
+                <Label htmlFor="password">Contraseña</Label>
                 <Input 
                   id="password" 
                   type="password" 
-                  placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="h-11 transition-smooth"
                   required
                 />
               </div>
             </CardContent>
-            <CardFooter className="pt-2">
+            <CardFooter>
               <Button 
                 type="submit" 
-                className="w-full h-11"
-                size="lg"
+                className="w-full bg-farm-green hover:bg-farm-darkgreen dark:bg-farm-lightgreen dark:hover:bg-farm-green"
                 disabled={isLoading}
               >
                 {isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}

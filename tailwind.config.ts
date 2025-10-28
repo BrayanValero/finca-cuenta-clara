@@ -63,17 +63,14 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				success: {
-					DEFAULT: 'hsl(var(--success))',
-					foreground: 'hsl(var(--success-foreground))'
-				},
-				warning: {
-					DEFAULT: 'hsl(var(--warning))',
-					foreground: 'hsl(var(--warning-foreground))'
-				},
-				info: {
-					DEFAULT: 'hsl(var(--info))',
-					foreground: 'hsl(var(--info-foreground))'
+				// Farm Colors
+				farm: {
+					green: '#4D5726',
+					brown: '#B8860B',
+					beige: '#F5F5DC',
+					lightgreen: '#6B7B3A',
+					darkgreen: '#3A4219',
+					lightbrown: '#D9A441',
 				}
 			},
 			borderRadius: {

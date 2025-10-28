@@ -5,25 +5,25 @@
 
 @layer base {
   :root {
-    --background: 60 33% 94%;
-    --foreground: 82 37% 25%;
+    --background: 60 33% 94%;  /* beige background */
+    --foreground: 82 37% 25%;  /* farm green */
 
     --card: 0 0% 100%;
-    --card-foreground: 82 37% 25%;
+    --card-foreground: 82 37% 25%;  /* farm green */
 
     --popover: 0 0% 100%;
-    --popover-foreground: 82 37% 25%;
+    --popover-foreground: 82 37% 25%;  /* farm green */
 
-    --primary: 82 37% 25%;
-    --primary-foreground: 60 33% 94%;
+    --primary: 82 37% 25%;     /* farm green */
+    --primary-foreground: 60 33% 94%;  /* beige */
 
-    --secondary: 43 89% 38%;
-    --secondary-foreground: 0 0% 100%;
+    --secondary: 43 89% 38%;  /* farm brown */
+    --secondary-foreground: 0 0% 100%; /* white */
 
     --muted: 82 10% 90%;
     --muted-foreground: 82 37% 35%;
 
-    --accent: 43 80% 45%;
+    --accent: 43 80% 45%;     /* lighter farm brown */
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84.2% 60.2%;
@@ -31,50 +31,31 @@
 
     --border: 82 20% 80%;
     --input: 82 20% 80%;
-    --ring: 82 37% 25%;
+    --ring: 82 37% 25%;       /* farm green */
 
     --radius: 0.5rem;
 
-    --sidebar-background: 82 37% 25%;
-    --sidebar-foreground: 60 33% 94%;
-    --sidebar-primary: 43 89% 38%;
+    --sidebar-background: 82 37% 25%; /* farm green */
+    --sidebar-foreground: 60 33% 94%; /* beige */
+    --sidebar-primary: 43 89% 38%;    /* farm brown */
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 82 37% 30%;
+    --sidebar-accent: 82 37% 30%;     /* slightly lighter farm green */
     --sidebar-accent-foreground: 60 33% 94%;
-    --sidebar-border: 82 37% 20%;
-    --sidebar-ring: 43 89% 38%;
+    --sidebar-border: 82 37% 20%;     /* darker farm green */
+    --sidebar-ring: 43 89% 38%;       /* farm brown */
 
-    /* Enhanced Design System */
-    --success: 142 76% 36%;
-    --success-foreground: 0 0% 100%;
-    --warning: 38 92% 50%;
-    --warning-foreground: 0 0% 100%;
-    --info: 199 89% 48%;
-    --info-foreground: 0 0% 100%;
-
-    /* Shadows */
-    --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.05);
-    --shadow: 0 1px 3px 0 hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
-    --shadow-md: 0 4px 6px -1px hsl(0 0% 0% / 0.1), 0 2px 4px -2px hsl(0 0% 0% / 0.1);
-    --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.1), 0 4px 6px -4px hsl(0 0% 0% / 0.1);
-    --shadow-xl: 0 20px 25px -5px hsl(0 0% 0% / 0.1), 0 8px 10px -6px hsl(0 0% 0% / 0.1);
-    --shadow-glow: 0 0 20px hsl(var(--primary) / 0.3);
-
-    /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(82 37% 30%) 100%);
-    --gradient-secondary: linear-gradient(135deg, hsl(var(--secondary)) 0%, hsl(43 89% 48%) 100%);
-    --gradient-accent: linear-gradient(135deg, hsl(var(--accent)) 0%, hsl(43 80% 55%) 100%);
-    --gradient-subtle: linear-gradient(180deg, hsl(var(--background)) 0%, hsl(60 33% 90%) 100%);
-
-    /* Transitions */
-    --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+    /* Custom theme variables */
+    --theme-primary: #4D5726;
+    --theme-secondary: #B8860B;
+    --theme-accent: #6B7B3A;
+    --theme-background: #F5F5DC;
+    --theme-dark-primary: #3A4219;
+    --theme-light-accent: #8A9B4A;
   }
 
   .dark {
-    --background: 82 37% 15%;
-    --foreground: 60 33% 94%;
+    --background: 82 37% 15%;  /* dark farm green */
+    --foreground: 60 33% 94%;  /* beige */
 
     --card: 82 37% 18%;
     --card-foreground: 60 33% 94%;
@@ -82,16 +63,16 @@
     --popover: 82 37% 18%;
     --popover-foreground: 60 33% 94%;
 
-    --primary: 60 33% 94%;
-    --primary-foreground: 82 37% 25%;
+    --primary: 60 33% 94%;     /* beige */
+    --primary-foreground: 82 37% 25%; /* farm green */
 
-    --secondary: 43 89% 38%;
+    --secondary: 43 89% 38%;   /* farm brown */
     --secondary-foreground: 0 0% 100%;
 
     --muted: 82 37% 25%;
     --muted-foreground: 82 10% 80%;
 
-    --accent: 43 80% 45%;
+    --accent: 43 80% 45%;      /* lighter farm brown */
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 62.8% 30.6%;
@@ -99,7 +80,7 @@
 
     --border: 82 37% 30%;
     --input: 82 37% 30%;
-    --ring: 60 33% 94%;
+    --ring: 60 33% 94%;         /* beige */
     
     --sidebar-background: 82 37% 18%;
     --sidebar-foreground: 60 33% 94%;
@@ -109,18 +90,6 @@
     --sidebar-accent-foreground: 60 33% 94%;
     --sidebar-border: 82 37% 30%;
     --sidebar-ring: 43 89% 38%;
-
-    /* Enhanced Design System - Dark Mode */
-    --success: 142 76% 36%;
-    --success-foreground: 0 0% 100%;
-    --warning: 38 92% 50%;
-    --warning-foreground: 0 0% 100%;
-    --info: 199 89% 48%;
-    --info-foreground: 0 0% 100%;
-
-    --shadow-glow: 0 0 30px hsl(var(--primary) / 0.5);
-    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(60 33% 88%) 100%);
-    --gradient-secondary: linear-gradient(135deg, hsl(var(--secondary)) 0%, hsl(43 89% 48%) 100%);
   }
 }
 
@@ -133,6 +102,7 @@
     @apply bg-background text-foreground;
     height: 100%;
     overflow: hidden;
+    background-color: var(--theme-background);
   }
 
   #root {
@@ -227,45 +197,43 @@
   box-shadow: 0 0 20px rgba(77, 87, 38, 0.4);
 }
 
-/* Enhanced utility classes */
-.shadow-elegant {
-  box-shadow: var(--shadow-lg);
+/* Theme-based utility classes */
+.bg-theme-primary {
+  background-color: var(--theme-primary);
 }
 
-.shadow-glow {
-  box-shadow: var(--shadow-glow);
+.bg-theme-secondary {
+  background-color: var(--theme-secondary);
 }
 
-.gradient-primary {
-  background: var(--gradient-primary);
+.bg-theme-accent {
+  background-color: var(--theme-accent);
 }
 
-.gradient-secondary {
-  background: var(--gradient-secondary);
+.bg-theme-background {
+  background-color: var(--theme-background);
 }
 
-.gradient-accent {
-  background: var(--gradient-accent);
+.text-theme-primary {
+  color: var(--theme-primary);
 }
 
-.gradient-subtle {
-  background: var(--gradient-subtle);
+.text-theme-secondary {
+  color: var(--theme-secondary);
 }
 
-.transition-smooth {
-  transition: var(--transition-base);
+.text-theme-accent {
+  color: var(--theme-accent);
 }
 
-.transition-fast {
-  transition: var(--transition-fast);
+.border-theme-primary {
+  border-color: var(--theme-primary);
 }
 
-.card-elevated {
-  box-shadow: var(--shadow-md);
-  transition: var(--transition-base);
+.border-theme-secondary {
+  border-color: var(--theme-secondary);
 }
 
-.card-elevated:hover {
-  box-shadow: var(--shadow-lg);
-  transform: translateY(-2px);
+.border-theme-accent {
+  border-color: var(--theme-accent);
 }
