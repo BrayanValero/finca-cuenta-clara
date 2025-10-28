@@ -1,5 +1,4 @@
-
-import { FileText, PieChart } from 'lucide-react';
+import { FileText, PieChart, PawPrint } from 'lucide-react';
 import QuickReportCard from './QuickReportCard';
 
 interface QuickReportsTabProps {
@@ -31,6 +30,14 @@ const QuickReportsTab = ({ onGenerateReport }: QuickReportsTabProps) => {
         icon={PieChart}
         onPreview={() => onGenerateReport('categories', 'preview')}
         onGenerate={() => onGenerateReport('categories', 'pdf')}
+      />
+      
+      <QuickReportCard
+        title="Informe de Animales"
+        description="Resumen de animales e ingresos/gastos asociados."
+        icon={PawPrint}
+        onPreview={() => onGenerateReport('animals', 'preview')}
+        onGenerate={() => onGenerateReport('animals', 'pdf')}
       />
     </div>
   );

@@ -1,5 +1,6 @@
 
 import { Transaction } from '@/services/transactionService';
+import { Animal, AnimalTransaction } from '@/services/animalService';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { jsPDF } from 'jspdf';
@@ -13,6 +14,13 @@ interface ReportOptions {
   type?: 'all' | 'incomes' | 'expenses' | 'descriptions';
   format: 'pdf' | 'preview';
   includeCharts?: boolean;
+}
+
+interface AnimalReportOptions {
+  animals: Animal[];
+  animalTransactions: AnimalTransaction[];
+  title: string;
+  format: 'pdf' | 'preview';
 }
 
 // Filter transactions based on report options
@@ -425,6 +433,187 @@ export const generateReport = (options: ReportOptions) => {
     return exportToPDF(options);
   } catch (error) {
     console.error('Error generating report:', error);
+    return false;
+  }
+};
+
+// Generate animal report
+export const generateAnimalReport = (options: AnimalReportOptions) => {
+  const { animals, animalTransactions, title, format: outputFormat } = options;
+  
+  if (outputFormat === 'preview') {
+    return true;
+  }
+  
+  try {
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    
+    // Add logo
+    const logoPath = "/lovable-uploads/e7909117-d6bf-4712-a6f5-696a1e342bf7.png";
+    doc.addImage(logoPath, 'PNG', 15, 10, 20, 20);
+    
+    // Add title
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    doc.text('H-V Farm', 40, 20);
+    
+    // Add report title
+    doc.setFontSize(16);
+    doc.setFont('helvetica', 'normal');
+    doc.text(title, pageWidth / 2, 40, { align: 'center' });
+    
+    let currentY = 55;
+    
+    // Format currency
+    const formatCurrency = (amount: number) => {
+      return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'COP' }).format(amount);
+    };
+    
+    // Calculate totals
+    const totalIncome = animalTransactions
+      .filter(t => t.type === 'ingreso')
+      .reduce((sum, t) => sum + Number(t.amount), 0);
+      
+    const totalExpense = animalTransactions
+      .filter(t => t.type === 'gasto')
+      .reduce((sum, t) => sum + Number(t.amount), 0);
+      
+    const balance = totalIncome - totalExpense;
+    
+    // Add summary section
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Resumen Ejecutivo', 15, currentY);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.text(`Total de animales: ${animals.length}`, 15, currentY + 10);
+    doc.text(`Total de transacciones: ${animalTransactions.length}`, 15, currentY + 17);
+    
+    currentY += 30;
+    
+    // Add animals table
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Inventario de Animales', 15, currentY);
+    currentY += 5;
+    
+    const animalTableData = animals.map(animal => {
+      const animalTxs = animalTransactions.filter(tx => tx.animal_id === animal.id);
+      const animalIncome = animalTxs.filter(t => t.type === 'ingreso').reduce((sum, t) => sum + Number(t.amount), 0);
+      const animalExpense = animalTxs.filter(t => t.type === 'gasto').reduce((sum, t) => sum + Number(t.amount), 0);
+      
+      return [
+        animal.name || animal.animal_type,
+        animal.animal_type,
+        animal.quantity?.toString() || '1',
+        formatCurrency(animalIncome),
+        formatCurrency(animalExpense),
+        formatCurrency(animalIncome - animalExpense)
+      ];
+    });
+    
+    autoTable(doc, {
+      startY: currentY,
+      head: [['Nombre', 'Tipo', 'Cantidad', 'Ingresos', 'Gastos', 'Balance']],
+      body: animalTableData,
+      theme: 'striped',
+      headStyles: {
+        fillColor: [64, 115, 64],
+        textColor: [255, 255, 255],
+        fontStyle: 'bold'
+      },
+      columnStyles: {
+        2: { halign: 'center' },
+        3: { halign: 'right' },
+        4: { halign: 'right' },
+        5: { halign: 'right' }
+      }
+    });
+    
+    const finalY = (doc as any).lastAutoTable.finalY || 180;
+    currentY = finalY + 15;
+    
+    // Add transactions table
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Detalle de Transacciones', 15, currentY);
+    currentY += 5;
+    
+    const txTableData = animalTransactions.map(tx => {
+      const animal = animals.find(a => a.id === tx.animal_id);
+      return [
+        format(new Date(tx.date), 'dd/MM/yyyy'),
+        animal?.name || animal?.animal_type || 'N/A',
+        tx.type === 'ingreso' ? 'INGRESO' : 'GASTO',
+        tx.category || '-',
+        tx.description || '-',
+        formatCurrency(Number(tx.amount))
+      ];
+    });
+    
+    autoTable(doc, {
+      startY: currentY,
+      head: [['Fecha', 'Animal', 'Tipo', 'Categoría', 'Descripción', 'Monto']],
+      body: txTableData,
+      theme: 'striped',
+      headStyles: {
+        fillColor: [64, 115, 64],
+        textColor: [255, 255, 255],
+        fontStyle: 'bold'
+      },
+      columnStyles: {
+        2: { halign: 'center' },
+        5: { halign: 'right' }
+      },
+      didParseCell: function(data) {
+        if (data.column.index === 2 && data.cell.text[0]) {
+          if (data.cell.text[0] === 'INGRESO') {
+            data.cell.styles.textColor = [34, 139, 34];
+            data.cell.styles.fontStyle = 'bold';
+          } else if (data.cell.text[0] === 'GASTO') {
+            data.cell.styles.textColor = [220, 20, 60];
+            data.cell.styles.fontStyle = 'bold';
+          }
+        }
+      }
+    });
+    
+    const transactionsFinalY = (doc as any).lastAutoTable.finalY || 180;
+    
+    // Add totals section
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Resumen Financiero', 15, transactionsFinalY + 20);
+    
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(34, 139, 34);
+    doc.text(`Total Ingresos: ${formatCurrency(totalIncome)}`, 15, transactionsFinalY + 32);
+    
+    doc.setTextColor(220, 20, 60);
+    doc.text(`Total Gastos: ${formatCurrency(totalExpense)}`, 15, transactionsFinalY + 42);
+    
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    const balanceColor = balance >= 0 ? [34, 139, 34] : [220, 20, 60];
+    doc.setTextColor(balanceColor[0], balanceColor[1], balanceColor[2]);
+    doc.text(`Balance Final: ${formatCurrency(balance)}`, 15, transactionsFinalY + 55);
+    
+    // Add footer
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'italic');
+    doc.text(`Informe generado automáticamente por H-V Farm`, 15, doc.internal.pageSize.getHeight() - 20);
+    doc.text(`Fecha de generación: ${format(new Date(), 'PPP', { locale: es })}`, pageWidth - 15, doc.internal.pageSize.getHeight() - 10, { align: 'right' });
+    
+    // Save the PDF
+    doc.save(`${title.replace(/\s+/g, '_')}_${format(new Date(), 'yyyyMMdd')}.pdf`);
+    
+    return true;
+  } catch (error) {
+    console.error('Error generating animal report:', error);
     return false;
   }
 };
