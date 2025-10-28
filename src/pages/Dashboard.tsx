@@ -10,8 +10,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTransactions } from '@/hooks/useTransactions';
 import { useFinancialSummary } from '@/hooks/useFinancialSummary';
 import { formatCurrency } from '@/utils/transactionUtils';
-import { useQuery } from '@tanstack/react-query';
-import { getLoans } from '@/services/loanService';
+import { useLoans, useAllLoanPayments } from '@/hooks/useLoans';
 
 
 const Dashboard = () => {
@@ -20,12 +19,10 @@ const Dashboard = () => {
   
   
   const { data: transactions = [], isLoading } = useTransactions();
-  const { data: loans = [] } = useQuery({
-    queryKey: ['loans'],
-    queryFn: getLoans
-  });
+  const { data: loans = [] } = useLoans();
+  const { data: loanPayments = [] } = useAllLoanPayments();
   
-  const summary = useFinancialSummary(transactions, loans);
+  const summary = useFinancialSummary(transactions, loans, loanPayments);
 
   useEffect(() => {
     console.log("Dashboard rendered, user:", user?.id);

@@ -2,13 +2,19 @@
 import { useMemo } from 'react';
 import { Transaction } from '@/services/transactionService';
 import { Loan } from '@/services/loanService';
+import { LoanPayment } from '@/services/loanPaymentService';
 
 interface UseFinancialSummaryProps {
   transactions: Transaction[];
   loans?: Loan[];
+  loanPayments?: LoanPayment[];
 }
 
-export const useFinancialSummary = (transactions: Transaction[], loans: Loan[] = []) => {
+export const useFinancialSummary = (
+  transactions: Transaction[], 
+  loans: Loan[] = [], 
+  loanPayments: LoanPayment[] = []
+) => {
   return useMemo(() => {
     if (!transactions.length) {
       return {
@@ -48,14 +54,24 @@ export const useFinancialSummary = (transactions: Transaction[], loans: Loan[] =
 
     const totalBalance = totalIncome - totalExpenses;
 
-    // Calculate liquidity considering pending loans
+    // Calculate liquidity considering pending loans and their payments
     const pendingLoans = loans.filter((loan: Loan) => loan.status === 'pendiente');
     
     const pendingLoanAdjustment = pendingLoans.reduce((sum: number, loan: Loan) => {
+      // Calculate payments made for this loan
+      const paymentsForLoan = loanPayments
+        .filter((payment: LoanPayment) => payment.loan_id === loan.id)
+        .reduce((paymentSum: number, payment: LoanPayment) => paymentSum + Number(payment.amount), 0);
+      
+      // Remaining balance = original amount - payments made
+      const remainingBalance = Number(loan.amount) - paymentsForLoan;
+      
       if (loan.loan_type === 'recibido') {
-        return sum + Number(loan.amount); // Money we received (adds to liquidity)
+        // Money we received (debt we owe) - reduces liquidity
+        return sum - remainingBalance;
       } else {
-        return sum - Number(loan.amount); // Money we lent out (reduces liquidity)
+        // Money we lent out (asset we own) - adds to liquidity
+        return sum + remainingBalance;
       }
     }, 0);
 
@@ -69,5 +85,5 @@ export const useFinancialSummary = (transactions: Transaction[], loans: Loan[] =
       incomeTrend: 24, // Example value, would need historical data for real calculation
       expensesTrend: -8 // Example value, would need historical data for real calculation
     };
-  }, [transactions, loans]);
+  }, [transactions, loans, loanPayments]);
 };
