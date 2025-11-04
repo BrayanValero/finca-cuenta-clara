@@ -66,11 +66,11 @@ export const useFinancialSummary = (
       // Remaining balance = original amount - payments made
       const remainingBalance = Number(loan.amount) - paymentsForLoan;
       
-      if (loan.loan_type === 'recibido') {
-        // Money we received (debt) - reduces liquidity (we owe this)
+      if (loan.loan_type === 'otorgado') {
+        // Money we lent out - reduces liquidity (money is out)
         return sum - remainingBalance;
       } else {
-        // Money we lent out (credit) - adds to liquidity (they owe us this)
+        // Money we received - adds to liquidity (money is in)
         return sum + remainingBalance;
       }
     }, 0);
