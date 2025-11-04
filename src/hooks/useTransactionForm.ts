@@ -3,6 +3,7 @@ import { useToast } from '@/hooks/use-toast';
 import { TransactionInput } from '@/services/transactionService';
 import { categorizeTransaction } from '@/utils/transactionUtils';
 import { FormData, CategorySuggestion } from '@/types/TransactionFormTypes';
+import { formatDateToLocalString } from '@/lib/utils';
 
 export const useTransactionForm = (editTransaction?: any) => {
   const { toast } = useToast();
@@ -90,7 +91,7 @@ export const useTransactionForm = (editTransaction?: any) => {
   };
 
   const prepareTransactionData = (): TransactionInput => ({
-    date: formData.fecha.toISOString().split('T')[0],
+    date: formatDateToLocalString(formData.fecha),
     type: formData.type,
     description: formData.description || null,
     amount: Number(formData.amount)

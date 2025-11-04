@@ -9,6 +9,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form';
 import { useClients } from '@/hooks/useClients';
+import { formatDateToLocalString } from '@/lib/utils';
 
 const animalSaleSchema = z.object({
   cartons: z.number().min(0, 'Los cartones deben ser 0 o más').default(0),
@@ -72,7 +73,7 @@ export const AnimalSaleForm: React.FC<AnimalSaleFormProps> = ({
       customer_name: '',
       customer_phone: '',
       description: '',
-      date: new Date().toISOString().split('T')[0],
+      date: formatDateToLocalString(new Date()),
       animal_type: animalType,
     }
   });

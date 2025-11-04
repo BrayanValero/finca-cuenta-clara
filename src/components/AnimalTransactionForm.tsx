@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { AnimalTransaction } from '@/services/animalService';
+import { formatDateToLocalString } from '@/lib/utils';
 
 const transactionSchema = z.object({
   type: z.enum(['ingreso', 'gasto'], {
@@ -59,7 +60,7 @@ export const AnimalTransactionForm: React.FC<AnimalTransactionFormProps> = ({
       category: initialData?.category || '',
       amount: initialData?.amount || 0,
       description: initialData?.description || '',
-      date: initialData?.date || new Date().toISOString().split('T')[0],
+      date: initialData?.date || formatDateToLocalString(new Date()),
     },
   });
 
@@ -74,7 +75,7 @@ export const AnimalTransactionForm: React.FC<AnimalTransactionFormProps> = ({
         category: '',
         amount: 0,
         description: '',
-        date: new Date().toISOString().split('T')[0],
+        date: formatDateToLocalString(new Date()),
       });
     }
   };

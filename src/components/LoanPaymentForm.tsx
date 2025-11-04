@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useLoanPaymentMutations } from '@/hooks/useLoanPayments';
 import { LoanPaymentInput } from '@/services/loanPaymentService';
+import { formatDateToLocalString } from '@/lib/utils';
 
 const paymentSchema = z.object({
   amount: z.string()
@@ -39,7 +40,7 @@ const LoanPaymentForm: React.FC<LoanPaymentFormProps> = ({ loanId, onSuccess, ma
     resolver: zodResolver(paymentSchema),
     defaultValues: {
       amount: '',
-      payment_date: new Date().toISOString().split('T')[0],
+      payment_date: formatDateToLocalString(new Date()),
       description: '',
     },
   });

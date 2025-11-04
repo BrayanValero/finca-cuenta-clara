@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Label } from '@/components/ui/label';
+import { formatDateToLocalString } from '@/lib/utils';
 
 // Schema para gallinas (venta de huevos)
 const eggSaleSchema = z.object({
@@ -56,7 +57,7 @@ export const AnimalIncomeForm: React.FC<AnimalIncomeFormProps> = ({
       pricePerCarton: 12000,
       pricePerEgg: 500,
       description: '',
-      date: new Date().toISOString().split('T')[0],
+      date: formatDateToLocalString(new Date()),
     },
   });
 
@@ -67,7 +68,7 @@ export const AnimalIncomeForm: React.FC<AnimalIncomeFormProps> = ({
       weight: 0,
       pricePerKilo: 13000,
       description: '',
-      date: new Date().toISOString().split('T')[0],
+      date: formatDateToLocalString(new Date()),
     },
   });
 

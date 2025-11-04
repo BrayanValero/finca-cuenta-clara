@@ -5,6 +5,7 @@ import { Upload } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { useQueryClient } from '@tanstack/react-query';
 import { createTransaction, TransactionInput } from '@/services/transactionService';
+import { formatDateToLocalString } from '@/lib/utils';
 
 // Interface for the row data from Excel
 interface ExcelRowData {
@@ -81,8 +82,8 @@ const FileUpload = () => {
       }
     }
     
-    // Format as YYYY-MM-DD
-    return date.toISOString().split('T')[0];
+    // Format as YYYY-MM-DD using local timezone
+    return formatDateToLocalString(date);
   };
 
   const handleUpload = async () => {

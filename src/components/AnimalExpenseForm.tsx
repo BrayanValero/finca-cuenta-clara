@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { formatDateToLocalString } from '@/lib/utils';
 
 const animalExpenseSchema = z.object({
   category: z.string().min(1, 'La categoría es requerida'),
@@ -34,7 +35,7 @@ export const AnimalExpenseForm: React.FC<AnimalExpenseFormProps> = ({
       category: 'purina',
       amount: 90000,
       description: '',
-      date: new Date().toISOString().split('T')[0],
+      date: formatDateToLocalString(new Date()),
     }
   });
 

@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { cn } from '@/lib/utils';
+import { cn, formatDateToLocalString } from '@/lib/utils';
 import { format } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
@@ -85,12 +85,12 @@ const LoanForm = () => {
 
     // Preparar datos para enviar
     const loanData: LoanInput = {
-      date: formData.fecha.toISOString().split('T')[0],
+      date: formatDateToLocalString(formData.fecha),
       description: formData.description || null,
       amount: Number(formData.amount),
       loan_type: formData.loan_type,
       status: formData.status,
-      due_date: formData.due_date ? formData.due_date.toISOString().split('T')[0] : null
+      due_date: formData.due_date ? formatDateToLocalString(formData.due_date) : null
     };
 
     // Enviar datos
