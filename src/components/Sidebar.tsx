@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { BarChart3, FileText, Home, LogOut, PlusCircle, DollarSign, UserCircle, FolderOpen, Beef } from 'lucide-react';
+import { BarChart3, FileText, Home, LogOut, PlusCircle, DollarSign, UserCircle, FolderOpen } from 'lucide-react';
 import AppLogo from './AppLogo';
 import { useAuth } from '@/contexts/AuthContext';
 
