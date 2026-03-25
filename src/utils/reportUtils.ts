@@ -16,12 +16,6 @@ interface ReportOptions {
   includeCharts?: boolean;
 }
 
-interface AnimalReportOptions {
-  animals: Animal[];
-  animalTransactions: AnimalTransaction[];
-  title: string;
-  format: 'pdf' | 'preview';
-}
 
 // Filter transactions based on report options
 export const filterTransactions = (transactions: Transaction[], options: Omit<ReportOptions, 'format'>) => {
