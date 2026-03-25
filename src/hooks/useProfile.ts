@@ -48,24 +48,21 @@ export function useProfile(userId: string | undefined) {
       phone?: string;
       address?: string;
     }) => {
-      // Separar full_name en first_name y last_name
       const nameParts = updateData.full_name?.trim().split(' ') || [];
       const first_name = nameParts[0] || '';
       const last_name = nameParts.slice(1).join(' ') || '';
 
       const dataToUpdate = { 
+        id: updateData.id,
         first_name: first_name || null,
         last_name: last_name || null,
         phone: updateData.phone || null,
         address: updateData.address || null
       };
 
-      console.log('Updating profile with data:', dataToUpdate, 'for user ID:', updateData.id);
-
       const { data, error } = await supabase
         .from("profiles")
-        .update(dataToUpdate)
-        .eq("id", updateData.id)
+        .upsert(dataToUpdate, { onConflict: 'id' })
         .select()
         .single();
 
@@ -74,7 +71,6 @@ export function useProfile(userId: string | undefined) {
         throw error;
       }
 
-      console.log('Profile updated successfully:', data);
       return data;
     },
     onSuccess: () => {
