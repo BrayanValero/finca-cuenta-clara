@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useQuery } from '@tanstack/react-query';
 import { getTransactions } from '@/services/transactionService';
-import { getAnimals, getAnimalTransactions } from '@/services/animalService';
+
 import { useToast } from '@/hooks/use-toast';
 import { generateReport, generateAnimalReport } from '@/utils/reportUtils';
 import ReportPreview from '@/components/ReportPreview';
