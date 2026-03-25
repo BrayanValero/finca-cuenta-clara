@@ -432,12 +432,6 @@ export const generateReport = (options: ReportOptions) => {
 };
 
 
-
-    
-    // Add title
-    doc.setFontSize(18);
-    doc.setFont('helvetica', 'bold');
-    doc.text('H-V Farm', 40, 20);
     
     // Add report title
     doc.setFontSize(16);
