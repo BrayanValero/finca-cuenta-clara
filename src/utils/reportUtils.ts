@@ -431,11 +431,6 @@ export const generateReport = (options: ReportOptions) => {
   }
 };
 
-
-
-  
-  try {
-    const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
     
     // Add logo
