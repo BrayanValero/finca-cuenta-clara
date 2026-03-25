@@ -431,13 +431,8 @@ export const generateReport = (options: ReportOptions) => {
   }
 };
 
-// Generate animal report
-export const generateAnimalReport = (options: AnimalReportOptions) => {
-  const { animals, animalTransactions, title, format: outputFormat } = options;
-  
-  if (outputFormat === 'preview') {
-    return true;
-  }
+
+
   
   try {
     const doc = new jsPDF();
