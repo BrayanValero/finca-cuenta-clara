@@ -5,7 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { getTransactions } from '@/services/transactionService';
 
 import { useToast } from '@/hooks/use-toast';
-import { generateReport, generateAnimalReport } from '@/utils/reportUtils';
+import { generateReport } from '@/utils/reportUtils';
 import ReportPreview from '@/components/ReportPreview';
 import QuickReportsTab from '@/components/reports/QuickReportsTab';
 import CustomReportTab from '@/components/reports/CustomReportTab';

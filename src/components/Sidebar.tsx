@@ -62,19 +62,6 @@ const Sidebar: React.FC = () => {
           </li>
           <li>
             <Link 
-              to="/animales"
-              className={`flex items-center p-2 rounded-md transition-colors ${
-                isActive("/animales") 
-                  ? "bg-theme-accent text-white" 
-                  : "hover:bg-theme-accent/30"
-              }`}
-            >
-              <Beef size={20} className="mr-3" />
-              <span>Mis Animales</span>
-            </Link>
-          </li>
-          <li>
-            <Link 
               to="/estadisticas"
               className={`flex items-center p-2 rounded-md transition-colors ${
                 isActive("/estadisticas") 

@@ -31,14 +31,6 @@ const QuickReportsTab = ({ onGenerateReport }: QuickReportsTabProps) => {
         onPreview={() => onGenerateReport('categories', 'preview')}
         onGenerate={() => onGenerateReport('categories', 'pdf')}
       />
-      
-      <QuickReportCard
-        title="Informe de Animales"
-        description="Resumen de animales e ingresos/gastos asociados."
-        icon={PawPrint}
-        onPreview={() => onGenerateReport('animals', 'preview')}
-        onGenerate={() => onGenerateReport('animals', 'pdf')}
-      />
     </div>
   );
 };

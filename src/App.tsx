@@ -52,7 +52,7 @@ const AppRoutes = () => {
         <Route path="/estadisticas" element={<Statistics />} />
         <Route path="/informes" element={<Reports />} />
         <Route path="/prestamos" element={<Loans />} />
-        <Route path="/animales" element={<Animals />} />
+        
         <Route path="/detalle-distribuciones" element={<ChartDetail />} />
         <Route path="/documentacion" element={<Documents />} />
         <Route path="/personal" element={<Personal />} />
