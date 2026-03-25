@@ -491,10 +491,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      get_loan_remaining_balance: {
-        Args: { loan_id: string }
-        Returns: number
-      }
+      get_loan_remaining_balance: { Args: { loan_id: string }; Returns: number }
     }
     Enums: {
       [_ in never]: never
