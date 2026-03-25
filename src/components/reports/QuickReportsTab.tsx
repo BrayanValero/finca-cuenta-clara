@@ -1,4 +1,4 @@
-import { FileText, PieChart, PawPrint } from 'lucide-react';
+import { FileText, PieChart } from 'lucide-react';
 import QuickReportCard from './QuickReportCard';
 
 interface QuickReportsTabProps {
