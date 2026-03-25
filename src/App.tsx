@@ -15,7 +15,7 @@ import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import Personal from "./pages/Personal";
 import Documents from "./pages/Documents";
-import Animals from "./pages/Animals";
+
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 
 // Protected route component
