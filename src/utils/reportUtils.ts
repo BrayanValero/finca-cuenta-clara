@@ -431,11 +431,8 @@ export const generateReport = (options: ReportOptions) => {
   }
 };
 
-    const pageWidth = doc.internal.pageSize.getWidth();
-    
-    // Add logo
-    const logoPath = "/lovable-uploads/e7909117-d6bf-4712-a6f5-696a1e342bf7.png";
-    doc.addImage(logoPath, 'PNG', 15, 10, 20, 20);
+
+
     
     // Add title
     doc.setFontSize(18);
