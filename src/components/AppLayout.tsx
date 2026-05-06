@@ -20,8 +20,8 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         <div className="md:hidden">
           <MobileNav />
         </div>
-        <main className="flex-1 w-full min-h-0 min-w-0 overflow-y-auto p-4 md:p-6">
-          <div className="max-w-full h-full">
+        <main className="flex-1 w-full min-h-0 min-w-0 overflow-y-auto p-4 md:p-6 pb-20 md:pb-6">
+          <div className="max-w-full">
             {children || <Outlet />}
           </div>
         </main>
