@@ -8,12 +8,16 @@ import { useAuth } from '@/contexts/AuthContext';
 import AppLogo from '@/components/AppLogo';
 
 const backgroundImages = [
-  '/lovable-uploads/01018185-9285-44e6-a198-621a4621db1a.png',
-  '/lovable-uploads/08d2ed9f-2aeb-48b7-b870-c0b1d566c28d.png',
-  '/lovable-uploads/5cf9d67b-8219-47b2-a86e-c103b6451edb.png',
-  '/lovable-uploads/6fc9d8df-4085-4171-9152-431a31a56503.png',
-  '/lovable-uploads/c053719c-1105-4150-835f-9af432e8bc3f.png',
-  '/lovable-uploads/e7909117-d6bf-4712-a6f5-696a1e342bf7.png',
+  '/farm-photos/farm-1.jpg',
+  '/farm-photos/farm-2.jpg',
+  '/farm-photos/farm-3.jpg',
+  '/farm-photos/farm-4.jpg',
+  '/farm-photos/farm-5.jpg',
+  '/farm-photos/farm-6.jpg',
+  '/farm-photos/farm-7.jpg',
+  '/farm-photos/farm-8.jpg',
+  '/farm-photos/farm-9.jpg',
+  '/farm-photos/farm-10.jpg',
 ];
 
 const Login = () => {
